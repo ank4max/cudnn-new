@@ -4,9 +4,9 @@ import sys
 
 
 args = {}
-for i in len(sys.args):
-  if(sys.args[i] == "-testfile"):
-    args["-testfile"] = sys.args[i + 1]
+for i in len(sys.argv):
+  if(sys.argv[i] == "-testfile"):
+    args["-testfile"] = sys.argv[i + 1]
 list_executable = glob.glob("Executables/*")
 
 f = open(args["-testfile"], "r")
