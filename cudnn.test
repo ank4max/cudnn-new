@@ -1,0 +1,1 @@
+cudnnTest_activation -n2 -c2 -h2 -w1 -arelu
