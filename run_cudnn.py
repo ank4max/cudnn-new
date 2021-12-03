@@ -2,7 +2,7 @@ import glob
 import os
 import sys
 
-// utility - 
+
 args = {}
 for i in len(sys.args):
   if(sys.args[i] == "-testfile"):
