@@ -1,0 +1,5 @@
+OP =batchnormalization
+BATCH_SIZE = 1
+N_OF_CHANNELS = 3
+INPUT_HEIGHT = 8
+INPUT_WIDTH = 8
