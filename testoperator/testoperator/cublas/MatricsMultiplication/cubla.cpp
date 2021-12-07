@@ -5,9 +5,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-include <cuda_runtime.h>
+#include <cuda_runtime.h>
 #include <cublas_v2.h>
-#include <helper_cuda.h>
 #include "MatrixMultiCuBLAS.h"
 
 
