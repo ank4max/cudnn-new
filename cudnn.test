@@ -1,2 +1,3 @@
 cudnnTest_activation_relu -n2 -c2 -h2 -w1 -arelu
 cudnnTest_activation_tanh -n2 -c2 -h2 -w1 -atanh
+MAN 1 2 3 4
