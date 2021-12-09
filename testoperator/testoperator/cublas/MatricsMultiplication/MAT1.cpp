@@ -23,6 +23,9 @@ const char *sSDKname = "MatrixMultiplicationCUBLAS";
 #define BENCH_MATRIX_M              (128)
 #define BENCH_MATRIX_K              (128)
 #define BENCH_MATRIX_N              (128)
+#ifndef EXIT_WAIVED
+#define EXIT_WAIVED 2
+#endif
 
 
 
@@ -74,6 +77,14 @@ void mat_fillupMatrixDebug(T_ELEM *A , int lda , int rows, int cols)
     }
 }
 
+
+enum testMethod
+{
+    tmRegular,
+    tmStream,
+    tmBatched
+};
+
 struct gemmOpts
 {
     int m;
@@ -84,6 +95,48 @@ struct gemmOpts
     int N;    // number of multiplications
 };
 
+inline int findCudaDevice(int argc, const char **argv)
+{
+    return 0;
+/*
+    cudaDeviceProp deviceProp;
+    int devID = 0;
+
+    // If the command-line has a device number specified, use it
+    if (checkCmdLineFlag(argc, argv, "device"))
+    {
+        devID = getCmdLineArgumentInt(argc, argv, "device=");
+
+        if (devID < 0)
+        {
+            printf("Invalid command line parameter\n ");
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            devID = gpuDeviceInit(devID);
+
+            if (devID < 0)
+            {
+                printf("exiting...\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    else
+    {
+        // Otherwise pick the device with highest Gflops/s
+        devID = gpuGetMaxGflopsDeviceId();
+        checkCudaErrors(cudaSetDevice(devID));
+        checkCudaErrors(cudaGetDeviceProperties(&deviceProp, devID));
+        printf("GPU Device %d: \"%s\" with compute capability %d.%d\n\n", devID, deviceProp.name, deviceProp.major, deviceProp.minor);
+    }
+
+    return devID; */
+}
+
+
+template<typename T_ELEM>
 struct gemmTestParams
 {
     cublasOperation_t transa;
@@ -94,6 +147,8 @@ struct gemmTestParams
     T_ELEM alpha;
     T_ELEM beta;
 };
+
+
 
 static inline cublasStatus_t cublasXgemm(cublasHandle_t handle,
                                          cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k,
@@ -218,6 +273,62 @@ static int processArgs(int argc, char *argv[], struct gemmOpts *opts)
 
     return error;
 }
+template <typename T_ELEM>
+static int TESTGEN(gemm)(const struct gemmOpts *opts,
+                         int matrixM, int matrixN, int matrixK, int &numTests,
+                         struct gemmTestParams<T_ELEM> *params)
+{
+    static T_ELEM alpha[] = { cuGet<T_ELEM>(0,0), cuGet<T_ELEM>(-1,-1), cuGet<T_ELEM>(1,-2), cuGet<T_ELEM>(2,-1), cuGet<T_ELEM>(0,-3) };
+    static T_ELEM beta[]  = { cuGet<T_ELEM>(0,0), cuGet<T_ELEM>(-1,-1), cuGet<T_ELEM>(1,-2), cuGet<T_ELEM>(2,-1), cuGet<T_ELEM>(0,-3)};
+
+#define NBR_ALPHAS (sizeof(alpha) / sizeof(alpha[0]))
+#define NBR_BETAS (sizeof(beta) / sizeof(beta[0]))
+    static T_ELEM theAlpha;
+    static T_ELEM theBeta;
+    static int state;
+    static int m;
+    static int n;
+    static int k;
+
+    if (numTests-- <= 0)
+    {
+        return -1;
+    }
+
+    theAlpha = alpha[cuRand()%NBR_ALPHAS];
+    theBeta  = beta[cuRand()%NBR_BETAS];
+    params->transa = CUBLAS_OP_N;
+    params->transb = CUBLAS_OP_N;
+    m = matrixM;
+    n = matrixN;
+    k = matrixK;
+    params->m = m;
+    params->n = n;
+    params->k = k;
+    params->alpha = theAlpha;
+    params->beta = theBeta;
+
+    printf("\n");
+    printf("MAtrix multiplicaton");
+    m = cuRand() % matrixM;
+    n = cuRand() % matrixN;
+    k = cuRand() % matrixK;
+
+    state = cuRand() % 9;
+    return 0;
+}
+template <typename T_ELEM>
+void mat_fillupMatrixDebug(T_ELEM *A , int lda , int rows, int cols)
+{
+    for (int j = 0; j < cols; j++)
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            A[i + lda*j ] = cuGet<T_ELEM> (i + j);
+        }
+    }
+}
+
 
 
 template <typename T_ELEM>
