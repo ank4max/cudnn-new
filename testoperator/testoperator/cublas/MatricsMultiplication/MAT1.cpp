@@ -317,17 +317,7 @@ static int TESTGEN(gemm)(const struct gemmOpts *opts,
     state = cuRand() % 9;
     return 0;
 }
-template <typename T_ELEM>
-void mat_fillupMatrixDebug(T_ELEM *A , int lda , int rows, int cols)
-{
-    for (int j = 0; j < cols; j++)
-    {
-        for (int i = 0; i < rows; i++)
-        {
-            A[i + lda*j ] = cuGet<T_ELEM> (i + j);
-        }
-    }
-}
+
 
 
 
