@@ -42,7 +42,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <assert.h>
-#include <helper_string.h>  // helper for shared functions common to CUDA Samples
+  // helper for shared functions common to CUDA Samples
 
 // CUDA runtime
 #include <cuda_runtime.h>
