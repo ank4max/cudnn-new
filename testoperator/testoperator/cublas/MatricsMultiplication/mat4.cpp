@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <cublas_v2.h>
 #include "helper.h"
-#include <cublasLt.h>
+
 using namespace helper;
 
 inline void checkCublasStatus(cublasStatus_t status) {
