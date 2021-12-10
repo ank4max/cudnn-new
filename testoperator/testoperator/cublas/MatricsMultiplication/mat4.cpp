@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cublas_v2.h>
-#include "helper.cuh"
+#include "helper.h"
 #include <cublasLt.h>
 using namespace helper;
 
