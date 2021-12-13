@@ -194,9 +194,11 @@ int main(int argc, char** argv)
 
 stop=clock();
  double flopsCoef = 2.0;
+	double time_taken=double(stop-start)/double(CLOCKS_PER_SEC);
 for(int i=0;i<5;i++)
-   std::cout <<"Input n*c*h*w........"<<x_size*(i+1)<< "...................latancy is "<< ((double)(stop-start))/CLOCKS_PER_SEC<< "...................Throughput  "<<(i+1)* (1e-9*flopsCoef*x_size)/(stop-start)<<"\n";
-
+{  std::cout <<"Input n*c*h*w........"<<x_size*(i+1)<< "...................latancy is "<<std::fixed<<time_taken<<std::endl;
+	std::cout<<" Throughput  "<<(i+1)* (1e-9*flopsCoef*x_size)/(time_taken)<<"\n";
+ }
   checkCUDA(cudaDeviceSynchronize());
 
   //print_array(y, x_size, "output: ");
