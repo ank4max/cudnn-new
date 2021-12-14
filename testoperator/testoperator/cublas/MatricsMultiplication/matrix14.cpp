@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cublas.h" 
+#include<iostream>
 #define index(i,j,ld) (((j)*(ld))+(i))
 
 void printMat(float*P,int uWP,int uHP){
