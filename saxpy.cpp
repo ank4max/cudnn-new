@@ -1,7 +1,7 @@
-# include < stdio .h >
-# include < stdlib .h >
-# include < cuda_runtime .h >
-# include " cublas_v2 .h"
+# include <stdio.h>
+# include <stdlib.h>
+# include <cuda_runtime.h>
+# include "cublas_v2.h"
 # define n 6                                  // length of x,y
 int main ( void ){
 cudaError_t cudaStat ; // cudaMalloc status
