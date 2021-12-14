@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cublas.h"
+#include <cuda_runtime.h>
+#include<time.h>
 #define HA 2
 #define WA 9
 #define WB 2
@@ -24,8 +26,9 @@ for(i=0;i<uHP;i++){
 
 int  main (int argc, char** argv) {
     cublasStatus status;
+    cudaError_t cudaStat;
     cublasHandle_t handle ;
-    
+    clock_t start,end;
     
      float *A = (float*)malloc(HA*WA*sizeof(float));
         float *B = (float*)malloc(HB*WB*sizeof(float));
@@ -94,6 +97,57 @@ int  main (int argc, char** argv) {
         fprintf (stderr, "!!!! device memory allocation error (A)\n");
         return EXIT_FAILURE;
         }
+        start=clock();
+        
+        cublasSgemm('n','n',HA,WB,WA,1,AA,HA,BB,HB,0,CC,HC);
+        end=clock();
+
+        status = cublasGetError();
+        if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! kernel execution error.\n");
+        return EXIT_FAILURE;
+        }
+        cublasGetMatrix(HC,WC,sizeof(float),CC,HC,C,HC);
+        if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! device read error (A)\n");
+        return EXIT_FAILURE;
+        }
+        
+         /* PERFORMANCE OUTPUT*/
+
+    printf("\nMatriz A:\n");
+    printMat(A,WA,HA);
+    printf("\nMatriz B:\n");
+    printMat(B,WB,HB);
+    printf("\nMatriz C:\n");
+    printMat(C,WC,HC);
+        double time_taken= double(end-start)/double (CLOCKS_PER_SEC);
+        printf(" the latency founded was  : %f\n",time_taken);
+        
+        free( A );  free( B );  free ( C );
+         cudaFree(AA);
+         cudaFree(BB);
+         cudaFree(CC);
+         cublasDestroy(handle);    
+        if (argc > 1) {
+        if (!strcmp(argv[1], "-noprompt") ||!strcmp(argv[1], "-qatest") ) 
+        {
+    return EXIT_SUCCESS;
+        }
+        } 
+        else
+        {
+            printf("\nPress ENTER to exit...\n");
+            getchar();
+        }
+
+return EXIT_SUCCESS;
+
+
+  }
+        
+        
+        
         
         
         
