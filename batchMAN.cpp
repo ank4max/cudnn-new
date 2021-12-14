@@ -204,6 +204,7 @@ int main(int argc, char** argv)
     stop=clock();
 	  double flopsCoef = 2.0;
     double time_taken=double(stop-start)/double(CLOCKS_PER_SEC);
+	std::cout<<(size)<<std::endl;
 	  for(int i=0;i<5;i++)
 	  std::cout <<"Input n*c*h*w........"<<size*(i+1)<< "...................latancy is "<<time_taken<< "...................Throughput "<<(i+1)* (1e-9*flopsCoef*size)/(time_taken)<<"\n";
     
