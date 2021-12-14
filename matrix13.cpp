@@ -1,19 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cublas.h"
+#include"cublas_v2.h"
 #include <cuda_runtime.h>
+#include<iostream>
+#include<string>
 #include<time.h>
-#define HA 2
-#define WA 9
-#define WB 2
-#define HB WA 
-#define WC WB   
-#define HC HA  
 #define index(i,j,ld) (((j)*(ld))+(i))
 
 void printMat(float*P,int uWP,int uHP){
 //printf("\n %f",P[1]);
 int i,j;
+   
+    
 for(i=0;i<uHP;i++){
 
     printf("\n");
@@ -29,6 +28,20 @@ int  main (int argc, char** argv) {
     cudaError_t cudaStat;
     cublasHandle_t handle ;
     clock_t start,end;
+    
+    
+    
+     for (int i = 0;i < argc; i++)
+        std::cout << argv[i] << std::endl;
+    
+   int HA = atoi(argv[1]);
+    int WA=atoi(argv[2]);
+    int WB=atoi(argv[3]);
+    int HB=WA;
+    int WC=WB;
+    int HC=HA;
+    
+    
     
      float *A = (float*)malloc(HA*WA*sizeof(float));
         float *B = (float*)malloc(HB*WB*sizeof(float));
@@ -52,11 +65,11 @@ int  main (int argc, char** argv) {
         return EXIT_FAILURE;
 
 
-   for (i=0;i<HA;i++)
-     for (j=0;j<WA;j++)
+   for (int i=0;i<HA;i++)
+     for (int j=0;j<WA;j++)
         A[index(i,j,HA)] = (float) index(i,j,HA);   
-        for (i=0;i<HB;i++)
-     for (j=0;j<WB;j++)
+        for (int i=0;i<HB;i++)
+     for (int j=0;j<WB;j++)
         B[index(i,j,HB)] = (float) index(i,j,HB); 
     /*
     for (i=0;i<HA*WA;i++)
@@ -85,7 +98,7 @@ int  main (int argc, char** argv) {
         return EXIT_FAILURE;
         
         
-        *SET MATRIX*/
+        */SET MATRIX*/
         status=cublasSetMatrix(HA,WA,sizeof(float),A,HA,AA,HA);
         if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!! device memory allocation error (A)\n");
@@ -129,19 +142,8 @@ int  main (int argc, char** argv) {
          cudaFree(BB);
          cudaFree(CC);
          cublasDestroy(handle);    
-        if (argc > 1) {
-        if (!strcmp(argv[1], "-noprompt") ||!strcmp(argv[1], "-qatest") ) 
-        {
-    return EXIT_SUCCESS;
-        }
-        } 
-        else
-        {
-            printf("\nPress ENTER to exit...\n");
-            getchar();
-        }
-
-return EXIT_SUCCESS;
+        
+       return 0;
 
 
   }
