@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "cublas.h" 
 #include<iostream>
+#include<time.h>
 #define index(i,j,ld) (((j)*(ld))+(i))
 
 void printMat(float*P,int uWP,int uHP){
@@ -23,6 +24,7 @@ for(i=0;i<uHP;i++){
  int  main (int argc, char** argv) {
     cublasStatus status;
         int i,j;
+     clock_t start,end;
         cublasInit();
       
        for (int i = 0;i < argc; i++)
@@ -101,9 +103,11 @@ for(i=0;i<uHP;i++){
         fprintf (stderr, "!!!! device memory allocation error (A)\n");
         return EXIT_FAILURE;
         }
+     start=clock();
 
     /*KERNEL*/
         cublasSgemm('n','n',HA,WB,WA,1,AA,HA,BB,HB,0,CC,HC);
+     end=clock();
 
         status = cublasGetError();
         if (status != CUBLAS_STATUS_SUCCESS) {
@@ -125,6 +129,10 @@ for(i=0;i<uHP;i++){
     printMat(B,WB,HB);
     printf("\nMatriz C:\n");
     printMat(C,WC,HC);
+     
+       double time_taken= double(end-start)/double (CLOCKS_PER_SEC);
+        printf(" the latency founded was  : %f\n",time_taken);
+     
 
         free( A );  free( B );  free ( C );
         status = cublasFree(AA);
