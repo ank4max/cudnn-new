@@ -35,7 +35,7 @@ stat = cublasSetVector (n, sizeof (*y) ,y ,1 ,d_y ,1); // cp y- >d_y
 float al =2.0; // al =2
 // multiply the vector d_x by the scalar al and add to d_y
 // d_y = al*d_x + d_y , d_x ,d_y - n- vectors ; al - scalar
-stat=cublasSaxpy(handle,n,&al,d x,1,d y,1);
+stat=cublasSaxpy(handle,n,&al,d_x,1,d_y,1);
 stat = cublasGetVector (n, sizeof ( float ) ,d_y ,1 ,y ,1); // cp d_y - >y
 printf ("y after Saxpy :\n"); // print y after Saxpy
 for(j=0;j<n;j++)
