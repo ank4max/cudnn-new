@@ -5,16 +5,16 @@
 #include<time.h>
 #define index(i,j,ld) (((j)*(ld))+(i))
 
-void printMat(float*P,int uWP,int uHP){
-//printf("\n %f",P[1]);
-int i,j;
-for(i = 0; i < uHP;i++) {
-  printf("\n");
-  for(j = 0;j < uWP;j++) {
-    printf("%f ",P[index(i,j,uHP)]);
-    //printf("%f ",P[i*uWP+j]);
-}
-}
+ void printMat(float*P,int uWP,int uHP) {
+ //printf("\n %f",P[1]);
+ int i,j;
+ for(i = 0; i < uHP;i++) {
+   printf("\n");
+   for(j = 0;j < uWP;j++) {
+     printf("%f ",P[index(i,j,uHP)]);
+     //printf("%f ",P[i*uWP+j]);
+ }
+ }
     
  int  main (int argc, char** argv) {
  cublasStatus status;
@@ -158,4 +158,5 @@ for(i = 0; i < uHP;i++) {
  }
 
  return EXIT_SUCCESS;
+ 
  }
