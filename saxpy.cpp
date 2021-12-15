@@ -2,7 +2,6 @@
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
-# define n 6                 // length of x,y
 
 int main ( int argc, char **argv ) {
 int n= argv[1];
