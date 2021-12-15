@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include "cublas.h" 
-#include<iostream>
-#include<time.h>
-#define index(i,j,ld) (((j)*(ld))+(i))
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include "cublas.h" 
+ #include<iostream>
+ #include<time.h>
+ #define index(i,j,ld) (((j)*(ld))+(i))
 
  void printMat(float*P,int uWP,int uHP) {
  //printf("\n %f",P[1]);
@@ -13,6 +13,7 @@
    for(j = 0;j < uWP;j++) {
      printf("%f ",P[index(i,j,uHP)]);
      //printf("%f ",P[i*uWP+j]);
+ }
  }
  }
     
@@ -160,3 +161,4 @@
  return EXIT_SUCCESS;
  
  }
+ 
