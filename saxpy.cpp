@@ -2,23 +2,29 @@
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
-# define n 6                                  // length of x,y
-int main ( void ){
-cudaError_t cudaStat ; // cudaMalloc status
-cublasStatus_t stat ; // CUBLAS functions status
-cublasHandle_t handle ; // CUBLAS context
-int j; // index of elements
-float * x; // n- vector on the host
-float * y; // n- vector on the host
-x=( float *) malloc (n* sizeof (*x)); // host memory alloc for x
-for(j=0;j<n;j++)
-x[j]=( float )j; // x={0 ,1 ,2 ,3 ,4 ,5}
-y=( float *) malloc (n* sizeof (*y)); // host memory alloc for y
-for(j=0;j<n;j++)
-y[j]=( float )j; // y={0 ,1 ,2 ,3 ,4 ,5}
+# define n 6                 // length of x,y
+
+int main ( int argc, char **argv ) {
+int n= argv[1];
+cudaError_t cudaStat ;       // cudaMalloc status
+cublasStatus_t stat ;        // CUBLAS functions status
+cublasHandle_t handle ;      // CUBLAS context
+int j;                       // index of elements
+  
+float * x;                   // n- vector on the host
+float * y;                   // n- vector on the host
+x = ( float *) malloc (n* sizeof (*x));   // host memory alloc for x
+for(j = 0;j < n;j++) {
+  x[j] = ( float )j;          // x={0 ,1 ,2 ,3 ,4 ,5}
+}
+y = ( float *) malloc (n* sizeof (*y));    // host memory alloc for y
+for(j = 0;j < n;j++) {
+  y[j] = ( float )j; // y={0 ,1 ,2 ,3 ,4 ,5}
+}
 printf ("x,y:\n");
-for(j=0;j<n;j++)
-printf (" %2.0f,",x[j]); // print x,y
+for(j = 0;j < n;j++) {
+  printf (" %2.0f,",x[j]); // print x,y
+}
 printf ("\n");
 // on the device
 float * d_x; // d_x - x on the device
@@ -32,14 +38,16 @@ cudaStat = cudaMalloc (( void **)& d_y ,n* sizeof (*y)); // device
 stat = cublasCreate (& handle ); // initialize CUBLAS context
 stat = cublasSetVector (n, sizeof (*x) ,x ,1 ,d_x ,1); // cp x- >d_x
 stat = cublasSetVector (n, sizeof (*y) ,y ,1 ,d_y ,1); // cp y- >d_y
+
 float al =2.0; // al =2
 // multiply the vector d_x by the scalar al and add to d_y
 // d_y = al*d_x + d_y , d_x ,d_y - n- vectors ; al - scalar
-stat=cublasSaxpy(handle,n,&al,d_x,1,d_y,1);
+stat = cublasSaxpy(handle,n,&al,d_x,1,d_y,1);
 stat = cublasGetVector (n, sizeof ( float ) ,d_y ,1 ,y ,1); // cp d_y - >y
 printf ("y after Saxpy :\n"); // print y after Saxpy
-for(j=0;j<n;j++)
-printf (" %2.0f,",y[j]);
+for(j = 0;j < n;j++) {
+  printf (" %2.0f,",y[j]);
+}
 printf ("\n");
 cudaFree (d_x ); // free device memory
 cudaFree (d_y ); // free device memory
