@@ -4,7 +4,7 @@
 # include "cublas_v2.h"
 
 int main ( int argc, char **argv ) {
-int n= argv[1];
+int n = atoi(argv[1]);
 cudaError_t cudaStat ;       // cudaMalloc status
 cublasStatus_t stat ;        // CUBLAS functions status
 cublasHandle_t handle ;      // CUBLAS context
