@@ -37,8 +37,11 @@ for p in cfg_line:
             W = p[-1]
     
     i += 1
-    print(W)
-
+    
+N=str(N)
+C=str(C)
+H=str(H)
+W=str(W)
 device = Device(0)
 this_process = GpuProcess(os.getpid(), device)
 
