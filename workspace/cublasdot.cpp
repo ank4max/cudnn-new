@@ -2,12 +2,12 @@
 # include <stdlib.h>
 # include <cuda_runtime.h >
 # include "cublas_v2 .h"
-# define n 6 // length of x,y
 
-int main ( void ) {
+int main ( int argc,char **argv ) {
 cudaError_t cudaStat ; // cudaMalloc status
 cublasStatus_t stat ; // CUBLAS functions status
 cublasHandle_t handle ;
+int n= stoi(argv[1]);
 int j;                  // index of elements
 float * x;             // n- vector on the host
 float * y;             // n- vector on the host
