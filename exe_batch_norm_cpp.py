@@ -51,7 +51,7 @@ def call():
         t = 0
         for i in range(int(args['iter'])):
             t1 = time.time()
-            process = subprocess.Popen(["./batch14 1 2 3 4"])
+            process = subprocess.Popen(["./batch14",1, 2, 3, 4])
             # print(str(process.pid))
             this_process = GpuProcess(process.pid, device)
             # subprocess.run(['ps'])
@@ -73,7 +73,7 @@ def call():
         t = 0
         for i in range(int(args['iter'])):
             t1 = time.time()
-            process = subprocess.Popen(["./batch14 1 2 3 4"])
+            process = subprocess.Popen(["./batch14",1, 2, 3, 4])
             # print(str(process.pid))
             this_process = GpuProcess(process.pid, device)
             
