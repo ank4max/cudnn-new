@@ -5,6 +5,7 @@
 #include <time.h>
 #define index(i,j,ld) (((j)*(ld))+(i))
 
+//printing the output and input matrices
 void printMat(float*P, int uWP, int uHP) {
   //printf("\n %f", P[1]);
   int i, j;
@@ -18,21 +19,26 @@ void printMat(float*P, int uWP, int uHP) {
 }
     
 int  main (int argc, char** argv) {
+
   cublasStatus status;
   int i, j;
   clock_t start, end;
   
+  //initializing cublas library and printing command line arguements
   cublasInit();
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
- 
+  
+  //initializing dimensions of matrices A,B and C with command line arguements
   int HA = atoi(argv[1]);
   int WA = atoi(argv[2]);
   int WB = atoi(argv[3]);
   int HB = WA;
   int WC = WB;
   int HC = HA;
+  
+  //host memory allocation for matrices
   float *A = (float*)malloc(HA*WA*sizeof(float));
   float *B = (float*)malloc(HB*WB*sizeof(float));
   float *C = (float*)malloc(HC*WC*sizeof(float));
@@ -50,12 +56,14 @@ int  main (int argc, char** argv) {
     return EXIT_FAILURE;
   }
  
+  //setting up values for A matrix
   for (i = 0; i < HA; i++) {
     for (j = 0; j < WA; j++) {
       A[index(i,j,HA)] = (float) index(i,j,HA);   
     }
   }
- 
+  
+  //setting up values for B Matrix 
   for (i = 0; i < HB; i++) {
     for (j = 0; j < WB; j++) {
       B[index(i,j,HB)] = (float) index(i,j,HB);
@@ -72,7 +80,7 @@ int  main (int argc, char** argv) {
   float* BB; 
   float* CC;
  
-  /*ALLOCATE ON THE DEVICE*/
+  //device memory allocation for matrices A,B and C using  cublasAlloc 
   status = cublasAlloc(HA*WA, sizeof(float), (void**)&AA);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device memory allocation error (A)\n");
@@ -91,7 +99,7 @@ int  main (int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  /*SET MATRIX*/
+  // setting the values of marices in device same as that of host matrices
   status = cublasSetMatrix(HA, WA, sizeof(float), A, HA, AA, HA);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device memory allocation error (A)\n");
@@ -103,12 +111,14 @@ int  main (int argc, char** argv) {
     fprintf (stderr, "!!!! device memory allocation error (A)\n");
     return EXIT_FAILURE;
   }
-
+  
+  //start variable to store time 
   start=clock();
 
-  /*KERNEL*/
+  //performing matrix multiplication
   cublasSgemm('n', 'n', HA, WB, WA, 1, AA, HA, BB, HB, 0, CC, HC);
 
+  //end variable to record time so that latency can be computed
   end=clock();
 
   status = cublasGetError();
@@ -116,7 +126,8 @@ int  main (int argc, char** argv) {
     fprintf (stderr, "!!!! kernel execution error.\n");
     return EXIT_FAILURE;
   }
-
+  
+  //storing the final result from device matrix to host matrix
   cublasGetMatrix(HC, WC, sizeof(float), CC, HC, C, HC);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device read error (A)\n");
@@ -132,14 +143,16 @@ int  main (int argc, char** argv) {
   printf("\nMatriz C:\n");
   printMat(C, WC, HC);
      
-
+  //printing latency of the function
   double time_taken= double(end-start)/double (CLOCKS_PER_SEC);
   printf(" the latency founded was  : %f\n",time_taken);
 
+  //freeing host memory
   free( A );  
   free( B );   
   free( C );
 
+  //freeing device memory
   status = cublasFree(AA);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! memory free error (A)\n");
