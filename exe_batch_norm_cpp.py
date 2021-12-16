@@ -41,7 +41,6 @@ for p in cfg_line:
 device = Device(0)
 this_process = GpuProcess(os.getpid(), device)
 
-#@profile
 def call():
     if args['data'] == " ":
         t = 0
