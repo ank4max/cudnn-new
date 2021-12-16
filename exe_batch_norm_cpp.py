@@ -51,7 +51,7 @@ def call():
         t = 0
         for i in range(int(args['iter'])):
             t1 = time.time()
-            process = subprocess.Popen(["./batchnormalization", N, C, H, W, '&'])
+            process = subprocess.Popen("./batchnormalization -n2 -c2 -h2 -w1 -atanh".split(" "))
             # print(str(process.pid))
             this_process = GpuProcess(process.pid, device)
             # subprocess.run(['ps'])
@@ -73,7 +73,7 @@ def call():
         t = 0
         for i in range(int(args['iter'])):
             t1 = time.time()
-            process = subprocess.Popen(["./batchnormalization", N, C, H, W, args['data'], '&'])
+            process = subprocess.Popen("./batchnormalization -n2 -c2 -h2 -w1 -atanh".split(" "))
             # print(str(process.pid))
             this_process = GpuProcess(process.pid, device)
             
