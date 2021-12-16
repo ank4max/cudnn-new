@@ -1,7 +1,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <cuda_runtime.h>
-# include "cublas_v2 .h"
+# include "cublas_v2.h"
 
 int main ( int argc,char **argv ) {
 cudaError_t cudaStat ; // cudaMalloc status
