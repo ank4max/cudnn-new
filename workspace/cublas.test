@@ -1,2 +1,3 @@
 cublasmatrix 2 9 2
 cublassaxpy 6
+cublasdot 6
