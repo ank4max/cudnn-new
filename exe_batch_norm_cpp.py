@@ -8,7 +8,7 @@ import time
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--testfile", default=" ", help="path to config")
 ap.add_argument("-d", "--data", default=" ", help="path to input data")
-ap.add_argument("-i", "--iter", default="1000", help="throughput over iterartion")
+ap.add_argument("-i", "--iter", default="3", help="throughput over iterartion")
 
 args = vars(ap.parse_args())
 
