@@ -41,6 +41,7 @@ for p in cfg_line:
 device = Device(0)
 this_process = GpuProcess(os.getpid(), device)
 
+@profile
 def call():
     if args['data'] == " ":
         t = 0
@@ -68,7 +69,7 @@ def call():
         t = 0
         for i in range(int(args['iter'])):
             t1 = time.time()
-            process = subprocess.Popen(["./batchnormalization", N, C, H, W, args['data'], '&'])
+            process = subprocess.Popen(["./batchnormalization"", N, C, H, W, args['data'], '&'])
             # print(str(process.pid))
             this_process = GpuProcess(process.pid, device)
             
