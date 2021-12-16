@@ -53,7 +53,7 @@ int main ( int argc,char **argv ) {
   
   //printing the final result
   printf ("dot product x.y:\n");
-  printf (" %7.0 f\n",result ); 
+  printf (" %7.0f",result ); 
   
   //freeing device memory
   cudaFree (d_x ); 
