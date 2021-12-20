@@ -23,6 +23,7 @@ int main ( int argc,char **argv ) {
   cublasHandle_t handle ;
   clock_t start, end;
   int lenA, lenB;
+  int n;
   
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
@@ -35,7 +36,7 @@ int main ( int argc,char **argv ) {
       lenB = atoi(argv[i] + 5);
 
   if(lenA != lenB) {
-    return EXIT_FALURE
+    return EXIT_FALURE ;
   }
   else
   {
