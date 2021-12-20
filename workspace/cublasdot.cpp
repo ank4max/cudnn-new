@@ -27,13 +27,15 @@ int main ( int argc,char **argv ) {
   
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
-  
+  }
+    
   for (int i = 1; i < 3; i++) {
     int len = sizeof(argv[i]);
     if (!strcmp(substr(argv[i], 1, 4), "lenA"))
       lenA = atoi(argv[i] + 5);
     else if (!strcmp(substr(argv[i], 1, 4), "lenB"))
       lenB = atoi(argv[i] + 5);
+  }
 
   if(lenA != lenB) {
     return EXIT_FALURE ;
