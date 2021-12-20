@@ -38,7 +38,7 @@ int main ( int argc,char **argv ) {
   }
 
   if(lenA != lenB) {
-    return EXIT_FALURE ;
+    return EXIT_FAILURE ;
   }
   else
   {
