@@ -5,6 +5,16 @@
 # include <time.h>
 # include <iostream>
 
+char* substr(char* arr, int begin, int len)
+{
+    char* res = new char[len + 1];
+    for (int i = 0; i < len; i++)
+        res[i] = *(arr + begin + i);
+    res[len] = 0;
+    return res;
+}
+
+
 int main ( int argc,char **argv ) {
 
   //initializing size of vector with command line arguement
@@ -12,7 +22,26 @@ int main ( int argc,char **argv ) {
   cublasStatus_t stat ; 
   cublasHandle_t handle ;
   clock_t start, end;
-  int n= atoi(argv[1]);
+  int lenA, lenB;
+  
+  for (int i = 0;i < argc; i++) {
+    std::cout << argv[i] << std::endl;
+  
+  for (int i = 1; i < 3; i++) {
+    int len = sizeof(argv[i]);
+    if (!strcmp(substr(argv[i], 1, 4), "lenA"))
+      lenA = atoi(argv[i] + 5);
+    else if (!strcmp(substr(argv[i], 1, 4), "lenB"))
+      lenB = atoi(argv[i] + 5);
+
+  if(lenA != lenB) {
+    return EXIT_FALURE
+  }
+  else
+  {
+    n = lenA;
+  }
+    
   int j; 
   
   //pointers x and y pointing  to vectors
