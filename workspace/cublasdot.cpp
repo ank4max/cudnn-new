@@ -2,6 +2,7 @@
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
+# include <time.h>
 
 int main ( int argc,char **argv ) {
 
@@ -9,6 +10,7 @@ int main ( int argc,char **argv ) {
   cudaError_t cudaStat ; 
   cublasStatus_t stat ; 
   cublasHandle_t handle ;
+  clock_t start, end;
   int n= atoi(argv[1]);
   int j; 
   
@@ -49,11 +51,18 @@ int main ( int argc,char **argv ) {
 
   float result ;
   // performing dot product operation and storing result in result variable
+  start=clock();
   stat=cublasSdot(handle, n, d_x, 1, d_y, 1, &result);
+  end=clock();
   
   //printing the final result
   printf ("dot product x.y:\n");
   printf (" %7.0f",result ); 
+  
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
+
   
   //freeing device memory
   cudaFree (d_x ); 
