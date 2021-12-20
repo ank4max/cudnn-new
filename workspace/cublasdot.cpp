@@ -1,8 +1,9 @@
-# include <stdio.h>
+
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
 # include <time.h>
+# include <iostream>
 
 int main ( int argc,char **argv ) {
 
