@@ -32,10 +32,16 @@ int main ( int argc,char **argv ) {
     y[j] = ( float )j; 
   }
   
-  //printing the initial values in vector x which is same as y
-  printf ("x,y:\n");
+  //printing the initial values in vector x and vector y
+  printf ("x:\n");
   for (j = 0; j < n; j++) {
     printf (" %2.0f,",x[j]); 
+  }
+  printf ("\n");
+  
+   printf ("y:\n");
+  for (j = 0; j < n; j++) {
+    printf (" %2.0f,",y[j]); 
   }
   printf ("\n");
   
