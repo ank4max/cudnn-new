@@ -5,13 +5,13 @@
 # include <time.h>
 # include <iostream>
 
-char* substr(char* arr, int begin, int len)
+char* Substr(char* cInputArr, int nBegin, int nLen)
 {
-    char* res = new char[len + 1];
-    for (int i = 0; i < len; i++)
-        res[i] = *(arr + begin + i);
-    res[len] = 0;
-    return res;
+    char* pcResStr = new char[nLen + 1];
+    for (int i = 0; i < nLen; i++)
+        pcResStr[i] = *(cInputArr + nBegin + i);
+    pcResStr[len] = 0;
+    return pcResStr;
 }
 
 
@@ -22,45 +22,44 @@ int main ( int argc,char **argv ) {
   cublasStatus_t stat ; 
   cublasHandle_t handle ;
   clock_t start, end;
-  int lenA, lenB;
-  int n;
+  int nLenA, nLenB;
+  int nLenVector;
   
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
     
   for (int i = 1; i < 3; i++) {
-    int len = sizeof(argv[i]);
     if (!strcmp(substr(argv[i], 1, 4), "lenA"))
-      lenA = atoi(argv[i] + 5);
+      nLenA = atoi(argv[i] + 5);
     else if (!strcmp(substr(argv[i], 1, 4), "lenB"))
-      lenB = atoi(argv[i] + 5);
+      nLenB = atoi(argv[i] + 5);
   }
 
-  if(lenA != lenB) {
+  if(nLenA != nLenB) {
     return EXIT_FAILURE ;
   }
   else
   {
-    n = lenA;
+    nLenVector = nLenA;
   }
     
   int j; 
   
   //pointers x and y pointing  to vectors
-  float * x;             
-  float * y; 
+  float * pfHostVecX;             
+  float * pfHostVecY; 
   
   //host memory allocation for vectors
-  x = ( float *) malloc (n* sizeof (*x)); 
-  y = ( float *) malloc (n* sizeof (*y)); 
+  pfHostVecX = ( float *) malloc ( nLenVector* sizeof (*pfHostVecX)); 
+  pfHostVecY = ( float *) malloc ( nLenVector* sizeof (*pfHostVecY)); 
   
-  if (x == 0) {
+  if (pfHostVecX == 0) {
     fprintf (stderr, "!!!! host memory allocation error (vector x )\n");
     return EXIT_FAILURE;
   }
    
-  if (y == 0) {
+  if (pfHostVecY == 0) {
     fprintf (stderr, "!!!! host memory allocation error (vector y )\n");
     return EXIT_FAILURE;
   }
@@ -68,38 +67,38 @@ int main ( int argc,char **argv ) {
 
 
   //setting up values in x and y vectors
-  for(j = 0;j < n; j++) {
-    x[j] = ( float )j; // x={0 ,1 ,2 ,3 ,4 ,5}
+  for(j = 0;j < nLenVector; j++) {
+    pfHostVecX[j] = ( float )j; // x={0 ,1 ,2 ,3 ,4 ,5}
   }
 
-  for (j = 0; j < n; j++) {
-    y[j] = ( float )j; 
+  for (j = 0; j < nLenVector ; j++) {
+    pfHostVecY[j] = ( float )j; 
   }
   
   //printing the initial values in vector x and vector y
   printf ("x:\n");
-  for (j = 0; j < n; j++) {
-    printf (" %2.0f,",x[j]); 
+  for (j = 0; j < nLenVector; j++) {
+    printf (" %2.0f,",pfHostVecX[j]); 
   }
   printf ("\n");
   
    printf ("y:\n");
-  for (j = 0; j < n; j++) {
-    printf (" %2.0f,",y[j]); 
+  for (j = 0; j < nLenVector; j++) {
+    printf (" %2.0f,",pfHostVecY[j]); 
   }
   printf ("\n");
   
   // Pointers for device memory allocation
-  float * d_x; 
-  float * d_y; 
+  float * pfDevVecX; 
+  float * pfDevVecY; 
   
-  cudaStat = cudaMalloc (( void **)& d_x, n* sizeof (*x));
+  cudaStat = cudaMalloc (( void **)& pfDevVecX, nLenVector* sizeof (*pfHostVecX));
   if( cudaStat != cudaSuccess) {
     printf(" the device memory allocation failed\n");
     return EXIT_FAILURE;
   }
   
-  cudaStat = cudaMalloc (( void **)& d_y, n* sizeof (*y));
+  cudaStat = cudaMalloc (( void **)& pfDevVecY, nLenVector* sizeof (*pfHostVecY));
   
   if( cudaStat != cudaSuccess) {
     printf(" the device memory allocation failed\n");
@@ -113,22 +112,22 @@ int main ( int argc,char **argv ) {
     return EXIT_FAILURE;
   }
 
-  stat = cublasSetVector (n, sizeof (*x) ,x ,1 ,d_x ,1); 
+  stat = cublasSetVector (nLenVector, sizeof (*pfHostVecX) , pfHostVecX, 1, pfDevVecX, 1); 
   if (stat != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to set vector values for X on gpu\n");
     return EXIT_FAILURE;
   }
   
-  stat = cublasSetVector (n, sizeof (*y) ,y ,1 ,d_y ,1); 
+  stat = cublasSetVector (nLenVector, sizeof (*pfHostVecY), pfHostVecY, 1, pfDevVecY, 1); 
   if (stat != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to set vector values for Y on gpu\n");
     return EXIT_FAILURE;
   }
 
-  float result ;
+  float fResult ;
   // performing dot product operation and storing result in result variable
   start=clock();
-  stat=cublasSdot(handle, n, d_x, 1, d_y, 1, &result);
+  stat=cublasSdot(handle, nLenVector, pfDevVecX, 1, pfDevVecY, 1, &fResult);
   end=clock();
   
   if (stat != CUBLAS_STATUS_SUCCESS) {
@@ -138,7 +137,7 @@ int main ( int argc,char **argv ) {
   
   //printing the final result
   printf ("dot product x.y:\n");
-  printf (" %7.0f",result ); 
+  printf (" %7.0f",fResult ); 
   
   // printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
@@ -146,13 +145,13 @@ int main ( int argc,char **argv ) {
 
   
   //freeing device memory
-  cudaStat = cudaFree (d_x );
+  cudaStat = cudaFree (pfDevVecX );
   if( cudaStat != cudaSuccess) {
     printf(" memory free error on device for vector x\n");
     return EXIT_FAILURE;
   }
   
-  cudaFree (d_y );
+  cudaFree (pfDevVecY );
   if( cudaStat != cudaSuccess) {
     printf(" memory free error on device for vector y\n");
     return EXIT_FAILURE;
@@ -160,8 +159,8 @@ int main ( int argc,char **argv ) {
   
   //destroying cublas context and freeing host memory
   cublasDestroy ( handle ); 
-  free (x); 
-  free (y); 
+  free (pfHostVecX); 
+  free (pfHostVecY); 
   return EXIT_SUCCESS ;
 }
 // x,y:
