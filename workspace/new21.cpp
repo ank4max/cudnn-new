@@ -10,7 +10,7 @@ char* Substr(char* cInputArr, int nBegin, int nLen)
     char* pcResStr = new char[nLen + 1];
     for (int i = 0; i < nLen; i++)
         pcResStr[i] = *(cInputArr + nBegin + i);
-    pcResStr[len] = 0;
+    pcResStr[nLen] = 0;
     return pcResStr;
 }
 
@@ -30,9 +30,9 @@ int main ( int argc,char **argv ) {
   }
     
   for (int i = 1; i < 3; i++) {
-    if (!strcmp(substr(argv[i], 1, 4), "lenA"))
+    if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
       nLenA = atoi(argv[i] + 5);
-    else if (!strcmp(substr(argv[i], 1, 4), "lenB"))
+    else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
       nLenB = atoi(argv[i] + 5);
   }
 
