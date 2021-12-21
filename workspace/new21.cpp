@@ -158,7 +158,13 @@ int main ( int argc,char **argv ) {
   }
   
   //destroying cublas context and freeing host memory
-  cublasDestroy ( handle ); 
+  stat = cublasDestroy ( handle );
+  
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! shutdown error (matrixA)\n");
+    return EXIT_FAILURE;
+  }
+  
   free (pfHostVecX); 
   free (pfHostVecY); 
   return EXIT_SUCCESS ;
