@@ -18,6 +18,7 @@ import argparse
 import subprocess
 import tabulate
 from datetime import datetime
+import sqlite3
 
 # creating object files 
 list_cpp = glob.glob("*.cpp")
@@ -106,4 +107,18 @@ passed_percentage = (passed_cases * 100) / total_cases
 
 print("\n\n[{passed}/{total} PASSED]".format(passed = passed_cases, total = total_cases))
 print("{percent}% tests passed, {failed} tests failed out of {total}".format(percent = passed_percentage, failed = failed_cases, total = total_cases))
+
+
+con=sqlite3.connect('new.db')
+print("database connected")
+
+
+#for table
+#cur = con.cursor()
+
+
+
+
+
+
 
