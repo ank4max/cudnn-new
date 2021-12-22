@@ -47,6 +47,14 @@ commands = []
 total_cases = 0
 passed_cases = 0
 
+con=sqlite3.connect('new.db')
+print("database connected")
+
+cur=con.cursor()
+
+cur.execute("CREATE TABLE product( cuBLAS_api  text NOT NULL, Latency text,throughput TEXT, status1 TEXT, testL TEXT)");
+
+
 # Running executables            
 for cmd in config:
   commands.append(cmd)
@@ -75,16 +83,26 @@ for cmd in config:
     if ("./" in line) :
       executable = line.split("/")[2]
       summary["cuBLAS API"] = executable.split("_")[1]
+      cur.EXECUTE("INSERT INTO product( cuBLAS_api) VALUES(summary{"cuBLAS_API"])
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
+      cur.EXECUTE("INSERT INTO product( testL) VALUES(summary{"Test Level"])
 
   for line in output :
     if ("Latency" in line) :
       summary["Latency"] = line.split(": ")[1]
+      cur.EXECUTE("INSERT INTO product(Latency) VALUES(summary{"Latency"])
     elif ("Throughput" in line) :
       summary["Throughput"] = line.split(": ")[1]
+      cur.EXECUTE("INSERT INTO product(throughput) VALUES(summary{"Throughput"])
   Table.append(summary)
 
+con.commit()
+print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
+cursor = cur.execute("SELECT * FROM product");
+for row in cursor : 
+  print(row[0],"\t",row[1],"\t",row[2],"\t",row[3],"\t",row[4],"\n")
+  con.close()
 
 print("\n\nExecuted below cuBLAS Test Cases")
 print("===============================")
@@ -109,12 +127,7 @@ print("\n\n[{passed}/{total} PASSED]".format(passed = passed_cases, total = tota
 print("{percent}% tests passed, {failed} tests failed out of {total}".format(percent = passed_percentage, failed = failed_cases, total = total_cases))
 
 
-con=sqlite3.connect('new.db')
-print("database connected")
 
-
-#for table
-#cur = con.cursor()
 
 
 
