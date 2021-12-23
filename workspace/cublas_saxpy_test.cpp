@@ -19,20 +19,21 @@
 # include "cublas_v2.h"
 # include <string.h>
 
-char* substr(char* arr, int begin, int len)
+char* Substr(char* cInputArr, int nBegin, int nLen)
 {
-    char* res = new char[len + 1];
-    for (int i = 0; i < len; i++)
-        res[i] = *(arr + begin + i);
-    res[len] = 0;
-    return res;
+    char* pcResStr = new char[nLen + 1];
+    for (int i = 0; i < nLen; i++)
+        pcResStr[i] = *(cInputArr + nBegin + i);
+    pcResStr[nLen] = 0;
+    return pcResStr;
 }
 
 int main (int argc, char **argv) {
   // reading cmd line arguments
   clock_t start, end;
-  int lenA, lenB;
+  int nLenA, nLenB;
   float scalar_const;
+  
 
   std::cout << "\n" << std::endl;
   for (int i = 0;i < argc; i++) {
@@ -40,16 +41,16 @@ int main (int argc, char **argv) {
   }
   for (int i = 1; i < 4; i++) {
     int len = sizeof(argv[i]);
-    if (!strcmp(substr(argv[i], 1, 4), "lenA"))
+    if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
       lenA = atoi(argv[i] + 5);
-    else if (!strcmp(substr(argv[i], 1, 4), "lenB"))
+    else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
       lenB = atoi(argv[i] + 5);
-    else if (!strcmp(substr(argv[i], 1, 9), "const_val"))
+    else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
       scalar_const = atof(argv[i] + 10);
   }
   
   // length of vectorA and vectorB should be same
-  if(lenA != lenB) {
+  if(nLenA != nLenB) {
       return EXIT_FAILURE;
   }
   
@@ -58,6 +59,10 @@ int main (int argc, char **argv) {
   cublasStatus_t stat ;
   cublasHandle_t handle ;
   stat = cublasCreate(& handle);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    return EXIT_FAILURE;
+  }
 
   // allocating memory for vectors on host
   float *vectorA;
