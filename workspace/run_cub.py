@@ -102,12 +102,13 @@ for cmd in config:
   Table.append(summary)
 
 con.commit()
+
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
   print(row[0],"\t",row[1],"\t",row[2],"\t",row[3],"\t",row[4],"\n")
-  con.close()
-
+  
+con.close()
 print("\n\nExecuted below cuBLAS Test Cases")
 print("===============================")
 for cmd in commands :
