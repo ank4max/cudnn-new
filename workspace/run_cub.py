@@ -106,7 +106,8 @@ con.commit()
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"  \t " ,row[1] "\n")
+  print(row[0],"  \t ",row[1], "\n")
+  
   
 con.close()
 print("\n\nExecuted below cuBLAS Test Cases")
