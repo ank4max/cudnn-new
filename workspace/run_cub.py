@@ -54,7 +54,10 @@ cur=con.cursor()
 
 cur.execute("CREATE TABLE product( cuBLAS_api TEXT, Latency TEXT,throughput TEXT, status1 TEXT, testL TEXT)");
 
-
+cub=""
+cub1=""
+cub2=""
+cub3=""
 # Running executables            
 for cmd in config:
   commands.append(cmd)
