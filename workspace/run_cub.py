@@ -84,21 +84,21 @@ for cmd in config:
       executable = line.split("/")[2]
       summary["cuBLAS API"] = executable.split("_")[1]
       cub=executable.split("_")[1]
-      cur.execute("INSERT INTO product( cuBLAS_api) VALUES(str(cub))")
+      cur.execute("INSERT INTO product( cuBLAS_api) VALUES(%s)",(cub))
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
       cub1=line.split("-")[1]
-      cur.execute("INSERT INTO product( testL) VALUES(str(cub1))")
+      cur.execute("INSERT INTO product( testL) VALUES(%s)",(cub1))
 
   for line in output :
     if ("Latency" in line) :
       summary["Latency"] = line.split(": ")[1]
       cub2 = line.split(": ")[1]
-      cur.execute("INSERT INTO product(Latency) VALUES(str(cub2))")
+      cur.execute("INSERT INTO product(Latency) VALUES(%s)",(cub2))
     elif ("Throughput" in line) :
       summary["Throughput"] = line.split(": ")[1]
       cub3=line.split(": ")[1]
-      cur.execute("INSERT INTO product(throughput) VALUES(str(cub3))")
+      cur.execute("INSERT INTO product(throughput) VALUES(%s)",(cub3))
   Table.append(summary)
 
 con.commit()
