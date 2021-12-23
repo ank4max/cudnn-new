@@ -83,7 +83,7 @@ for cmd in config:
     if ("./" in line) :
       executable = line.split("/")[2]
       summary["cuBLAS API"] = executable.split("_")[1]
-      cur.execute("INSERT INTO product( cuBLAS_api) VALUES(summary["cuBLAS API"])")
+      cur.execute("INSERT INTO product( cuBLAS_api) VALUES(executable.split("_")[1])")
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
       cur.EXECUTE("INSERT INTO product( testL) VALUES(summary["Test Level"])")
