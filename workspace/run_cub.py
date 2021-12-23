@@ -88,17 +88,17 @@ for cmd in config:
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
       cub1=line.split("-")[1]
-      cur.EXECUTE("INSERT INTO product( testL) VALUES('cub1')")
+      cur.execute("INSERT INTO product( testL) VALUES('cub1')")
 
   for line in output :
     if ("Latency" in line) :
       summary["Latency"] = line.split(": ")[1]
       cub2 = line.split(": ")[1]
-      cur.EXECUTE("INSERT INTO product(Latency) VALUES('cub2')")
+      cur.execute("INSERT INTO product(Latency) VALUES('cub2')")
     elif ("Throughput" in line) :
       summary["Throughput"] = line.split(": ")[1]
       cub3=line.split(": ")[1]
-      cur.EXECUTE("INSERT INTO product(throughput) VALUES('cub3')")
+      cur.execute("INSERT INTO product(throughput) VALUES('cub3')")
   Table.append(summary)
 
 con.commit()
