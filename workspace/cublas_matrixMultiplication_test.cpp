@@ -1,193 +1,206 @@
+/**
+ * Copyright 2021-2022 Enflame. All Rights Reserved.
+ *
+ * @file    cublas_matrixMultiplication_test.cpp
+ * @brief   Benchmarking Tests for cublas matrix multiplication API
+ *
+ * @author  ashish(CAI)
+ * @date    2021-12-17
+ * @version V1.0
+ * @par     Copyright (c)
+ *          Enflame Tech Company.
+ * @par     History:
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
-#include "cublas.h" 
+#include "cublas.h"
 #include <iostream>
+#include<string.h>
 #include <time.h>
+
 #define index(i,j,ld) (((j)*(ld))+(i))
 
-//printing the output and input matrices
-void printMat(float*P, int uWP, int uHP) {
-  //printf("\n %f", P[1]);
+void PrintMat(float*P, int uWP, int uHP) {
   int i, j;
   for (i = 0; i < uHP; i++) {
     printf("\n");
     for (j = 0; j < uWP; j++) {
-      printf("%f ", P[index(i,j,uHP)]);
-     //printf("%f ", P[i*uWP+j]);
+      printf("%f ", P[index(i, j, uHP)]);
     }
   }
+  printf("\n\n");
 }
-    
-int  main (int argc, char** argv) {
+
+char* Substr(char* cInputArr, int begin, int nLen)
+{
+    char* pcResStr = new char[nLen + 1];
+    for (int i = 0; i < nLen; i++)
+        pcResStr[i] = *(cInputArr + nBegin + i);
+    pcResStr[nLen] = 0;
+    return pcResStr;
+}
+
+int  main(int argc, char** argv) {
 
   cublasStatus status;
   int i, j;
   clock_t start, end;
-  
-  //initializing cublas library and printing command line arguements
-  cublasInit();
+
+  // initializing cublas library
+  status = cublasInit();
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to initialize library\n");
+    return EXIT_FAILURE;
+  }
+  // Reading dimensions of matrices
+  int nRowA, nColA, nRowB, nColB, nRowC, nColC;
+
+  std::cout << "\n" << std::endl;
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
+  for (int i = 1; i < 5; i++) {
+        int len = sizeof(argv[i]);
+        if (!strcmp(Substr(argv[i], 1, 4), "rowA"))
+          nRowA = atoi(argv[i] + 5);
+        else if (!strcmp(Substr(argv[i], 1, 4), "colA"))
+          nColA = atoi(argv[i] + 5);
+        else if (!strcmp(Substr(argv[i], 1, 4), "rowB"))
+          nRowB = atoi(argv[i] + 5);
+        else if (!strcmp(Substr(argv[i], 1, 4), "colB"))
+          nColB = atoi(argv[i] + 5);
+  }
+  nRowC =  nRowA;
+  nColC =  nColB ;
   
-  //initializing dimensions of matrices A,B and C with command line arguements
-  int HA = atoi(argv[1]);
-  int WA = atoi(argv[2]);
-  int WB = atoi(argv[3]);
-  int HB = WA;
-  int WC = WB;
-  int HC = HA;
-  
-  //host memory allocation for matrices
-  float *A = (float*)malloc(HA*WA*sizeof(float));
-  float *B = (float*)malloc(HB*WB*sizeof(float));
-  float *C = (float*)malloc(HC*WC*sizeof(float));
+  // allocating memory for matrices on host
+  float *pfMatrixA = (float*) malloc(nRowA * nColA * sizeof(float));
+  float *pfMatrixB = (float*) malloc(nRowB * nColB * sizeof(float));
+  float *pfMatrixC = (float*) malloc(nRowC * nColC * sizeof(float));
 
-  if (A == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (A)\n");
+  if (pfMatrixA == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixA)\n");
     return EXIT_FAILURE;
   }
-  if (B == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (A)\n");
+  if (pfMatrixB == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixB)\n");
     return EXIT_FAILURE;
   }
-  if (C == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (A)\n");
+  if (pfMatrixC == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixC)\n");
     return EXIT_FAILURE;
   }
- 
-  //setting up values for A matrix
-  for (i = 0; i < HA; i++) {
-    for (j = 0; j < WA; j++) {
-      A[index(i,j,HA)] = (float) index(i,j,HA);   
+
+  // setting up values for matrices
+  for (i = 0; i < nRowA; i++) {
+    for (j = 0; j < nColA; j++) {
+      pfMatrixA[index(i, j, nRowA)] = (rand() % 10000 * 1.00) / 100;
     }
   }
-  
-  //setting up values for B Matrix 
-  for (i = 0; i < HB; i++) {
-    for (j = 0; j < WB; j++) {
-      B[index(i,j,HB)] = (float) index(i,j,HB);
+  for (i = 0; i < nRowB; i++) {
+    for (j = 0; j < nColB; j++) {
+      pfMatrixB[index(i, j, nRowB)] = (rand() % 10000 * 1.00) / 100;
     }
   }
- 
-  /*
-  for (i=0;i<HA*WA;i++)
-    A[i]=(float) i;
-  for (i=0;i<HB*WB;i++)
-    B[i]=(float) i;         */  
-     
-  float* AA; 
-  float* BB; 
-  float* CC;
- 
-  //device memory allocation for matrices A,B and C using  cublasAlloc 
-  status = cublasAlloc(HA*WA, sizeof(float), (void**)&AA);
+
+  // allocating memory for matrices on device using cublasAlloc
+  float* pfDevMatA;
+  float* pfDevMatB;
+  float* pfDevMatC;
+  status = cublasAlloc(nRowA * nColA, sizeof(float), (void**)& pfDevMatA);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! device memory allocation error (A)\n");
+    return EXIT_FAILURE;
+  }
+  status = cublasAlloc(nRowB * nColB, sizeof(float), (void**)& pfDevMatB);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! device memory allocation error (A)\n");
+    return EXIT_FAILURE;
+  }
+  status = cublasAlloc(nRowC * nColC, sizeof(float), (void**)& pfDevMatC);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device memory allocation error (A)\n");
     return EXIT_FAILURE;
   }
 
-  status = cublasAlloc(HB*WB, sizeof(float), (void**)&BB);
+  // setting the values of matrices on device
+  status = cublasSetMatrix(nRowA, nColA, sizeof(float), pfMatrixA, nRowA, pfDevMatA, nRowA);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! device memory allocation error (A)\n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix(nRowB, nColB, sizeof(float), pfMatrixB, nRowB, pfDevMatB, nRowB);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device memory allocation error (A)\n");
     return EXIT_FAILURE;
   }
 
-  status = cublasAlloc(HC*WC, sizeof(float), (void**)&CC);
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! device memory allocation error (A)\n");
-    return EXIT_FAILURE;
-  }
-
-  // setting the values of marices in device same as that of host matrices
-  status = cublasSetMatrix(HA, WA, sizeof(float), A, HA, AA, HA);
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! device memory allocation error (A)\n");
-    return EXIT_FAILURE;
-  }
-
-  status = cublasSetMatrix(HB, WB, sizeof(float), B, HB, BB, HB);
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! device memory allocation error (A)\n");
-    return EXIT_FAILURE;
-  }
+  // start variable to store time
+  start = clock();
   
-  //start variable to store time 
-  start=clock();
 
-  //performing matrix multiplication
-  cublasSgemm('n', 'n', HA, WB, WA, 1, AA, HA, BB, HB, 0, CC, HC);
+  // performing matrix multiplication
+  cublasSgemm('n', 'n', nRowA, nColB, nColA, 1, pfDevMatA, nRowA, pfDevMatB, nRowB, 0, pfDevMatC, nColC);
 
-  //end variable to record time so that latency can be computed
-  end=clock();
+  // end variable to store time
+  end = clock();
 
   status = cublasGetError();
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! kernel execution error.\n");
     return EXIT_FAILURE;
   }
-  
-  //storing the final result from device matrix to host matrix
-  cublasGetMatrix(HC, WC, sizeof(float), CC, HC, C, HC);
+
+  // storing the final result from device matrix to host matrix
+  cublasGetMatrix(nRowC, nColC, sizeof(float), pfDevMatC, nRowC, pfMatrixC, nColC);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! device read error (A)\n");
     return EXIT_FAILURE;
   }
 
-  /* PERFORMANCE OUTPUT*/
-
+  // Matrix output
   printf("\nMatriz A:\n");
-  printMat(A, WA, HA);
+  printMat(pfMatrixA, nColA, nRowA);
   printf("\nMatriz B:\n");
-  printMat(B, WB, HB);
+  printMat(pfMatrixB, nColB, nRowB);
   printf("\nMatriz C:\n");
-  printMat(C, WC, HC);
-     
-  //printing latency of the function
-  double time_taken= double(end-start)/double (CLOCKS_PER_SEC);
-  printf(" the latency founded was  : %f\n",time_taken);
+  printMat(pfMatrixC, nColC, nRowC);
 
-  //freeing host memory
-  free( A );  
-  free( B );   
-  free( C );
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(end-start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
 
-  //freeing device memory
-  status = cublasFree(AA);
+  // freeing host memory
+  free(pfMatrixA);
+  free(pfMatrixB);
+  free(pfMatrixC);
+
+  // freeing device memory
+  status = cublasFree(pfDevMatA);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! memory free error (A)\n");
+    fprintf (stderr, "!!!! memory free error (matrixA)\n");
     return EXIT_FAILURE;
   }
 
-  status = cublasFree(BB);
+  status = cublasFree(pfDevMatB);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! memory free error (B)\n");
+    fprintf (stderr, "!!!! memory free error (matrixB)\n");
     return EXIT_FAILURE;
   }
 
-  status = cublasFree(CC);
+  status = cublasFree(pfDevMatC);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! memory free error (C)\n");
+    fprintf (stderr, "!!!! memory free error (matrixC)\n");
     return EXIT_FAILURE;
   }
 
   /* Shutdown */
   status = cublasShutdown();
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! shutdown error (A)\n");
+    fprintf (stderr, "!!!! shutdown error (matrixA)\n");
     return EXIT_FAILURE;
-  }
- 
-  if (argc > 1) {
-    if (!strcmp(argv[1], "-noprompt") ||!strcmp(argv[1], "-qatest") ) {
-      return EXIT_SUCCESS;
-    }
-  } 
-  else {
-    printf("\nPress ENTER to exit...\n");
-    getchar();
   }
 
   return EXIT_SUCCESS;
- 
 }
