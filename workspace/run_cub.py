@@ -105,10 +105,18 @@ for cmd in config:
   Table.append(summary)
   with open("new.json",'w') as json_file :
     json.dump(summary,json_file)
+    
+
   
   cur.execute("INSERT INTO product(cuBLAS_api,Latency,throughput,testL,status1) VALUES(?,?,?,?,?)",(cub,cub2,cub3,cub1,status))
 
+  
 con.commit()
+nex={}
+with open("new.json",'r') as json_file :
+   nex= json.load(json_file)
+print(nex)
+
 
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
