@@ -33,6 +33,8 @@ int main (int argc, char **argv) {
   clock_t start, end;
   int lenA, lenB;
   float scalar_const;
+
+  std::cout << "\n" << std::endl;
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
@@ -132,3 +134,6 @@ int main (int argc, char **argv) {
 // 0 , 1 , 2 , 3 , 4 , 5 ,
 // y after Saxpy :
 // 0 , 3 , 6 , 9 ,12 ,15 ,// a*x+y = 2*{0 ,1 ,2 ,3 ,4 ,5} + {0 ,1 ,2 ,3 ,4 ,5}
+
+
+ 
