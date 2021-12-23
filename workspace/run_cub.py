@@ -52,7 +52,7 @@ print("database connected")
 
 cur=con.cursor()
 
-cur.execute("CREATE TABLE product( cuBLAS_api  text NOT NULL, Latency TEXT,throughput TEXT, status1 TEXT, testL TEXT)");
+cur.execute("CREATE TABLE product( cuBLAS_api TEXT, Latency TEXT,throughput TEXT, status1 TEXT, testL TEXT)");
 
 
 # Running executables            
