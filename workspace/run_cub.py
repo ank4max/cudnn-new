@@ -19,6 +19,7 @@ import subprocess
 import tabulate
 from datetime import datetime
 import sqlite3
+import json
 
 # creating object files 
 list_cpp = glob.glob("*.cpp")
@@ -102,6 +103,8 @@ for cmd in config:
       cub3=line.split(": ")[1]
       
   Table.append(summary)
+  with open("new.json",'w') as json_file :
+    json.dump(summary,json_file)
   
   cur.execute("INSERT INTO product(cuBLAS_api,Latency,throughput,testL,status1) VALUES(?,?,?,?,?)",(cub,cub2,cub3,cub1,status))
 
