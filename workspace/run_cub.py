@@ -77,6 +77,7 @@ for cmd in config:
     status = "FAILED"
 
   summary = {"cuBLAS API": "", "Latency": "", "Throughput": "", "Test Level": "", "Status": status}
+  cur.execute("INSERT INTO product(status1) VALUES(?)",(status,))
 
   arguments = cmd.split(" ")
   for line in arguments :
@@ -106,7 +107,8 @@ con.commit()
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"  \t ",row[1], "\n")
+  print(row[0],"    \t ",row[1],"    \t ",row[2],"    \t ",row[3],"    \t ",row[4], "\n")
+  
   
   
 con.close()
