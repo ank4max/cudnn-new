@@ -83,18 +83,18 @@ for cmd in config:
     if ("./" in line) :
       executable = line.split("/")[2]
       summary["cuBLAS API"] = executable.split("_")[1]
-      cur.EXECUTE("INSERT INTO product( cuBLAS_api) VALUES(summary{"cuBLAS_API"])
+      cur.EXECUTE("INSERT INTO product( cuBLAS_api) VALUES(summary["cuBLAS_API"])");
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
-      cur.EXECUTE("INSERT INTO product( testL) VALUES(summary{"Test Level"])
+      cur.EXECUTE("INSERT INTO product( testL) VALUES(summary["Test Level"])");
 
   for line in output :
     if ("Latency" in line) :
       summary["Latency"] = line.split(": ")[1]
-      cur.EXECUTE("INSERT INTO product(Latency) VALUES(summary{"Latency"])
+      cur.EXECUTE("INSERT INTO product(Latency) VALUES(summary["Latency"])");
     elif ("Throughput" in line) :
       summary["Throughput"] = line.split(": ")[1]
-      cur.EXECUTE("INSERT INTO product(throughput) VALUES(summary{"Throughput"])
+      cur.EXECUTE("INSERT INTO product(throughput) VALUES(summary{"Throughput"])");
   Table.append(summary)
 
 con.commit()
