@@ -84,21 +84,21 @@ for cmd in config:
       executable = line.split("/")[2]
       summary["cuBLAS API"] = executable.split("_")[1]
       cub=executable.split("_")[1]
-      cur.execute("INSERT INTO product( cuBLAS_api) VALUES('cub')")
+      cur.execute("INSERT INTO product( cuBLAS_api) VALUES(str(cub))")
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
       cub1=line.split("-")[1]
-      cur.execute("INSERT INTO product( testL) VALUES('cub1')")
+      cur.execute("INSERT INTO product( testL) VALUES(str(cub1))")
 
   for line in output :
     if ("Latency" in line) :
       summary["Latency"] = line.split(": ")[1]
       cub2 = line.split(": ")[1]
-      cur.execute("INSERT INTO product(Latency) VALUES('cub2')")
+      cur.execute("INSERT INTO product(Latency) VALUES(str(cub2))")
     elif ("Throughput" in line) :
       summary["Throughput"] = line.split(": ")[1]
       cub3=line.split(": ")[1]
-      cur.execute("INSERT INTO product(throughput) VALUES('cub3')")
+      cur.execute("INSERT INTO product(throughput) VALUES(str(cub3))")
   Table.append(summary)
 
 con.commit()
@@ -106,7 +106,7 @@ con.commit()
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"\t",row[1],"\t",row[2],"\t",row[3],"\t",row[4],"\n")
+  print(row[0],"  \t " ,row[1],"  \t ",row[2],"  \t ",row[3],"  \t ",row[4],"\n")
   
 con.close()
 print("\n\nExecuted below cuBLAS Test Cases")
