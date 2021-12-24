@@ -80,25 +80,25 @@ int main (int argc, char **argv) {
   float * DeviceVecY;
   cudaStatus = cudaMalloc(( void **)& DeviceVecX, x_len * sizeof (*HostVecX));
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory allocation failed\n");
+    printf(" The device memory allocation failed\n");
     return EXIT_FAILURE;   
   }
     
-  cudaStat = cudaMalloc(( void **)& DevVecB, len_b * sizeof (*HostVecB));
-  if( cudaStat != cudaSuccess) {
-    printf(" the device memory allocation failed\n");
+  cudaStatus = cudaMalloc(( void **)& DeviceVecB, y_len * sizeof (*HostVecY));
+  if( cudaStatus != cudaSuccess) {
+    printf(" The device memory allocation failed\n");
     return EXIT_FAILURE;   
   }
   // setting values of matrices on device
-  stat = cublasSetVector(len_a, sizeof (*HostVecA), HostVecA, 1, DevVecA, 1);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to set up values in device vector A\n");
+  status = cublasSetVector(x_len, sizeof (*HostVecX), HostVecX, 1, DeviceVecX, 1);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to set up values in device vector X\n");
     return EXIT_FAILURE;
   }
     
-  stat = cublasSetVector(len_b, sizeof (*HostVecB), HostVecB, 1, DevVecB, 1);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to to set up values in device vector B\n");
+  status = cublasSetVector(y_len, sizeof (*HostVecY), HostVecY, 1, DeviceVecY, 1);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to to set up values in device vector Y\n");
     return EXIT_FAILURE;
   }
 
@@ -106,8 +106,8 @@ int main (int argc, char **argv) {
   start = clock();
 
   // performing saxpy operation
-  stat = cublasSaxpy(handle, len_a, &scalConst, DevVecA, 1, DevVecB, 1);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
+  status = cublasSaxpy(handle, x_len, scalarConst, DeviceVecX, 1, DeviceVecY, 1);
+  if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
   }
@@ -115,16 +115,16 @@ int main (int argc, char **argv) {
   end = clock();
 
   // getting the final output
-  stat = cublasGetVector(len_b, sizeof(float), DevVecB, 1, HostVecB, 1);
+  stat = cublasGetVector(y_len, sizeof(float), DeviceVecY, 1, HostVecY, 1);
   if (stat != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to to Get values in Host vector B\n");
+    fprintf (stderr, "!!!! Failed to to Get values in Host vector Y\n");
     return EXIT_FAILURE;
   }
 
   // final output
   printf ("Final output y after Saxpy operation:\n");
-  for (int j = 0; j < len_b; j++) {
-    printf ("%2.0f, ", HostVecB[j]);
+  for (int it = 0; it < y_len; it++) {
+    printf ("%2.0f, ", HostVecY[it]);
   }
   printf ("\n\n");
 
@@ -133,27 +133,27 @@ int main (int argc, char **argv) {
         "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
 
   // free device memory
-  cudaStat = cudaFree(DevVecA);
-  if( cudaStat != cudaSuccess) {
+  cudaStatus = cudaFree(DeviceVecX);
+  if( cudaStatus != cudaSuccess) {
     printf(" the device memory deallocation failed\n");
     return EXIT_FAILURE;   
   }
-  cudaStat = cudaFree(DevVecB);
-  if( cudaStat != cudaSuccess) {
+  cudaStatus = cudaFree(DeviceVecY);
+  if( cudaStatus != cudaSuccess) {
     printf(" the device  memory deallocation failed\n");
     return EXIT_FAILURE;   
   }
 
   // destroying cublas handle
-  stat = cublasDestroy(handle);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
+  status = cublasDestroy(handle);
+  if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to uninitialize");
     return EXIT_FAILURE;
   }
 
   // freeing host memory
-  free(HostVecA);
-  free(HostVecB);
+  free(HostVecX);
+  free(HostVecY);
 
   return EXIT_SUCCESS ;
 }
