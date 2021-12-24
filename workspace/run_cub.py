@@ -48,11 +48,13 @@ commands = []
 total_cases = 0
 passed_cases = 0
 
+# setting up conection to connect to database
+
 con=sqlite3.connect('new.db')
 print("database connected")
 
+#table creation using cursor command
 cur=con.cursor()
-
 cur.execute("CREATE TABLE product( cuBLAS_api TEXT, Latency TEXT,throughput TEXT, status1 TEXT, testL TEXT)");
 
 cub=""
@@ -107,21 +109,22 @@ for cmd in config:
     json.dump(summary,json_file)
     
 
-  
+  # values insertion in table
   cur.execute("INSERT INTO product(cuBLAS_api,Latency,throughput,testL,status1) VALUES(?,?,?,?,?)",(cub,cub2,cub3,cub1,status))
 
-  
+# saving changes in table  
 con.commit()
 nex={}
 with open("new.json",'r') as json_file :
    nex= json.load(json_file)
 print(nex)
 
+# printng database table
 
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"    \t ",row[1],"    \t ",row[2],"    \t ",row[3],"    \t ",row[4], "\n")
+  print(row[0],"    \t ",row[1]," \t ",row[2],"  \t ",row[3],"    \t ",row[4], "\n")
   
   
   
