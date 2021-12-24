@@ -114,17 +114,20 @@ for cmd in config:
 
 # saving changes in table  
 con.commit()
+con.close()
 nex={}
 with open("new.json",'r') as json_file :
    nex= json.load(json_file)
 print(nex)
 
 # printng database table
+con = sqlite3.connect('new.db')
+cur = con.cursor()
 
-print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
+print("cuBLAS_api \t latency    \t throughput   \t testlevel  \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"    \t ",row[1]," \t ",row[2],"  \t ",row[3],"    \t ",row[4], "\n")
+  print(row[0],"    \t ",row[1],"    \t ",row[2],"    \t ",row[3],"    \t ",row[4], "\n")
   
   
   
