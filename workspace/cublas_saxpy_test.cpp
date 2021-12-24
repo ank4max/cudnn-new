@@ -27,7 +27,7 @@ int main (int argc, char **argv) {
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
-  for (int i = 1; i < 3; i++) {
+  for (int i = 1; i < 4; i++) {
     int len = sizeof(argv[i]);
     if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
       x_len = atoi(argv[i] + 5);
