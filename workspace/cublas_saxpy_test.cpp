@@ -20,6 +20,7 @@ int main (int argc, char **argv) {
   // reading cmd line arguments
   clock_t start, end;
   int x_len, y_len;
+  float scalar_const;
   
 
   std::cout << "\n" << std::endl;
@@ -32,8 +33,8 @@ int main (int argc, char **argv) {
       x_len = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
       y_len = atoi(argv[i] + 5);
-    else if (!strcmp(substr(argv[i], 1, 9), "const_val"))
-      scalarConst = atof(argv[i] + 10);
+    else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
+      scalar_const = atof(argv[i] + 10);
 
     
   }
@@ -87,7 +88,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;   
   }
     
-  cudaStatus = cudaMalloc(( void **)& DeviceVecB, y_len * sizeof (*HostVecY));
+  cudaStatus = cudaMalloc(( void **)& DeviceVecY, y_len * sizeof (*HostVecY));
   if( cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed\n");
     return EXIT_FAILURE;   
@@ -109,7 +110,7 @@ int main (int argc, char **argv) {
   start = clock();
 
   // performing saxpy operation
-  status = cublasSaxpy(handle, x_len, &scalarConst, DeviceVecX, 1, DeviceVecY, 1);
+  status = cublasSaxpy(handle, x_len, &scalar_const, DeviceVecX, 1, DeviceVecY, 1);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
@@ -118,8 +119,8 @@ int main (int argc, char **argv) {
   end = clock();
 
   // getting the final output
-  stat = cublasGetVector(y_len, sizeof(float), DeviceVecY, 1, HostVecY, 1);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
+  status = cublasGetVector(y_len, sizeof(float), DeviceVecY, 1, HostVecY, 1);
+  if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to to Get values in Host vector Y\n");
     return EXIT_FAILURE;
   }
@@ -164,6 +165,3 @@ int main (int argc, char **argv) {
 // 0 , 1 , 2 , 3 , 4 , 5 ,
 // y after Saxpy :
 // 0 , 3 , 6 , 9 ,12 ,15 ,// a*x+y = 2*{0 ,1 ,2 ,3 ,4 ,5} + {0 ,1 ,2 ,3 ,4 ,5}
-
-
- 
