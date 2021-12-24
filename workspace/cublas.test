@@ -1,1 +1,2 @@
-cublas_saxpy_test -lenA10 -lenB10 -L0
+cublas_saxpy_test -lenA10 -lenB10 -const_val50 -L0
+cublas_matrixMultiplication_test -rowA3 -colA3 -rowB3 -colB5 -L1
