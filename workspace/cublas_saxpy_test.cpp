@@ -5,7 +5,7 @@
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
 # include <string.h>
-# define scalarConst 3
+
 
 char* Substr(char* InputArr, int begin, int len)
 {
@@ -32,6 +32,9 @@ int main (int argc, char **argv) {
       x_len = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
       y_len = atoi(argv[i] + 5);
+    else if (!strcmp(substr(argv[i], 1, 9), "const_val"))
+      scalarConst = atof(argv[i] + 10);
+
     
   }
   
@@ -106,7 +109,7 @@ int main (int argc, char **argv) {
   start = clock();
 
   // performing saxpy operation
-  status = cublasSaxpy(handle, x_len, scalarConst, DeviceVecX, 1, DeviceVecY, 1);
+  status = cublasSaxpy(handle, x_len, &scalarConst, DeviceVecX, 1, DeviceVecY, 1);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
