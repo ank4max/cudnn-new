@@ -115,7 +115,7 @@ cur = con.cursor()
 print("cuBLAS_api \t latency \t throughput \t testlevel \t status\n")
 cursor = cur.execute("SELECT * FROM product");
 for row in cursor : 
-  print(row[0],"    \t",row[1],"\t",row[2]," \t",row[3],"       \t",row[4], "\n")
+  print(row[0],"    \t",row[1],"\t",row[2]," \t",row[3],"     \t",row[4], "\n")
   
   
   
