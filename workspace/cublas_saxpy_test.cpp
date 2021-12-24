@@ -5,82 +5,81 @@
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
 # include <string.h>
+# define scalarConst 3
 
 char* Substr(char* InputArr, int begin, int len)
 {
-    char* ResStr = new char[len + 1];
+    char* ResultStr = new char[len + 1];
     for (int i = 0; i < len; i++)
-        ResStr[i] = *(InputArr + begin + i);
-    ResStr[len] = 0;
-    return ResStr;
+        ResultStr[i] = *(InputArr + begin + i);
+    ResultStr[len] = 0;
+    return ResultStr;
 }
 
 int main (int argc, char **argv) {
   // reading cmd line arguments
   clock_t start, end;
-  int len_a, len_b;
-  float scalConst;
+  int x_len, y_len;
   
 
   std::cout << "\n" << std::endl;
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
-  for (int i = 1; i < 4; i++) {
+  for (int i = 1; i < 3; i++) {
     int len = sizeof(argv[i]);
     if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
-      len_a = atoi(argv[i] + 5);
+      x_len = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
-      len_b = atoi(argv[i] + 5);
-    else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
-      scalConst = atof(argv[i] + 10);
+      y_len = atoi(argv[i] + 5);
+    
   }
   
   // length of vectorA and vectorB should be same
-  if(len_a != len_b) {
+  if(x_len != y_len) {
       return EXIT_FAILURE;
   }
   
   // creating cublas handle
-  cudaError_t cudaStat ;
-  cublasStatus_t stat ;
+  cudaError_t cudaStatus ;
+  cublasStatus_t status ;
   cublasHandle_t handle ;
-  stat = cublasCreate(& handle);
-  if (stat != CUBLAS_STATUS_SUCCESS) {
+  status = cublasCreate(& handle);
+  if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to initialize handle\n");
     return EXIT_FAILURE;
   }
 
   // allocating memory for vectors on host
-  float *HostVecA;
-  float *HostVecB;
-  HostVecA = (float *) malloc(len_a * sizeof (*HostVecA));
-  HostVecB = (float *) malloc(len_b * sizeof (*HostVecB));
+  float *HostVecX;
+  float *HostVecY;
+  HostVecX = (float *) malloc(x_len * sizeof (*HostVecX));
+  HostVecY = (float *) malloc(y_len * sizeof (*HostVecY));
 
   // setting up values in vectors
-  for (int j = 0; j < len_a; j++) {
-    HostVecA[j] = (float) (rand() % 10000) / 100;
+  for (int it = 0; it < x_len; it++) {
+    HostVecX[it] = (float) (rand() % 10000) / 100;
   }
-  for (int j = 0; j < len_b; j++) {
-    HostVecB[j] = (float) (rand() % 10000) / 100;
+  for (int it = 0; it < y_len; it++) {
+    HostVecY[it] = (float) (rand() % 10000) / 100;
   }
 
   printf ("\nOriginal vector x:\n");
-  for (int j = 0; j < len_a; j++) {
-    printf("%2.0f, ", HostVecA[j]);
+  for (int it = 0; it < x_len; it++) {
+    printf("%2.0f, ", HostVecX[it]);
   }
   printf ("\n");
   printf ("Original vector y:\n");
-  for (int j = 0; j < len_b; j++) {
-    printf ("%2.0f, ", HostVecB[j]);
+  for (int it = 0; it < y_len; it++) {
+    printf ("%2.0f, ", HostVecY[it]);
   }
   printf ("\n\n");
 
   // using cudamalloc for allocating memory on device
-  float * DevVecA;
-  float * DevVecB;
-  cudaStat = cudaMalloc(( void **)& DevVecA, len_a * sizeof (*HostVecA));
-  if( cudaStat != cudaSuccess) {
+  float * DeviceVecX;
+  float * DeviceVecY;
+  cudaStatus = cudaMalloc(( void **)& DeviceVecX, x_len * sizeof (*HostVecX));
+  if( cudaStatus != cudaSuccess) {
     printf(" the device memory allocation failed\n");
     return EXIT_FAILURE;   
   }
