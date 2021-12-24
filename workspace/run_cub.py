@@ -119,6 +119,7 @@ nex={}
 with open("new.json",'r') as json_file :
    nex= json.load(json_file)
 print(nex)
+print("printed json data")
 
 # printng database table
 con = sqlite3.connect('new.db')
