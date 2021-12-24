@@ -1,16 +1,5 @@
-/**
- * Copyright 2021-2022 Enflame. All Rights Reserved.
- *
- * @file    cublas_matrixMultiplication_test.cpp
- * @brief   Benchmarking Tests for cublas matrix multiplication API
- *
- * @author  ashish(CAI)
- * @date    2021-12-17
- * @version V1.0
- * @par     Copyright (c)
- *          Enflame Tech Company.
- * @par     History:
- */
+
+ 
 
 #include <stdlib.h>
 #include <stdio.h>
