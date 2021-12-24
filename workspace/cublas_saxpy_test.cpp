@@ -7,13 +7,13 @@
 # include <string.h>
 
 
-char* Substr(char* InputArr, int begin, int len)
-{
-    char* ResultStr = new char[len + 1];
-    for (int i = 0; i < len; i++)
-        ResultStr[i] = *(InputArr + begin + i);
-    ResultStr[len] = 0;
-    return ResultStr;
+char* Substr(char* InputArr, int begin, int len) {
+  char* ResultStr = new char[len + 1];
+  for (int i = 0; i < len; i++) {
+    ResultStr[i] = *(InputArr + begin + i);
+  }
+  ResultStr[len] = 0;
+  return ResultStr;
 }
 
 int main (int argc, char **argv) {
@@ -35,13 +35,11 @@ int main (int argc, char **argv) {
       y_len = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
       scalar_const = atof(argv[i] + 10);
-
-    
   }
   
   // length of vectorA and vectorB should be same
   if(x_len != y_len) {
-      return EXIT_FAILURE;
+    return EXIT_FAILURE;
   }
   
   // creating cublas handle
