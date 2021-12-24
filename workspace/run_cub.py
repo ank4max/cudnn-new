@@ -1,17 +1,4 @@
-'''
-/* Copyright 2021-2022 Enflame. All Rights Reserved.
- *
- * @file    run_cublas.py
- * @brief   To run benchmarking test for cudnn API
- *
- * @author  ashish(CAI)
- * @date    2021-12-17
- * @version V1.0
- * @par     Copyright (c)
- *          Enflame Tech Company.
- * @par     History:
- */
-'''
+
 import glob
 import os 
 import argparse
@@ -93,7 +80,7 @@ for cmd in config:
       cub=executable.split("_")[1]
     elif ("-L" in line) :
       summary["Test Level"] = line.split("-")[1]
-      cub1=line.split("-")[1]
+      cub1=line.split("-")[1][:2]
       
 
   for line in output :
