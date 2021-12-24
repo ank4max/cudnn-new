@@ -32,7 +32,7 @@ int main (int argc, char **argv) {
   // reading cmd line arguments
   clock_t start, end;
   int nLenA, nLenB;
-  float scalar_const;
+  float fScalConst;
   
 
   std::cout << "\n" << std::endl;
@@ -42,11 +42,11 @@ int main (int argc, char **argv) {
   for (int i = 1; i < 4; i++) {
     int len = sizeof(argv[i]);
     if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
-      lenA = atoi(argv[i] + 5);
+      nLenA = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
-      lenB = atoi(argv[i] + 5);
+      nLenB = atoi(argv[i] + 5);
     else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
-      scalar_const = atof(argv[i] + 10);
+      fScalConst = atof(argv[i] + 10);
   }
   
   // length of vectorA and vectorB should be same
@@ -65,56 +65,80 @@ int main (int argc, char **argv) {
   }
 
   // allocating memory for vectors on host
-  float *vectorA;
-  float *vectorB;
-  vectorA = (float *) malloc(lenA * sizeof (*vectorA));
-  vectorB = (float *) malloc(lenB * sizeof (*vectorB));
+  float *pfHostVecA;
+  float *pfHostVecB;
+  pfHostVecA = (float *) malloc(nLenA * sizeof (*pfHostVecA));
+  pfHostVecB = (float *) malloc(nLenB * sizeof (*pfHostVecB));
 
   // setting up values in vectors
-  for (int j = 0; j < lenA; j++) {
-    vectorA[j] = (float) (rand() % 10000) / 100;
+  for (int j = 0; j < nLenA; j++) {
+    pfHostVecA[j] = (float) (rand() % 10000) / 100;
   }
   for (int j = 0; j < lenB; j++) {
-    vectorB[j] = (float) (rand() % 10000) / 100;
+    pfHostVecB[j] = (float) (rand() % 10000) / 100;
   }
 
   printf ("\nOriginal vector x:\n");
-  for (int j = 0; j < lenA; j++) {
-    printf("%2.0f, ", vectorA[j]);
+  for (int j = 0; j < nLenA; j++) {
+    printf("%2.0f, ", pfHostVecA[j]);
   }
   printf ("\n");
   printf ("Original vector y:\n");
-  for (int j = 0; j < lenB; j++) {
-    printf ("%2.0f, ", vectorB[j]);
+  for (int j = 0; j < nLenB; j++) {
+    printf ("%2.0f, ", pfHostVecB[j]);
   }
   printf ("\n\n");
 
   // using cudamalloc for allocating memory on device
-  float * vectorAA;
-  float * vectorBB;
-  cudaStat = cudaMalloc(( void **)& vectorAA, lenA * sizeof (*vectorA));
-  cudaStat = cudaMalloc(( void **)& vectorBB, lenB * sizeof (*vectorB));
-
+  float * pfDevVecA;
+  float * pfDevVecB;
+  cudaStat = cudaMalloc(( void **)& pfDevVecA, nLenA * sizeof (*pfHostVecA));
+  if( cudaStat != cudaSuccess) {
+    printf(" the device memory allocation failed\n");
+    return EXIT_FAILURE;   
+  }
+    
+  cudaStat = cudaMalloc(( void **)& pfDevVecB, nLenB * sizeof (*pfHostVecB));
+  if( cudaStat != cudaSuccess) {
+    printf(" the device memory allocation failed\n");
+    return EXIT_FAILURE;   
+  }
   // setting values of matrices on device
-  stat = cublasSetVector(lenA, sizeof (*vectorA), vectorA, 1, vectorAA, 1);
-  stat = cublasSetVector(lenB, sizeof (*vectorB), vectorB, 1, vectorBB, 1);
+  stat = cublasSetVector(nLenA, sizeof (*pfHostVecA), pfHostVecA, 1, pfDevVecA, 1);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to set up values in device vector A\n");
+    return EXIT_FAILURE;
+  }
+    
+  stat = cublasSetVector(nLenB, sizeof (*pfHostVecB), pfHostVecB, 1, pfDevVecB, 1);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to to set up values in device vector B\n");
+    return EXIT_FAILURE;
+  }
 
   // start variable to store time
   start = clock();
 
   // performing saxpy operation
-  stat = cublasSaxpy(handle, lenA, &scalar_const, vectorAA, 1, vectorBB, 1);
-
+  stat = cublasSaxpy(handle, nLenA, &fScalConst, pfDevVecA, 1, pfDevVecB, 1);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! kernel execution error\n");
+    return EXIT_FAILURE;
+  }
   // end variable to store time
   end = clock();
 
   // getting the final output
-  stat = cublasGetVector(lenB, sizeof(float), vectorBB, 1, vectorB, 1);
+  stat = cublasGetVector(nLenB, sizeof(float), pfDevVecB, 1, pfHostVecB, 1);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to to Get values in Host vector B\n");
+    return EXIT_FAILURE;
+  }
 
   // final output
   printf ("Final output y after Saxpy operation:\n");
-  for (int j = 0; j < lenB; j++) {
-    printf ("%2.0f, ", vectorB[j]);
+  for (int j = 0; j < nLenB; j++) {
+    printf ("%2.0f, ", pfHostVecB[j]);
   }
   printf ("\n\n");
 
@@ -127,7 +151,11 @@ int main (int argc, char **argv) {
   cudaFree(vectorBB);
 
   // destroying cublas handle
-  cublasDestroy(handle);
+  stat = cublasDestroy(handle);
+  if (stat != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to uninitialize");
+    return EXIT_FAILURE;
+  }
 
   // freeing host memory
   free(vectorA);
