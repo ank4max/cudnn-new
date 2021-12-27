@@ -9,21 +9,21 @@ int main(int argc, char** argv) {
   for (int i = 0;i <= 5; i++) {
     std::cout << argv[i] << std::endl;
   }
-  int n, c, h, w;
+  int batch ,channel,height,width;
   std::string mode_set;
   for (int i = 1; i <= 5; i++) {
     int len = sizeof(argv[i]);
     if (argv[i][1] == 'n') {
-      n = atoi(argv[i] + 2);
+      batch = atoi(argv[i] + 2);
     }
     else if (argv[i][1] == 'c') {
-      c = atoi(argv[i] + 2);
+      channel = atoi(argv[i] + 2);
     }
     else if (argv[i][1] == 'h') {
-      h = atoi(argv[i] + 2);
+      height = atoi(argv[i] + 2);
     }
     else if (argv[i][1] == 'w') {
-      w = atoi(argv[i] + 2);
+      width = atoi(argv[i] + 2);
     }
     else if (argv[i][1] == 'a') {
       mode_set = argv[i] + 2; 
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   }
 
   // Generating random input_data 
-  int size = n*c*h*w;
+  int size = batch*channel*height*width;
   int InputData[size];
   for (int i = 0; i < size; i++) {
     InputData[i] = rand() % 10;
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetTensor4dDescriptor(x_desc, format, dtype, n, c, h, w);
+  status = cudnnSetTensor4dDescriptor(x_desc, format, dtype, batch, channel, height, width);
   
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting tensor descriptor error\n");
@@ -116,8 +116,8 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   // create activation function descriptor
-  float alpha[c] = {1};
-  float beta[c] = {0.0};
+  float alpha[channel] = {1};
+  float beta[channel] = {0.0};
   cudnnActivationDescriptor_t activation;
   cudnnActivationMode_t mode;
  
@@ -149,15 +149,15 @@ int main(int argc, char** argv) {
   start=clock();
 
   status = cudnnActivationForward(
-        handle_,
-        activation,
-        alpha,
-        x_desc,
-        InputArray,
-        beta,
-        x_desc,
-        InputArray 
-    ); 
+  handle_,
+  activation,
+  alpha,
+  x_desc,
+  InputArray,
+  beta,
+  x_desc,
+  InputArray 
+  ); 
 
   stop=clock();
   if( status != CUDNN_STATUS_SUCCESS) {
