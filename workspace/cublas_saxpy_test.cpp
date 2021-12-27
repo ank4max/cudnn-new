@@ -1,5 +1,4 @@
 
-
 # include <iostream>
 # include <stdlib.h>
 # include <cuda_runtime.h>
@@ -7,7 +6,7 @@
 # include <string.h>
 
 
-char* Substr(char* InputArr, int begin, int len) {
+char* SubStr(char* InputArr, int begin, int len) {
   char* ResultStr = new char[len + 1];
   for (int i = 0; i < len; i++) {
     ResultStr[i] = *(InputArr + begin + i);
@@ -29,11 +28,11 @@ int main (int argc, char **argv) {
   }
   for (int i = 1; i < 4; i++) {
     int len = sizeof(argv[i]);
-    if (!strcmp(Substr(argv[i], 1, 4), "lenA"))
-      x_len = atoi(argv[i] + 5);
-    else if (!strcmp(Substr(argv[i], 1, 4), "lenB"))
-      y_len = atoi(argv[i] + 5);
-    else if (!strcmp(Substr(argv[i], 1, 9), "const_val"))
+    if (!strcmp(SubStr(argv[i], 1, 5), "len_x"))
+      x_len = atoi(argv[i] + 6);
+    else if (!strcmp(SubStr(argv[i], 1, 5), "len_y"))
+      y_len = atoi(argv[i] + 6);
+    else if (!strcmp(SubStr(argv[i], 1, 9), "const_val"))
       scalar_const = atof(argv[i] + 10);
   }
   
