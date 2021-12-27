@@ -1,6 +1,4 @@
 
- 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "cublas.h"
@@ -10,12 +8,12 @@
 
 #define index(i,j,ld) (((j)*(ld))+(i))
 
-void PrintMat(float*P, int uWP, int uHP) {
+void PrintMat(float*PrintMatrix, int col, int row) {
   int i, j;
-  for (i = 0; i < uHP; i++) {
+  for (i = 0; i < row; i++) {
     printf("\n");
-    for (j = 0; j < uWP; j++) {
-      printf("%f ", P[index(i, j, uHP)]);
+    for (j = 0; j < col; j++) {
+      printf("%f ", PrintMatrix[index(i, j,row)]);
     }
   }
   printf("\n\n");
@@ -51,14 +49,14 @@ int  main(int argc, char** argv) {
   }
   for (int i = 1; i < 5; i++) {
         int len = sizeof(argv[i]);
-        if (!strcmp(Substr(argv[i], 1, 4), "rowA"))
-          x_row = atoi(argv[i] + 5);
-        else if (!strcmp(Substr(argv[i], 1, 4), "colA"))
-          x_col = atoi(argv[i] + 5);
-        else if (!strcmp(Substr(argv[i], 1, 4), "rowB"))
-          y_row = atoi(argv[i] + 5);
-        else if (!strcmp(Substr(argv[i], 1, 4), "colB"))
-          y_col = atoi(argv[i] + 5);
+        if (!strcmp(Substr(argv[i], 1, 5), "row_x"))
+          x_row = atoi(argv[i] + 6);
+        else if (!strcmp(Substr(argv[i], 1, 5), "col_x"))
+          x_col = atoi(argv[i] + 6);
+        else if (!strcmp(Substr(argv[i], 1, 5), "row_y"))
+          y_row = atoi(argv[i] + 6);
+        else if (!strcmp(Substr(argv[i], 1, 5), "col_y"))
+          y_col = atoi(argv[i] + 6);
   }
   z_row =  x_row;
   z_col =  y_col ;
@@ -150,11 +148,11 @@ int  main(int argc, char** argv) {
 
   // Matrix output
   printf("\nMatriz X:\n");
-  printMat(HostMatX, x_col, x_row);
+  PrintMat(HostMatX, x_col, x_row);
   printf("\nMatriz Y:\n");
-  printMat(HostMatY, y_col, y_row);
+  PrintMat(HostMatY, y_col, y_row);
   printf("\nMatriz Z:\n");
-  printMat(HostMatZ, z_col, z_row);
+  PrintMat(HostMatZ, z_col, z_row);
 
   // printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(end-start)) / double(CLOCKS_PER_SEC) <<
