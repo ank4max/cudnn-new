@@ -17,24 +17,24 @@ int main(int argc, char** argv) {
   for (int i = 0;i < 5; i++) {
     std::cout << argv[i] << std::endl;
   }    
-  int n, c, h, w;
-  std::string a;
+  int batch, channel, height, width;
+  std::string mode_set;
 
   for (int i = 1; i < 5; i++) {
     int len = sizeof(argv[i]);
     if (argv[i][1] == 'n')
-      n = atoi(argv[i] + 2);
+      batch = atoi(argv[i] + 2);
     else if (argv[i][1] == 'c')
-      c = atoi(argv[i] + 2);
+      channel = atoi(argv[i] + 2);
     else if (argv[i][1] == 'h')
-      h = atoi(argv[i] + 2);
+      height = atoi(argv[i] + 2);
     else if (argv[i][1] == 'w')
-      w = atoi(argv[i] + 2);
+      width = atoi(argv[i] + 2);
  
   }
 
   // Generating random input_data 
-  int size = n*c*h*w;
+  int size = batch*channel*height*width;
   int InputData[size];
   for (int i = 0; i < size; i++) {
     InputData[i] = rand() % 255;
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     printf(" GPU count error");
     return EXIT_FAILURE;   
   }
-  std::cout << "Found " << numGPUs << " GPUs." << std::endl;
+  std::cout << "Found " << num_GPUs << " GPUs." << std::endl;
   
   //setting device
   cudaStatus = cudaSetDevice(0);
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   float one = 1.0;
   float zero = 0.0;
   int size_bytes = size * sizeof(float);
-  int mean_size = c;
+  int mean_size = channel;
   int mean_size_bytes = mean_size * sizeof(float);
 
   // create the tensor descriptor
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;   
   }
    
-  status = cudnnSetTensor4dDescriptor(x_desc, format, dtype, n, c, h, w);
+  status = cudnnSetTensor4dDescriptor(x_desc, format, dtype, batch, channel, height, width);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting tensor descriptor x error\n");
     return EXIT_FAILURE;   
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetTensor4dDescriptor(y_desc, format, dtype, n, c, h, w);
+  status = cudnnSetTensor4dDescriptor(y_desc, format, dtype, batch, channel, height, width);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting tensor descriptor error y \n");
     return EXIT_FAILURE;   
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
 
   // initializing data    
   for (int i = 0; i < size; i++) {
-    x[i] = input_data[i];
+    x[i] = InputData[i];
   }
   std::cout << "Original array: " << std::endl; 
   for(int i =0 ; i < size;i ++) {
@@ -151,8 +151,8 @@ int main(int argc, char** argv) {
   }
   std::cout << std::endl;
 
-  float alpha[c] = {1};
-  float beta[c] = {0.0};
+  float alpha[channel] = {1};
+  float beta[channel] = {0.0};
 
   cudnnTensorDescriptor_t mean_descriptor;
   status = cudnnCreateTensorDescriptor(&mean_descriptor);
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
                                         /*format=*/CUDNN_TENSOR_NCHW,
                                         /*dataType=*/CUDNN_DATA_FLOAT,
                                         /*batch_size=*/1,
-                                        /*channels=*/c,
+                                        /*channels=*/channel,
                                         /*image_height=*/1,
                                         /*image_width=*/1);
   if( status != CUDNN_STATUS_SUCCESS) {
