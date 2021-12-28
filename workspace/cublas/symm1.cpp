@@ -5,8 +5,7 @@
 #include "cublas_v2.h"
 #include <time.h>
 #define IDX2C(i ,j , ld ) ((( j )*( ld ))+( i ))
-#define m 6 // a - mxm matrix
-#define n 4 // b,c - mxn matrices
+
 
 char* SubStr(char* InputArr, int begin, int len) {
   char* ResultStr = new char[len + 1];
@@ -18,12 +17,27 @@ char* SubStr(char* InputArr, int begin, int len) {
 }
 
 int main (int argc, char **argv) {
-  cudaError_t cudaStatus ; // cudaMalloc status
-  cublasStatus_t status ; // CUBLAS functions status
-  cublasHandle_t handle ; // CUBLAS context
+  //variables for dimension of matrices
+  int m,n;
+  float alpha,beta;
+  //status variable declaration
+  cudaError_t cudaStatus ; 
+  cublasStatus_t status ; 
+  cublasHandle_t handle ;
   clock_t start, end;
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
+  }
+  for (int i = 1; i < 5; i++) {
+    int len = sizeof(argv[i]);
+    if (!strcmp(SubStr(argv[i], 1, 5), "dim_m"))
+      m = atoi(argv[i] + 6);
+    else if (!strcmp(SubStr(argv[i], 1, 5), "dim_n"))
+      n = atoi(argv[i] + 6);
+    else if (!strcmp(SubStr(argv[i], 1, 5), "alpha"))
+      alpha = atof(argv[i] + 6);
+    else if (!strcmp(SubStr(argv[i], 1, 4), "beta"))
+      beta = atof(argv[i] + 5);
   }
   
   int i,j; // i-row ind. , j- column ind.
@@ -133,10 +147,9 @@ int main (int argc, char **argv) {
     fprintf (stderr, "Copying matrix Z from host to device failed\n");
     return EXIT_FAILURE;
   }
-  float al =1.0f; // al =1
-  float bet =1.0f; // bet =1
   
   
+ 
   // symmetric matrix - matrix multiplication :
   // d_c = al*d_a *d_b + bet *d_c ; d_a - mxm symmetric matrix ;
   // d_b ,d_c - mxn general matrices ; al ,bet - scalars;
@@ -144,7 +157,7 @@ int main (int argc, char **argv) {
   start = clock();
   
   status = cublasSsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-  m, n, &al, DeviceMatX, m, DeviceMatY, m, &bet, DeviceMatZ, m);
+  m, n, &alpha, DeviceMatX, m, DeviceMatY, m, &beta, DeviceMatZ, m);
   
   end = clock();
   if (status != CUBLAS_STATUS_SUCCESS) {
