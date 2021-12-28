@@ -66,7 +66,7 @@ c[ IDX2C (i,j,m )]=( float )ind ++; // 13 ,19 ,25 ,31
 printf ("c:\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){
-printf (" %5.0 f",c[ IDX2C (i,j,m )]);
+printf (" %5.0f",c[ IDX2C (i,j,m )]);
 }
 printf ("\n");
 }
