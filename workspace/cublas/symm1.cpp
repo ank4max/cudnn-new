@@ -80,24 +80,24 @@ int main ( void ) {
   float *DeviceMatY; // d_b - b on the device
   float *DeviceMatZ; // d_c - c on the device
   cudaStatus = cudaMalloc((void **)&DeviceMatX, m*m* sizeof(*HostMatX)); // device
-  if( cudaStatus != cudaSuccess) {
+  if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for X\n");
     return EXIT_FAILURE;
   }
   // memory alloc for a
   cudaStatus = cudaMalloc((void **)&DeviceMatY, m*n* sizeof(*HostMatY)); // device
-  if( cudaStatus != cudaSuccess) {
+  if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for Y\n");
     return EXIT_FAILURE;
   }
   // memory alloc for b
   cudaStatus = cudaMalloc((void **)&DeviceMatZ, m*n* sizeof(*HostMatZ)); // device
-  if( cudaStatus != cudaSuccess) {
+  if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for Z\n");
     return EXIT_FAILURE;
   }
   // memory alloc for c
-  status = cublasCreate (& handle ); // initialize CUBLAS context
+  status = cublasCreate (& handle); // initialize CUBLAS context
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to initialize handle\n");
     return EXIT_FAILURE;
@@ -126,7 +126,7 @@ int main ( void ) {
   
   // symmetric matrix - matrix multiplication :
   // d_c = al*d_a *d_b + bet *d_c ; d_a - mxm symmetric matrix ;
-  // d_b ,d_c - mxn general matrices ; al ,bet - scalars
+  // d_b ,d_c - mxn general matrices ; al ,bet - scalars;
   
   start = clock();
   
