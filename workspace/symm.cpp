@@ -47,7 +47,7 @@ ind ++; // 15 ,21 ,27 ,33
 } // 16 ,22 ,28 ,34
 }
 // print b(=c) row by row
-printf ("b(=c):\ n");
+printf ("b(=c):\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){
 printf (" %5.0f",b[ IDX2C (i,j,m )]);
@@ -69,12 +69,12 @@ stat = cublasCreate (& handle ); // initialize CUBLAS context
 stat = cublasSetMatrix (m,m, sizeof (*a) ,a,m,d_a ,m); //a -> d_a
 stat = cublasSetMatrix (m,n, sizeof (*b) ,b,m,d_b ,m); //b -> d_b
 stat = cublasSetMatrix (m,n, sizeof (*c) ,c,m,d_c ,m); //c -> d_c
-float al =1.0 f; // al =1
-float bet =1.0 f; // bet =1
+float al =1.0f; // al =1
+float bet =1.0f; // bet =1
 // symmetric matrix - matrix multiplication :
 // d_c = al*d_a *d_b + bet *d_c ; d_a - mxm symmetric matrix ;
 // d_b ,d_c - mxn general matrices ; al ,bet - scalars
-stat=cublasSsymm(handle,CUBLAS SIDE LEFT,CUBLAS FILL MODE LOWER,
+stat=cublasSsymm(handle,CUBLAS_SIDE_LEFT,CUBLAS_FILL_MODE_LOWER,
 m,n,&al,d_a,m,d_b,m,&bet,d_c,m);
 stat = cublasGetMatrix (m,n, sizeof (*c) ,d_c ,m,c,m); // d_c -> c
 printf ("c after Ssymm :\n"); // print c after Ssymm
