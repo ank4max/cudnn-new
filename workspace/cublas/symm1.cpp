@@ -55,8 +55,9 @@ int main ( void ) {
       if(i >=j) {
         printf (" %5.0f", HostMatX[ IDX2C (i,j,m )]);
       }
-      printf ("\n");
+      
     }
+    printf ("\n");
   }
   // define mxn matrices b,c column by column
   ind =11; // b,c:
