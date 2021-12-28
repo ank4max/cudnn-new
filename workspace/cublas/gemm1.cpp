@@ -19,7 +19,7 @@ char* SubStr(char* InputArr, int begin, int len) {
 
 int main (int argc, char **argv  ) {
   
-  int x_row, x_col, y_row;
+  int x_row, x_col, y_row, y_col, z_row, z_col;
   float alpha,beta;
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
@@ -37,7 +37,7 @@ int main (int argc, char **argv  ) {
      else if (!strcmp(SubStr(argv[i], 1, 4), "beta"))
       beta = atof(argv[i] + 5);
   }
-  int y_col, z_row, z_col;
+ 
   y_row = x_col;
   z_row = x_row;
   z_col = y_col;
