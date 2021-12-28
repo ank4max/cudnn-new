@@ -1,8 +1,9 @@
-
+#include<iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
+#include <time.h>
 #define IDX2C(i,j,ld) ((( j )*( ld ))+( i ))
 
 #define m 6 // a - mxk matrix
@@ -17,6 +18,7 @@ int main (int argc, char **argv  ) {
   
   
   int row,column; // i-row index ,j- column index
+  clock_t start, end;
   float *HostMatX; // mxk matrix a on the host
   float *HostMatY; // kxn matrix b on the host
   float *HostMatZ; // mxn matrix c on the host
@@ -166,6 +168,12 @@ int main (int argc, char **argv  ) {
     }
     printf ("\n");
   }
+  
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
+  
+  
   cudaStatus = cudaFree (DeviceMatX); // free device memory
   if( cudaStatus != cudaSuccess) {
     printf(" the device memory deallocation failed for X\n");
@@ -189,9 +197,9 @@ int main (int argc, char **argv  ) {
     fprintf (stderr, "!!!! Unable to uninitialize handle \n");
     return EXIT_FAILURE;
   }
-  free (a); // free host memory
-  free (b); // free host memory
-  free (c); // free host memory
+  free (HostMatX); // free host memory
+  free (HostMatY); // free host memory
+  free (HostMatY); // free host memory
   return EXIT_SUCCESS ;
 }
 // a:
