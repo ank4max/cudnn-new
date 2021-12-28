@@ -1,11 +1,13 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <cuda_runtime.h>
-# include "cublas_v2.h"
-# define IDX2C (i ,j , ld ) ((( j )*( ld ))+( i ))
-# define m 6 // a - mxk matrix
-# define n 4 // b - kxn matrix
-# define k 5 // c - mxn matrix
+#include <stdio.h>
+#include <stdlib.h>
+#include <cuda_runtime.h>
+#include "cublas_v2.h"
+#define IDX2C(i,j,ld) ((( j )*( ld ))+( i ))
+
+#define m 6 // a - mxk matrix
+#define n 4 // b - kxn matrix
+#define k 5 // c - mxn matrix
+
 int main (  ){
 cudaError_t cudaStat ; // cudaMalloc status
 cublasStatus_t stat ; // CUBLAS functions status
@@ -33,7 +35,7 @@ a[ IDX2C (i,j,m )]=( float )ind ++; // 13 ,19 ,25 ,31 ,37
 printf ("a:\n");
 for (i=0;i<m;i ++){
 for (j=0;j<k;j ++){
-printf (" %5.0 f",a[ IDX2C (i,j,m )]);
+printf (" %5.0f",a[ IDX2C (i,j,m )]);
 }
 printf ("\n");
 }
@@ -48,7 +50,7 @@ b[ IDX2C (i,j,k )]=( float )ind ++; // 13 ,18 ,23 ,28
 printf ("b:\n");
 for (i=0;i<k;i ++){
 for (j=0;j<n;j ++){
-printf (" %5.0 f",b[ IDX2C (i,j,k )]);
+printf (" %5.0f",b[ IDX2C (i,j,k )]);
 }
 printf ("\n");
 }
@@ -87,18 +89,18 @@ stat = cublasSetMatrix (m,k, sizeof (*a) ,a,m,d_a ,m); //a -> d_a
   
   stat = cublasSetMatrix (k,n, sizeof (*b) ,b,k,d_b ,k); //b -> d_b
 stat = cublasSetMatrix (m,n, sizeof (*c) ,c,m,d_c ,m); //c -> d_c
-float al =1.0 f; // al =1
-float bet =1.0 f; // bet =1
+float al =1.0f; // al =1
+float bet =1.0f; // bet =1
 // matrix - matrix multiplication : d_c = al*d_a *d_b + bet *d_c
 // d_a -mxk matrix , d_b -kxn matrix , d_c -mxn matrix ;
 // al ,bet -scalars
-stat=cublasSgemm(handle,CUBLAS OP N,CUBLAS OP N,m,n,k,&al,d a,
-m,d b,k,&bet,d c,m);
+stat=cublasSgemm(handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&al,d_a,
+m,d_b,k,&bet,d_c,m);
 stat = cublasGetMatrix (m,n, sizeof (*c) ,d_c ,m,c,m); // cp d_c - >c
 printf ("c after Sgemm :\n");
 for(i=0;i<m;i ++){
 for(j=0;j<n;j ++){
-printf (" %7.0 f",c[ IDX2C (i,j,m )]); // print c after Sgemm
+printf (" %7.0f",c[ IDX2C (i,j,m )]); // print c after Sgemm
 }
 printf ("\n");
 }
