@@ -23,18 +23,7 @@ int main ( void ) {
   HostMatY = (float *) malloc(m*n* sizeof (float)); // host memory for b
   HostMatZ = (float *) malloc(m*n* sizeof (float)); // host memory for c
   
-  if (HostMatX == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixX)\n");
-    return EXIT_FAILURE;
-  }
-  if (HostMatY == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixY)\n");
-    return EXIT_FAILURE;
-  }
-  if (HostMatZ == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixZ)\n");
-    return EXIT_FAILURE;
-  }
+  
   
   
   // define the lower triangle of an mxm symmetric matrix a in
