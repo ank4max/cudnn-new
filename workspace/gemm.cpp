@@ -1,6 +1,6 @@
-# include <stdio.h >
-# include <stdlib.h >
-# include <cuda_runtime .h >
+# include <stdio.h>
+# include <stdlib.h>
+# include <cuda_runtime.h>
 # include "cublas_v2.h"
 # define IDX2C (i ,j , ld ) ((( j )*( ld ))+( i ))
 # define m 6 // a - mxk matrix
