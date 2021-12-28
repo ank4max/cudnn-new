@@ -19,10 +19,21 @@ int main ( void ) {
   float * HostMatY; // mxn matrix b on the host
   float * HostMatZ; // mxn matrix c on the host
   
-  HostMatX = (float *) malloc(m*m* sizeof (float)); // host memory for a
-  HostMatY = (float *) malloc(m*n* sizeof (float)); // host memory for b
-  HostMatZ = (float *) malloc(m*n* sizeof (float)); // host memory for c
-  
+  HostMatX = (float *) malloc (m*m* sizeof (float)); // host memory for a
+  HostMatY = (float *) malloc (m*n* sizeof (float)); // host memory for b
+  HostMatZ = (float *) malloc (m*n* sizeof (float)); // host memory for c
+  if (HostMatX == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixX)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatY == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixY)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatZ == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrixZ)\n");
+    return EXIT_FAILURE;
+  }
   
   
   
@@ -68,19 +79,19 @@ int main ( void ) {
   float *DeviceMatX; // d_a - a on the device
   float *DeviceMatY; // d_b - b on the device
   float *DeviceMatZ; // d_c - c on the device
-  cudaStatus = cudaMalloc((void **)&DeviceMatX, m*m* sizeof(*HostMatX)); // device
+  cudaStatus = cudaMalloc((void **)& DeviceMatX, m*m* sizeof (*HostMatX)); // device
   if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for X\n");
     return EXIT_FAILURE;
   }
   // memory alloc for a
-  cudaStatus = cudaMalloc((void **)&DeviceMatY, m*n* sizeof(*HostMatY)); // device
+  cudaStatus = cudaMalloc((void **)& DeviceMatY, m*n* sizeof (*HostMatY)); // device
   if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for Y\n");
     return EXIT_FAILURE;
   }
   // memory alloc for b
-  cudaStatus = cudaMalloc((void **)&DeviceMatZ, m*n* sizeof(*HostMatZ)); // device
+  cudaStatus = cudaMalloc((void **)& DeviceMatZ, m*n* sizeof (*HostMatZ)); // device
   if(cudaStatus != cudaSuccess) {
     printf(" The device memory allocation failed for Z\n");
     return EXIT_FAILURE;
@@ -127,7 +138,7 @@ int main ( void ) {
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
   }
-  status = cublasGetMatrix (m,n, sizeof (*HostMatZ) , DeviceMatZ, m, HostMatZ,m); // d_c -> c
+  status = cublasGetMatrix (m,n, sizeof (*HostMatZ), DeviceMatZ, m, HostMatZ, m); // d_c -> c
   printf ("c after Ssymm :\n"); // print c after Ssymm
   for(i = 0; i < m; i++) {
     for(j = 0; j < n; j ++) {
@@ -167,7 +178,7 @@ int main ( void ) {
   
   free (HostMatX); // free host memory
   free (HostMatY); // free host memory
-  free (HostMatY); // free host memory
+  free (HostMatZ); // free host memory
   return EXIT_SUCCESS ;
 }
 // lower triangle of a:
