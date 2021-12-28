@@ -8,11 +8,23 @@
 #define m 6 // a - mxm matrix
 #define n 4 // b,c - mxn matrices
 
-int main ( void ) {
+char* SubStr(char* InputArr, int begin, int len) {
+  char* ResultStr = new char[len + 1];
+  for (int i = 0; i < len; i++) {
+    ResultStr[i] = *(InputArr + begin + i);
+  }
+  ResultStr[len] = 0;
+  return ResultStr;
+}
+
+int main (int argc, char **argv) {
   cudaError_t cudaStatus ; // cudaMalloc status
   cublasStatus_t status ; // CUBLAS functions status
   cublasHandle_t handle ; // CUBLAS context
   clock_t start, end;
+  for (int i = 0;i < argc; i++) {
+    std::cout << argv[i] << std::endl;
+  }
   
   int i,j; // i-row ind. , j- column ind.
   float * HostMatX; // mxm matrix a on the host
@@ -37,23 +49,23 @@ int main ( void ) {
   
   
   
-  // define the lower triangle of an mxm symmetric matrix a in
+  // define the lower triangle of an mxm symmetric matrix x in
   // lower mode column by column
   int ind =11; // a:
   for(j = 0; j < m; j++) {                     // 11
     for(i = 0; i < m; i++) {                   // 12 ,17
       if(i >=j) {                              // 13 ,18 ,22
-        HostMatX[ IDX2C (i,j,m )] = (float)ind ++;    // 14 ,19 ,23 ,26
+        HostMatX[IDX2C (i, j, m)] = (float)ind ++;    // 14 ,19 ,23 ,26
       }                                        // 15 ,20 ,24 ,27 ,29
     }                                          // 16 ,21 ,25 ,28 ,30 ,31
   }
   // print the lower triangle of a row by row
-  printf (" lower triangle of a:\n");
+  printf (" lower triangle of x:\n");
   
   for(i = 0; i < m; i++) {
     for(j = 0; j < m; j++) {
       if(i >=j) {
-        printf (" %5.0f", HostMatX[ IDX2C (i,j,m )]);
+        printf (" %5.0f", HostMatX[IDX2C (i, j, m)]);
       }
       
     }
@@ -63,8 +75,8 @@ int main ( void ) {
   ind =11; // b,c:
   for(j = 0; j < n; j++) {                // 11 ,17 ,23 ,29
     for(i = 0; i < m; i++) {                        // 12 ,18 ,24 ,30
-      HostMatY[ IDX2C (i,j,m )]=( float )ind;         // 13 ,19 ,25 ,31
-      HostMatZ[ IDX2C (i,j,m )]=( float )ind;         // 14 ,20 ,26 ,32
+      HostMatY[IDX2C (i, j, m)]=( float )ind;         // 13 ,19 ,25 ,31
+      HostMatZ[IDX2C (i, j, m)]=( float )ind;         // 14 ,20 ,26 ,32
       ind ++; // 15 ,21 ,27 ,33
     } // 16 ,22 ,28 ,34
   }
@@ -72,7 +84,7 @@ int main ( void ) {
   printf ("b(=c):\n");
   for(i = 0; i < m; i++){
     for(j = 0; j < n; j ++) {
-      printf (" %5.0f", HostMatY[ IDX2C (i,j,m )]);
+      printf (" %5.0f", HostMatY[IDX2C (i, j, m)]);
     }
     printf ("\n");
   }
