@@ -26,6 +26,7 @@ int main ( void ) {
     fprintf (stderr, "!!!! host memory allocation error (matrixY)\n");
     return EXIT_FAILURE;
   }
+  
   // define the lower triangle of an nxn symmetric matrix c
   // column by column
   int ind =11; // c:
@@ -36,16 +37,18 @@ int main ( void ) {
       } // 15 ,20 ,24 ,27 ,29
     } // 16 ,21 ,25 ,28 ,30 ,31
   }
+  
   // print the lower triangle of c row by row
   printf (" lower triangle of c:\n");
   for(i = 0; i < n; i++) {
     for(j = 0; j < n; j++) {
       if(i >= j) {
-        printf (" %5.0f",c[ IDX2C (i,j,n )]);
+        printf (" %5.0f",HostMatY[ IDX2C (i,j,n )]);
       }
     }
     printf ("\n");
   }
+  
   // define an nxk matrix a column by column
   ind =11; // a:
   for(j = 0; j < k; j++) { // 11 ,17 ,23 ,29
