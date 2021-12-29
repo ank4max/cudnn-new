@@ -141,19 +141,19 @@ int main (int argc, char **argv) {
   float *DeviceMatZ; // d_c - c on the device
   cudaStatus = cudaMalloc((void **)& DeviceMatX, x_row * x_col * sizeof (*HostMatX)); // device
   if(cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for X\n");
+    std::cout << " The device memory allocation failed for X\n";
     return EXIT_FAILURE;
   }
   // memory alloc for y
   cudaStatus = cudaMalloc((void **)& DeviceMatY, y_row * y_col * sizeof (*HostMatY)); // device
   if(cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for Y\n");
+    std::cout << " The device memory allocation failed for Y\n";
     return EXIT_FAILURE;
   }
   // memory alloc for z
   cudaStatus = cudaMalloc((void **)& DeviceMatZ, z_row * z_col * sizeof (*HostMatZ)); // device
   if(cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for Z\n");
+    std::cout << " The device memory allocation failed for Z\n";
     return EXIT_FAILURE;
   }
   
