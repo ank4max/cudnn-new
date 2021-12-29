@@ -65,14 +65,23 @@ int main ( void ) {
     }
     printf ("\n");
   }
+  
   // on the device
-float * d_a; // d_a - a on the device
-float * d_c; // d_c - c on the device
+  float * DeviceMatX; // d_a - a on the device
+  float * DeviceMatY; // d_c - c on the device
 
   
-cudaStat = cudaMalloc (( void **)& d_a ,n*k* sizeof (*a)); // device
-// memory alloc for a
-cudaStat = cudaMalloc (( void **)& d_c ,n*n* sizeof (*c)); // device
+  cudaStatus = cudaMalloc((void **)& DeviceMatX, n*k* sizeof (*HostMatX)); // device
+  if(cudaStatus != cudaSuccess) {
+    printf(" The device memory allocation failed for X\n");
+    return EXIT_FAILURE;
+  }
+  // memory alloc for a
+  cudaStatus = cudaMalloc((void **)& DeviceMatY, n*n* sizeof (*HostMatY)); // device
+  if(cudaStatus != cudaSuccess) {
+    printf(" The device memory allocation failed for Y\n");
+    return EXIT_FAILURE;
+  }
 // memory alloc for c
 stat = cublasCreate (& handle ); // initialize CUBLAS context
 // copy matrices from the host to the device
