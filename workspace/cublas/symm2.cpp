@@ -102,7 +102,7 @@ int main (int argc, char **argv) {
   for (i = 0; i < x_row; i++) {
     for (j = 0; j < x_col; j++) {
       if (i >=j) {
-        std::cout << HostMatX[index(i, j, x_row)];
+        std::cout << HostMatX[index(i, j, x_row)] << " ";
       }
       
     }
