@@ -4,7 +4,20 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include <time.h>
-#define IDX2C(i,j,ld) ((( j )*( ld ))+( i ))
+#define index(i,j,ld) (((j)*(ld))+(i))
+
+
+void PrintMat(float* PrintMatrix, int col, int row) {
+  int i, j;
+  for (i = 0; i < row; i++) {
+    std::cout << "\n";
+    for (j = 0; j < col; j++) {
+      std::cout << PrintMatrix[index(i, j,row)] << " ";
+    }
+  }
+  std::cout << "\n";
+}
+
 
 
 
@@ -20,8 +33,8 @@ char* SubStr(char* InputArr, int begin, int len) {
 int main (int argc, char **argv  ) {
   
   int x_row, x_col, y_row, y_col, z_row, z_col;
-  float alpha,beta;
-  for (int i = 0;i < argc; i++) {
+  float alpha, beta;
+  for (int i = 0; i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
   for (int i = 1; i < 6; i++) {
@@ -47,105 +60,92 @@ int main (int argc, char **argv  ) {
   cublasHandle_t handle ; // CUBLAS context
   
   
-  int row,column; // i-row index ,j- column index
+  int row, column; // i-row index ,j- column index
   clock_t start, end;
   float *HostMatX; // mxk matrix a on the host
   float *HostMatY; // kxn matrix b on the host
   float *HostMatZ; // mxn matrix c on the host
   
-  HostMatX=( float *) malloc (x_row*x_col* sizeof ( float )); // host memory for a
-  HostMatY=( float *) malloc (y_row*y_col* sizeof ( float )); // host memory for b
-  HostMatZ=( float *) malloc (z_row*z_col* sizeof ( float )); // host memory for c
+  HostMatX = (float *) malloc (x_row * x_col * sizeof (float)); // host memory for a
+  HostMatY = (float *) malloc (y_row * y_col * sizeof (float)); // host memory for b
+  HostMatZ = (float *) malloc (z_row * z_col * sizeof (float)); // host memory for c
   
   if (HostMatX == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixX)\n");
+    fprintf (stderr, "!!!! Host memory allocation error (matrixX)\n");
     return EXIT_FAILURE;
   }
   if (HostMatY == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixY)\n");
+    fprintf (stderr, "!!!! Host memory allocation error (matrixY)\n");
     return EXIT_FAILURE;
   }
   if (HostMatZ == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrixZ)\n");
+    fprintf (stderr, "!!!! Host memory allocation error (matrixZ)\n");
     return EXIT_FAILURE;
   }
   
   
   // define an mxk matrix a column by column
-  int ind =11; // a:
-  for(column = 0; column < x_col; column++) {                                              // 11 ,17 ,23 ,29 ,35
-    for(row = 0; row < x_row; row++) {                                                      // 12 ,18 ,24 ,30 ,36
-      HostMatX[ IDX2C (row,column,x_row )]=( float )ind ++;                                      // 13 ,19 ,25 ,31 ,37
+  int ind = 11; // a:
+  for (column = 0; column < x_col; column++) {                                              // 11 ,17 ,23 ,29 ,35
+    for (row = 0; row < x_row; row++) {                                                      // 12 ,18 ,24 ,30 ,36
+      HostMatX[index(row, column, x_row)] = (float)ind ++;                                      // 13 ,19 ,25 ,31 ,37
     }                                                                                    // 14 ,20 ,26 ,32 ,38
   }                                                                               // 15 ,21 ,27 ,33 ,39
-                                                                                // 16 ,22 ,28 ,34 ,40
+                                                                                // 16 ,22 ,28 ,34 
+
   
   
   
-  
-  // print a row by row
-  printf ("X:\n");
-  for (row = 0; row < x_row; row ++) {
-    for (column = 0; column < x_col; column++) {
-      printf (" %5.0f",HostMatX[ IDX2C (row,column,x_row )]);
-    }
-    printf ("\n");
-  }
   // define a kxn matrix b column by column
-  ind =11; // b:
-  for(column = 0; column < y_col; column++) {                                      // 11 ,16 ,21 ,26
-    for(row = 0; row < y_row; row++) {                                                // 12 ,17 ,22 ,27
-      HostMatY[ IDX2C (row,column,y_row )]=( float )ind ++;                                           // 13 ,18 ,23 ,28
-    }                                                                         // 14 ,19 ,24 ,29
-  }                                                       // 15 ,20 ,25 ,30
-  // print b row by row
-  printf ("Y:\n");
-  for (row = 0; row < y_row; row++) {
-    for (column = 0; column < y_col; column++) {
-      printf (" %5.0f",HostMatY[ IDX2C (row,column,y_row )]);
-    }
-    printf ("\n");
-  }
+  ind = 11; // b:
+  for (column = 0; column < y_col; column++) {                                      
+    for (row = 0; row < y_row; row++) {                                                
+      HostMatY[index(row, column, y_row)] = (float)ind ++;                                           
+    }                                                                         
+  }                                                       
   
   // define an mxn matrix c column by column
   ind =11; // c:
-  for (column = 0; column < z_col; column++) {                             // 11 ,17 ,23 ,29
-    for (row = 0; row < z_row; row++) {                                        // 12 ,18 ,24 ,30
-      HostMatZ[ IDX2C (row,column,z_row )]=( float )ind ++;                  // 13 ,19 ,25 ,31
-    }                                                                  // 14 ,20 ,26 ,32
-  }                                                                     // 15 ,21 ,27 ,33
-                                                                   // 16 ,22 ,28 ,34
-  // print c row by row
-  printf ("Z:\n");
-  for (row = 0; row < z_row; row++) {
-    for (column = 0; column < z_col; column++) {
-      printf (" %5.0f",HostMatZ[ IDX2C (row,column,z_row )]);
-    }
-    printf ("\n");
+  for (column = 0; column < z_col; column++) {                             
+    for (row = 0; row < z_row; row++) {                                        
+      HostMatZ[ index(row, column, z_row )] = (float)ind ++;                  
+    }                                                                  
   }
+  
+  
+  std::cout << "\nMatriz X:";
+  PrintMat(HostMatX, x_col, x_row);
+  std::cout << "\nMatriz Y:\n";
+  PrintMat(HostMatY, y_col, y_row);
+  std::cout << "\nMatriz Z:\n";
+  PrintMat(HostMatZ, z_col, z_row);
+  
+  
+                                                                   
+  
   // on the device
   float *DeviceMatX; // d_a - a on the device
   float *DeviceMatY; // d_b - b on the device
   float *DeviceMatZ; // d_c - c on the device
-  cudaStatus = cudaMalloc (( void **)& DeviceMatX , x_row*x_col* sizeof (*HostMatX)); // device
+  cudaStatus = cudaMalloc ((void **)& DeviceMatX , x_row * x_col * sizeof (*HostMatX)); // device
   if( cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for X \n");
+    std::cout<<" The device memory allocation failed for X "<<std::endl;
     return EXIT_FAILURE;
   }
 
-  cudaStatus = cudaMalloc (( void **)& DeviceMatY , y_row*y_col* sizeof (*HostMatY)); // device
+  cudaStatus = cudaMalloc ((void **)& DeviceMatY , y_row * y_col * sizeof (*HostMatY)); // device
   if( cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for Y\n");
+    std::cout<<" The device memory allocation failed for Y "<<std::endl;
     return EXIT_FAILURE;
   }
 
-  cudaStatus = cudaMalloc (( void **)& DeviceMatZ , z_row*z_col* sizeof (*HostMatZ)); // device
+  cudaStatus = cudaMalloc ((void **)& DeviceMatZ , z_row * z_col* sizeof (*HostMatZ)); // device
   if( cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for Z\n");
+    std::cout<<" The device memory allocation failed for Z "<<std::endl;
     return EXIT_FAILURE;   
   }
   
-  status = cublasCreate (& handle );           // initialize CUBLAS context
+  status = cublasCreate (& handle);           // initialize CUBLAS context
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to initialize handle\n");
     return EXIT_FAILURE;
@@ -189,13 +189,13 @@ int main (int argc, char **argv  ) {
     fprintf (stderr, "!!!! Unable to get output matrix Z from device\n");
     return EXIT_FAILURE;
   }
-  printf ("c after Sgemm :\n");
-  for(row = 0; row < z_row; row ++) {
-    for(column = 0; column < z_col; column ++) {
-      printf (" %7.0f",HostMatZ[ IDX2C (row,column,z_row )]); // print c after Sgemm
-    }
-    printf ("\n");
-  }
+  
+  
+
+  std::cout << "\nMatriz Z after Gemm operation is:\n";
+  PrintMat(HostMatZ, z_col, z_row);
+  
+  
   
   // printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
@@ -204,19 +204,19 @@ int main (int argc, char **argv  ) {
   
   cudaStatus = cudaFree (DeviceMatX); // free device memory
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory deallocation failed for X\n");
+    std::cout<<" The device memory deallocation failed for X"std::endl;
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatY); // free device memory
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory deallocation failed for Y\n");
+    std::cout<<" The device memory deallocation failed for X"std::endl;
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatZ); // free device memory
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory deallocation failed for Z\n");
+    std::cout<<" The device memory deallocation failed for X"std::endl;
     return EXIT_FAILURE;   
   }
   
