@@ -39,7 +39,7 @@ int main (int argc, char **argv) {
   for (int i = 0;i < argc; i++) {
     std::cout << argv[i] << std::endl;
   }
-  for (int i = 1; i < 6; i++) {
+  for (int i = 1; i < 7; i++) {
     int len = sizeof(argv[i]);
     if (!strcmp(SubStr(argv[i], 1, 5), "x_row"))
       x_row = atoi(argv[i] + 6);
@@ -87,8 +87,6 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-  
-  
   // define the lower triangle of an mxm symmetric matrix x in
   // lower mode column by column
   int ind =11; // a:
@@ -101,7 +99,6 @@ int main (int argc, char **argv) {
   }
   // print the lower triangle of a row by row
   printf (" lower triangle of x:\n");
-  
   for (i = 0; i < x_row; i++) {
     for (j = 0; j < x_col; j++) {
       if (i >=j) {
@@ -111,6 +108,7 @@ int main (int argc, char **argv) {
     }
     printf ("\n");
   }
+  
   // define mxn matrices y column by column
   ind =11; 
   for (j = 0; j < y_col; j++) {                // 11 ,17 ,23 ,29
@@ -130,18 +128,13 @@ int main (int argc, char **argv) {
   }
   
   
-  
   // print y row by row
   // print z row by row
   std::cout << "\nMatriz Y:\n";
   PrintMat(HostMatY, y_col, y_row);
   std::cout << "\nMatriz Z:\n";
   PrintMat(HostMatZ, z_col, z_row);
-  
-  
-  
-  
-  
+ 
   // on the device
   float *DeviceMatX; // d_a - a on the device
   float *DeviceMatY; // d_b - b on the device
