@@ -71,19 +71,19 @@ int main ( void ) {
   float * DeviceMatY; // d_c - c on the device
 
   
-  cudaStatus = cudaMalloc((void **)& DeviceMatX, n*k* sizeof (*HostMatX)); // device
+  cudaStatus = cudaMalloc((void **)& DeviceMatX, n * k * sizeof (*HostMatX)); // device
   if(cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for X\n");
+    std::cout << " The device memory allocation failed for X\n";
     return EXIT_FAILURE;
   }
   // memory alloc for a
   cudaStatus = cudaMalloc((void **)& DeviceMatY, n*n* sizeof (*HostMatY)); // device
   if(cudaStatus != cudaSuccess) {
-    printf(" The device memory allocation failed for Y\n");
+    std::cout << " The device memory allocation failed for Y\n";
     return EXIT_FAILURE;
   }
-// memory alloc for c
-stat = cublasCreate (& handle ); // initialize CUBLAS context
+  // memory alloc for c
+  status = cublasCreate (& handle); // initialize CUBLAS context
 // copy matrices from the host to the device
 stat = cublasSetMatrix (n,k, sizeof (*a) ,a,n,d_a ,n); //a -> d_a
 stat = cublasSetMatrix (n,n, sizeof (*c) ,c,n,d_c ,n); //c -> d_c
