@@ -55,9 +55,9 @@ int main (int argc, char **argv  ) {
   z_row = x_row;
   z_col = y_col;
   
-  cudaError_t cudaStatus ; // cudaMalloc status
-  cublasStatus_t status ; // CUBLAS functions status
-  cublasHandle_t handle ; // CUBLAS context
+  cudaError_t cudaStatus ; 
+  cublasStatus_t status ; 
+  cublasHandle_t handle ;
   
   
   int row, column; // i-row index ,j- column index
@@ -86,16 +86,12 @@ int main (int argc, char **argv  ) {
   
   // define an mxk matrix a column by column
   int ind = 11; // a:
-  for (column = 0; column < x_col; column++) {                                              // 11 ,17 ,23 ,29 ,35
-    for (row = 0; row < x_row; row++) {                                                      // 12 ,18 ,24 ,30 ,36
-      HostMatX[index(row, column, x_row)] = (float)ind ++;                                      // 13 ,19 ,25 ,31 ,37
-    }                                                                                    // 14 ,20 ,26 ,32 ,38
-  }                                                                               // 15 ,21 ,27 ,33 ,39
-                                                                                // 16 ,22 ,28 ,34 
-
-  
-  
-  
+  for (column = 0; column < x_col; column++) {                                              
+    for (row = 0; row < x_row; row++) {                                                   
+      HostMatX[index(row, column, x_row)] = (float)ind ++;                                      
+    }                                                                                    
+  }                                                                               
+                                                                               
   // define a kxn matrix b column by column
   ind = 11; // b:
   for (column = 0; column < y_col; column++) {                                      
