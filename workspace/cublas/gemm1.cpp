@@ -12,7 +12,7 @@ void PrintMat(float* PrintMatrix, int col, int row) {
   for (i = 0; i < row; i++) {
     std::cout << "\n";
     for (j = 0; j < col; j++) {
-      std::cout << PrintMatrix[index(i, j,row)] << " ";
+      std::cout << PrintMatrix[index(i, j, row)] << " ";
     }
   }
   std::cout << "\n";
@@ -112,7 +112,7 @@ int main (int argc, char **argv  ) {
     }                                                                  
   }
   
-  
+  //printing input matrices
   std::cout << "\nMatriz X:";
   PrintMat(HostMatX, x_col, x_row);
   std::cout << "\nMatriz Y:\n";
@@ -129,19 +129,19 @@ int main (int argc, char **argv  ) {
   float *DeviceMatZ; // d_c - c on the device
   cudaStatus = cudaMalloc ((void **)& DeviceMatX , x_row * x_col * sizeof (*HostMatX)); // device
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory allocation failed for X "<<std::endl;
+    std::cout << " The device memory allocation failed for X " << std::endl;
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMalloc ((void **)& DeviceMatY , y_row * y_col * sizeof (*HostMatY)); // device
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory allocation failed for Y "<<std::endl;
+    std::cout << " The device memory allocation failed for Y " << std::endl;
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMalloc ((void **)& DeviceMatZ , z_row * z_col* sizeof (*HostMatZ)); // device
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory allocation failed for Z "<<std::endl;
+    std::cout << " The device memory allocation failed for Z " << std::endl;
     return EXIT_FAILURE;   
   }
   
@@ -204,23 +204,23 @@ int main (int argc, char **argv  ) {
   
   cudaStatus = cudaFree (DeviceMatX); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory deallocation failed for X"std::endl;
+    std::cout << " The device memory deallocation failed for X" << std::endl;
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatY); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory deallocation failed for X"std::endl;
+    std::cout << " The device memory deallocation failed for X" << std::endl;
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatZ); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout<<" The device memory deallocation failed for X"std::endl;
+    std::cout << " The device memory deallocation failed for X" << std::endl;
     return EXIT_FAILURE;   
   }
   
-  status  = cublasDestroy ( handle ); // destroy CUBLAS context
+  status  = cublasDestroy (handle); // destroy CUBLAS context
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to uninitialize handle \n");
     return EXIT_FAILURE;
