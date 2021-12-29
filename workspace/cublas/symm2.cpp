@@ -98,15 +98,15 @@ int main (int argc, char **argv) {
     }                                                       // 16 ,21 ,25 ,28 ,30 ,31
   }
   // print the lower triangle of a row by row
-  printf (" lower triangle of x:\n");
+  std::cout << " lower triangle of x:\n";
   for (i = 0; i < x_row; i++) {
     for (j = 0; j < x_col; j++) {
       if (i >=j) {
-        printf (" %5.0f", HostMatX[index(i, j, x_row)]);
+        std::cout << HostMatX[index(i, j, x_row)];
       }
       
     }
-    printf ("\n");
+    std::cout<<"\n";
   }
   
   // define mxn matrices y column by column
