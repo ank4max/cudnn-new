@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
@@ -26,13 +27,6 @@ char* SubStr(char* InputArr, int begin, int len) {
 }
 
 
-
-
-
-
-
-# define n 6 // a - nxk matrix
-# define k 4 // c - nxn matrix
 
 int main (int argc, char **argv) {
   int x_row, x_col, y_row, y_col;
@@ -67,6 +61,7 @@ int main (int argc, char **argv) {
   cudaError_t cudaStatus ; 
   cublasStatus_t status ; 
   cublasHandle_t handle ; 
+  clock_t start, end;
   int i,j; // i-row index , j- column index
   
   float *HostMatX;                   // nxk matrix a on the host
