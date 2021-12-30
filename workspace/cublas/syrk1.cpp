@@ -82,7 +82,7 @@ int main (int argc, char **argv) {
   // column by column
   int ind =11; // c:
   for(j = 0; j < y_col; j++) {                                  // 11
-    for(i = 0; i < y_row; i++) {                                / / 12 ,17
+    for(i = 0; i < y_row; i++) {                                // 12 ,17
       if(i >= j) {                                           // 13 ,18 ,22
         HostMatY[index(i, j, y_row)] = (float)ind ++;              // 14 ,19 ,23 ,26
       }                                                     // 15 ,20 ,24 ,27 ,29
