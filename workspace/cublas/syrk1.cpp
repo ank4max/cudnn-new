@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
-# include "cublas_v2.h"
+#include "cublas_v2.h"
+#include <time.h>
+
 #define index(i,j,ld) (((j)*(ld))+(i))
 
 
