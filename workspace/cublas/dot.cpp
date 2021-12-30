@@ -24,11 +24,11 @@ int main ( int argc,char **argv ) {
   clock_t start, end;
   int x_len, y_len;
   
-  for (int arg = 0;arg < argc; i++) {
+  for (int arg = 0;arg < argc; arg++) {
     std::cout << argv[arg] << std::endl;
   }
     
-  for (int arg = 1; arg < 3; i++) {
+  for (int arg = 1; arg < 3; arg++) {
     if (!strcmp(SubStr(argv[arg], 1, 5), "x_len"))
       x_len = atoi(argv[arg] + 6);
     else if (!strcmp(SubStr(argv[arg], 1, 5), "y_len"))
@@ -130,7 +130,7 @@ int main ( int argc,char **argv ) {
   }
   
   //printing the final result
-  std::cout << "Dot product x.y is :\n";
+  std::cout << "Dot product x.y is :  ";
   std::cout << result << "\n"; 
   
   // printing latency and throughput of the function
