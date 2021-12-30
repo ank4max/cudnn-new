@@ -36,23 +36,23 @@ int main (int argc, char **argv) {
   cublasStatus_t status ; 
   cublasHandle_t handle ;
   clock_t start, end;
-  for (int i = 0;i < argc; i++) {
-    std::cout << argv[i] << std::endl;
+  for (int arg = 0; arg < argc; arg++) {
+    std::cout << argv[arg] << std::endl;
   }
-  for (int i = 1; i < 7; i++) {
-    int len = sizeof(argv[i]);
-    if (!strcmp(SubStr(argv[i], 1, 5), "x_row"))
-      x_row = atoi(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 5), "x_col"))
-      x_col = atoi(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 5), "y_row"))
-      y_row = atoi(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 5), "y_col"))
-      y_col = atoi(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 5), "alpha"))
-      alpha = atof(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 4), "beta"))
-      beta = atof(argv[i] + 5);
+  for (int arg = 1; arg < 7; arg++) {
+    int len = sizeof(argv[arg]);
+    if (!strcmp(SubStr(argv[arg], 1, 5), "x_row"))
+      x_row = atoi(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 5), "x_col"))
+      x_col = atoi(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 5), "y_row"))
+      y_row = atoi(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 5), "y_col"))
+      y_col = atoi(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 5), "alpha"))
+      alpha = atof(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 4), "beta"))
+      beta = atof(argv[arg] + 5);
   }
   
   if (x_row != x_col) {
@@ -66,7 +66,7 @@ int main (int argc, char **argv) {
   z_row = y_row;
   z_col = y_col;
   
-  int i,j; // i-row ind. , j- column ind.
+  int row, column ;
   float * HostMatX; // mxm matrix a on the host
   float * HostMatY; // mxn matrix b on the host
   float * HostMatZ; // mxn matrix c on the host
@@ -90,19 +90,19 @@ int main (int argc, char **argv) {
   // define the lower triangle of an mxm symmetric matrix x in
   // lower mode column by column
   int ind =11; // a:
-  for (j = 0; j < x_col; j++) {                             // 11
-    for (i = 0; i < x_row; i++) {                         // 12 ,17
-      if(i >=j) {                                               // 13 ,18 ,22
-        HostMatX[index(i, j, x_row)] = (float)ind ++;          // 14 ,19 ,23 ,26
+  for (column = 0; column < x_col; column++) {                             // 11
+    for (row = 0; row < x_row; row++) {                         // 12 ,17
+      if(row >=column) {                                               // 13 ,18 ,22
+        HostMatX[index(row, column, x_row)] = (float)ind ++;          // 14 ,19 ,23 ,26
       }                                                        // 15 ,20 ,24 ,27 ,29
     }                                                       // 16 ,21 ,25 ,28 ,30 ,31
   }
   // print the lower triangle of a row by row
   std::cout << " lower triangle of x:\n";
-  for (i = 0; i < x_row; i++) {
-    for (j = 0; j < x_col; j++) {
-      if (i >=j) {
-        std::cout << HostMatX[index(i, j, x_row)] << " ";
+  for (row = 0; row < x_row; row++) {
+    for (column = 0; column < x_col; column++) {
+      if (row >= column) {
+        std::cout << HostMatX[index(row, column, x_row)] << " ";
       }
       
     }
@@ -111,18 +111,18 @@ int main (int argc, char **argv) {
   
   // define mxn matrices y column by column
   ind =11; 
-  for (j = 0; j < y_col; j++) {                // 11 ,17 ,23 ,29
-    for (i = 0; i < y_row; i++) {                        // 12 ,18 ,24 ,30
-      HostMatY[index(i, j, y_row)] = (float)ind;         // 13 ,19 ,25 ,31                                                        14 ,20 ,26 ,32
+  for (column = 0; column < y_col; column++) {                // 11 ,17 ,23 ,29
+    for (row = 0; row < y_row; row++) {                        // 12 ,18 ,24 ,30
+      HostMatY[index(row, column, y_row)] = (float)ind;         // 13 ,19 ,25 ,31                                                        14 ,20 ,26 ,32
       ind ++; // 15 ,21 ,27 ,33
     } // 16 ,22 ,28 ,34
   }
   
   // define mxn matrices z column by column
   ind =11; 
-  for (j = 0; j < z_col; j++) {                
-    for (i = 0; i < z_row; i++) {                        
-      HostMatZ[index(i, j, z_row)] = (float)ind;                                                                
+  for (column = 0; column < z_col; column++) {                
+    for (row = 0; row < z_row; row++) {                        
+      HostMatZ[index(row, column, z_row)] = (float)ind;                                                                
       ind ++;                                                  // 15 ,21 ,27 ,33
     }                                                     // 16 ,22 ,28 ,34
   }
@@ -180,14 +180,9 @@ int main (int argc, char **argv) {
     fprintf (stderr, "Copying matrix Z from host to device failed\n");
     return EXIT_FAILURE;
   }
-  
  
-  // symmetric matrix - matrix multiplication :
-  // d_c = al*d_a *d_b + bet *d_c ; d_a - mxm symmetric matrix ;
-  // d_b ,d_c - mxn general matrices ; al ,bet - scalars;
-  
+  // symmetric matrix - matrix multiplication : 
   start = clock();
-  
   status = cublasSsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
   y_row, y_col, &alpha, DeviceMatX, x_row, DeviceMatY, y_row, &beta, DeviceMatZ, z_row);
   
@@ -197,6 +192,10 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   status = cublasGetMatrix (z_row, z_col, sizeof (*HostMatZ), DeviceMatZ, z_row, HostMatZ, z_row); // d_c -> c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix Z from device to host failed\n");
+    return EXIT_FAILURE;
+  }
   
   std::cout << "\nMatriz Z after Symm operation is:\n";
   PrintMat(HostMatZ, z_col, z_row);
