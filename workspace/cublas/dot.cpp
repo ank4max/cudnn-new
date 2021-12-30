@@ -24,15 +24,15 @@ int main ( int argc,char **argv ) {
   clock_t start, end;
   int x_len, y_len;
   
-  for (int i = 0;i < argc; i++) {
-    std::cout << argv[i] << std::endl;
+  for (int arg = 0;i < argc; i++) {
+    std::cout << argv[arg] << std::endl;
   }
     
-  for (int i = 1; i < 3; i++) {
-    if (!strcmp(SubStr(argv[i], 1, 5), "x_len"))
-      x_len = atoi(argv[i] + 6);
-    else if (!strcmp(SubStr(argv[i], 1, 5), "y_len"))
-      y_len = atoi(argv[i] + 6);
+  for (int arg = 1; i < 3; i++) {
+    if (!strcmp(SubStr(argv[arg], 1, 5), "x_len"))
+      x_len = atoi(argv[arg] + 6);
+    else if (!strcmp(SubStr(argv[arg], 1, 5), "y_len"))
+      y_len = atoi(argv[arg] + 6);
   }
 
   if(x_len != y_len) {
@@ -40,7 +40,7 @@ int main ( int argc,char **argv ) {
   }
  
     
-  int it; 
+  int index; 
   
   //pointers x and y pointing  to vectors
   float * HostVecX;             
@@ -60,27 +60,25 @@ int main ( int argc,char **argv ) {
     return EXIT_FAILURE;
   }
   
-
-
   //setting up values in x and y vectors
-  for (it = 0; it < x_len; it++) {
-    HostVecX[it] = (float)it;                               
+  for (index = 0; index < x_len; index++) {
+    HostVecX[index] = (float)index;                               
   }
 
-  for (it = 0; it < y_len; it++) {
-    HostVecY[it] = (float)it; 
+  for (index = 0; index < y_len; index++) {
+    HostVecY[index] = (float)index; 
   }
   
   //printing the initial values in vector x and vector y
   std::cout <<"X vector initially:\n";
-  for (it = 0; it < x_len; it++) {
-    std::cout << HostVecX[it] << " "; 
+  for (index = 0; index < x_len; index++) {
+    std::cout << HostVecX[index] << " "; 
   }
   std::cout << "\n";
   
   std::cout << "Y vector initially :\n";
-  for (it = 0; it < y_len; it++) {
-    std::cout << HostVecY[it] << " "; 
+  for (index = 0; index < y_len; index++) {
+    std::cout << HostVecY[index] << " "; 
   }
   std::cout <<"\n";
   
@@ -132,8 +130,8 @@ int main ( int argc,char **argv ) {
   }
   
   //printing the final result
-  std::cout << "dot product x.y:\n";
-  std::cout << result ; 
+  std::cout << "Dot product x.y is :\n";
+  std::cout << result << "\n"; 
   
   // printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
@@ -157,7 +155,7 @@ int main ( int argc,char **argv ) {
   status = cublasDestroy (handle);
   
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! shutdown error (matrixA)\n");
+    fprintf (stderr, "!!!! Failed to uninitialize handle");
     return EXIT_FAILURE;
   }
   
