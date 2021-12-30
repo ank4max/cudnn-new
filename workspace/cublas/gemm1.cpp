@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include <time.h>
-#define index(i,j,ld) (((j)*(ld))+(i))
+#define index(row, column, row_count) (((column)*(row_count))+(row))
 
 
 void PrintMat(float* PrintMatrix, int col, int row) {
