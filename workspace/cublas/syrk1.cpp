@@ -175,7 +175,7 @@ int main (int argc, char **argv) {
   for(i = 0; i < y_row; i++) {
     for(j = 0; j < y_col; j++) {
       if(i >=j) {  // print the lower triangle
-        std::cout << [index(i, j, y_row)] << " " ;  // of c after Ssyrk
+        std::cout << HostMatY[index(i, j, y_row)] << " " ;  // of c after Ssyrk
       }
     }
     printf ("\n");
