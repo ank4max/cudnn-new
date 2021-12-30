@@ -206,13 +206,13 @@ int main (int argc, char **argv  ) {
   
   cudaStatus = cudaFree (DeviceMatY); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for X" << std::endl;
+    std::cout << " The device memory deallocation failed for Y" << std::endl;
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatZ); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for X" << std::endl;
+    std::cout << " The device memory deallocation failed for Z" << std::endl;
     return EXIT_FAILURE;   
   }
   
