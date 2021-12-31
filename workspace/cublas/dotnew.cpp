@@ -3,22 +3,14 @@
 #include "cublas.h"
 #include "cublas_v2.h"
 
-#define arg_1 "length"
-#define len_arg_1 6
-#define begin 1
+#define FIRST_ARG "length"    //for comparison and assigning the length of vectors
+#define FIRST_ARG_LEN 6
+#define BEGIN 1
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 //1e-9 for converting throughput in GFLOP/sec, multiplying by 2 because each multiply-add operation uses two flops and 
 // then divided it by latency to get required throughput
 
-char* SubStr(char* InputArr, int len) {
-  char* ResultStr = new char[len + 1];
-  for (int ch = 0; ch < len; ch++) {
-    ResultStr[ch] = *(InputArr + begin + ch);
-  }
-  ResultStr[len] = 0;
-  return ResultStr;
-}
 
 int main ( int argc,char **argv) {
 
@@ -35,8 +27,9 @@ int main ( int argc,char **argv) {
   }
     
   for (int loop_count = 1; loop_count < argc; loop_count++) {
-    if (!strcmp(SubStr(argv[loop_count], len_arg_1), arg_1))
-      vector_length = atoi(argv[loop_count] + len_arg_1 + 1);
+    std::string str1(argv[loop_count]);
+    if (!((str1.substr(BEGIN, FIRST_ARG_LEN)).compare(FIRST_ARG)))
+      vector_length = atoi(argv[loop_count] + FIRST_ARG_LEN + 1);
   }
   
   // pointers x and y pointing  to vectors
@@ -164,7 +157,3 @@ int main ( int argc,char **argv) {
 
   return EXIT_SUCCESS ;
 }
-// x,y:
-// 0 , 1 , 2 , 3 , 4 , 5 ,
-// dot product x.y: // x.y=
-// 55 // 1*1+2*2+3*3+4*4+5*5
