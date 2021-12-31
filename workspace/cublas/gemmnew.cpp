@@ -3,25 +3,26 @@
 #include "cublas.h"
 #include "cublas_v2.h"
 
-#define arg_1 "x_row"
-#define arg_2 "x_col"
-#define arg_3 "y_col"
-#define arg_4 "alpha"
-#define arg_5 "beta"
-#define len_arg_1 5
-#define len_arg_2 5
-#define len_arg_3 5
-#define len_arg_4 5
-#define len_arg_5 4
-#define begin 1
-#define index(row, col, row_count) (((col)*(row_count))+(row))
+#define FIRST_ARG "x_row"
+#define SECOND_ARG "x_col"
+#define THIRD_ARG "y_col"
+#define FOURTH_ARG "alpha"
+#define FIFTH_ARG "beta"
+#define LEN_ARG_FIRST 5
+#define LEN_ARG_SECOND 5
+#define LEN_ARG_THIRD 5
+#define LEN_ARG_FOURTH 5
+#define LEN_ARG_FIFTH 4
+#define BEGIN 1
+#define INDEX(row, col, row_count) (((col)*(row_count))+(row))
+#define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
   int row, col;
   for (row = 0; row < matrix_row; row++) {
     std::cout << "\n";
     for (col = 0; col < matrix_col; col++) {
-      std::cout << Matrix[index(row, col, matrix_row)] << " ";
+      std::cout << Matrix[INDEX(row, col, matrix_row)] << " ";
     }
   }
   std::cout << "\n";
@@ -42,22 +43,22 @@ int main (int argc, char **argv) {
   float alpha, beta;
 
   std::cout << std::endl;
-  for (int arg = 0; arg < argc; arg++) {
-    std::cout << argv[arg] << std::endl;
+  for (int loop_count = 0; loop_count < argc; loop_count++) {
+    std::cout << argv[loop_count] << std::endl;
   }
 
   // reading cmd line arguments
-  for (int arg = 1; arg < argc; arg++) {
-    if (!strcmp(SubStr(argv[arg], len_arg_1), arg_1))
-      x_row = atoi(argv[arg] + len_arg_1 + 1);
-    else if (!strcmp(SubStr(argv[arg], len_arg_2), arg_2))
-      x_col = atoi(argv[arg] + len_arg_2 + 1);
-    else if (!strcmp(SubStr(argv[arg], len_arg_3), arg_3))
-      y_col = atoi(argv[arg] + len_arg_3 + 1);
-    else if (!strcmp(SubStr(argv[arg], len_arg_4), arg_4))
-      alpha = atof(argv[arg] + len_arg_4 + 1);
-    else if (!strcmp(SubStr(argv[arg], len_arg_5), arg_5))
-      beta = atof(argv[arg] + len_arg_5 + 1);
+  for (int loop_count = 1; loop_count < argc; loop_count++) {
+    if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FIRST), FIRST_ARG))
+      x_row = atoi(argv[loop_count] + LEN_ARG_FIRST + 1);
+    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_SECOND), SECOND_ARG))
+      x_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
+    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_THIRD), THIRD_ARG))
+      y_col = atoi(argv[loop_count] + LEN_ARG_THIRD + 1);
+    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FOURTH), FOURTH_ARG))
+      alpha = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
+    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FIFTH), FIFTH_ARG))
+      beta = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
   }
  
   y_row = x_col;
@@ -68,7 +69,7 @@ int main (int argc, char **argv) {
   cublasStatus_t status; 
   cublasHandle_t handle;
 
-  clock_t start, end;   
+  clock_t clk_start, clk_end;   
  
   float *HostMatX; // mxk matrix x on the host
   float *HostMatY; // kxn matrix y on the host
@@ -96,21 +97,21 @@ int main (int argc, char **argv) {
   // define an mxk matrix x column by column
   for (row = 0; row < x_row; row++) {                                              
     for (col = 0; col < x_col; col++) {                                                   
-      HostMatX[index(row, col, x_row)] = (rand() % 10000 * 1.00) / 100;                                      
+      HostMatX[INDEX(row, col, x_row)] = (rand() % 10000 * 1.00) / 100;                                      
     }                                                                                    
   }                                                                               
                                                                                
   // define a kxn matrix y column by column
   for (row = 0; row < y_row; row++) {                                      
     for (col = 0; col < y_col; col++) {                                                
-      HostMatY[index(row, col, y_row)] = (rand() % 10000 * 1.00) / 100;                                           
+      HostMatY[INDEX(row, col, y_row)] = (rand() % 10000 * 1.00) / 100;                                           
     }                                                                         
   }                                                       
   
   // define an mxn matrix z column by column
   for (row = 0; row < z_row; row++) {                             
     for (col = 0; col < z_col; col++) {                                        
-      HostMatZ[index(row, col, z_row)] = (rand() % 10000 * 1.00) / 100;                 
+      HostMatZ[INDEX(row, col, z_row)] = (rand() % 10000 * 1.00) / 100;                 
     }                                                                  
   }
   
@@ -170,7 +171,7 @@ int main (int argc, char **argv) {
   }
   
 
-  start = clock();
+  clk_start = clock();
 
   // matrix - matrix multiplication : d_z = alpha * d_x * d_y + beta * d_z
   // d_x -mxk matrix , d_y -kxn matrix , d_z -mxn matrix
@@ -184,7 +185,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  end = clock();
+  clk_end = clock();
   
   status = cublasGetMatrix (z_row, z_col, sizeof (*HostMatZ),
                             DeviceMatZ, z_row, HostMatZ, z_row); // copy d_z -> z
@@ -198,8 +199,8 @@ int main (int argc, char **argv) {
   PrintMatrix(HostMatZ, z_row, z_col); 
   
   // printing latency and throughput of the function
-  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
-               "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+               "\nThroughput: " <<THROUGHPUT(clk_start, clk_end) << "\n\n";
   
   cudaStatus = cudaFree (DeviceMatX); // free device memory
   if( cudaStatus != cudaSuccess) {
