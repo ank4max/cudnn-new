@@ -2,110 +2,200 @@
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
-# define IDX2C (i ,j , ld ) ((( j )*( ld ))+( i ))
+#define index(i ,j , ld ) ((( j )*( ld ))+( i ))
 
-# define m 6 // a - mxm matrix
-# define n 5 // b,c - mxn matrices
-int main ( void ){
+#define m 6 // a - mxm matrix
+#define n 5 // b,c - mxn matrices
+int main ( void ) {
   
-  cudaError_t cudaStat ; // cudaMalloc status
-  cublasStatus_t stat ; // CUBLAS functions status
+  cudaError_t cudaStatus ; // cudaMalloc status
+  cublasStatus_t status ; // CUBLAS functions status
   cublasHandle_t handle ; // CUBLAS context
-int i,j; // i-row index , j-col. ind.
-// data preparation on the host
-cuComplex *a; // mxm complex matrix a on the host
-cuComplex *b; // mxn complex matrix b on the host
-cuComplex *c; // mxn complex matrix c on the host
-a=( cuComplex *) malloc (m*m* sizeof ( cuComplex )); // host memory
-// alloc for a
-b=( cuComplex *) malloc (m*n* sizeof ( cuComplex )); // host memory
-// alloc for b
-c=( cuComplex *) malloc (m*n* sizeof ( cuComplex )); // host memory
-// alloc for c
-// define the lower triangle of an mxm Hermitian matrix a in
-// lower mode column by column
-int ind =11; // a:
-for(j=0;j<m;j ++){ // 11
-for(i=0;i<m;i ++){ // 12 ,17
-if(i >=j){ // 13 ,18 ,22
-a[ IDX2C (i,j,m)].x=( float )ind ++; // 14 ,19 ,23 ,26
-a[ IDX2C (i,j,m)].y =0.0 f; // 15 ,20 ,24 ,27 ,29
-} // 16 ,21 ,25 ,28 ,30 ,31
-}
-}
-// print the lower triangle of a row by row
-printf (" lower triangle of a:\n");
-for (i=0;i<m;i ++){
-for (j=0;j<m;j ++){
-if(i >=j)
-printf (" %5.0 f +%2.0 f*I",a[ IDX2C (i,j,m)].x,
-a[ IDX2C (i,j,m)].y);
-}
-printf ("\n");
-}
-// define mxn matrices b,c column by column
-ind =11; // b,c:
-for(j=0;j<n;j ++){ // 11 ,17 ,23 ,29 ,35
-for(i=0;i<m;i ++){ // 12 ,18 ,24 ,30 ,36
-b[ IDX2C (i,j,m)].x=( float )ind; // 13 ,19 ,25 ,31 ,37
-b[ IDX2C (i,j,m)].y =0.0 f; // 14 ,20 ,26 ,32 ,38
-c[ IDX2C (i,j,m)].x=( float )ind; // 15 ,21 ,27 ,33 ,39
-c[ IDX2C (i,j,m)].y =0.0 f; // 16 ,22 ,28 ,34 ,40
-ind ++;
-}
-}
-// print b(=c) row by row
+  int i,j; // i-row index , j-col. ind.
+  time_t start, end;
+  // data preparation on the host
+  cuComplex *HostMatX; // mxm complex matrix a on the host
+  cuComplex *HostMatY; // mxn complex matrix b on the host
+  cuComplex *HostMatZ; // mxn complex matrix c on the host
+  HostMatX = (cuComplex *) malloc (m * m * sizeof (cuComplex)); // host memory
+  // alloc for a
+  HostMatY = (cuComplex *) malloc (m * n * sizeof (cuComplex)); // host memory
+  // alloc for b
+  HostMatZ = (cuComplex *) malloc (m * n * sizeof (cuComplex)); // host memory
+  // alloc for c
+  
+  if (HostMatX == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrix X)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatY == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrix Y)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatZ == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrix Z)\n");
+    return EXIT_FAILURE;
+  }
+  
+  
+  // define the lower triangle of an mxm Hermitian matrix a in
+  // lower mode column by column
+  int ind =11; // a:
+  for (j = 0; j < m; j++) {                 // 11
+    for (i = 0; i < m; i++) {                                   // 12 ,17
+      if(i >=j) {                                        // 13 ,18 ,22
+        HostMatX[index(i, j, m)].x = (float)ind ++;                   // 14 ,19 ,23 ,26
+        HostMatX[index(i, j, m)].y = 0.0f;                       // 15 ,20 ,24 ,27 ,29
+      }                                                           // 16 ,21 ,25 ,28 ,30 ,31
+    }
+  }
+  // print the lower triangle of a row by row
+  printf (" lower triangle of a:\n");
+  for (i = 0; i < m; i++){
+    for (j = 0; j < m; j++) {
+      if(i >=j) {
+        printf (" %5.0f +%2.0f*I",HostMatX[index(i,j,m)].x,
+        HostMatX[index(i,j,m)].y);
+      }
+    }
+  printf ("\n");
+  }
+  // define mxn matrices b,c column by column
+  ind =11; // b,c:
+  for(j = 0; j < n; j++) {           // 11 ,17 ,23 ,29 ,35
+    for(i = 0; i < m; i++) {                      // 12 ,18 ,24 ,30 ,36
+      HostMatY[index(i,j,m)].x=( float )ind;            // 13 ,19 ,25 ,31 ,37
+      HostMatY[index(i,j,m)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
+      HostMatZ[index(i,j,m)].x=( float )ind;              // 15 ,21 ,27 ,33 ,39
+      HostMatZ[index(i,j,m)].y =0.0f;             // 16 ,22 ,28 ,34 ,40
+      ind ++;
+    }
+  }
+  // print b(=c) row by row
 printf ("b,c:\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){
-printf (" %5.0 f +%2.0 f*I",b[ IDX2C (i,j,m)].x,
-b[ IDX2C (i,j,m)].y);
+printf (" %5.0f +%2.0f*I",HostMatY[index(i,j,m)].x,
+HostMatY[index(i,j,m)].y);
 }
 printf ("\n");
 }
-// on the device
-cuComplex * d_a; // d_a - a on the device
-cuComplex * d_b; // d_b - b on the device
-cuComplex * d_c; // d_c - c on the device
-cudaStat = cudaMalloc (( void **)& d_a ,m*m* sizeof ( cuComplex ));
-// device memory alloc for a
-cudaStat = cudaMalloc (( void **)& d_b ,n*m* sizeof ( cuComplex ));
-// device memory alloc for b
-cudaStat = cudaMalloc (( void **)& d_c ,n*m* sizeof ( cuComplex ));
-// device memory alloc for c
-stat = cublasCreate (& handle ); // initialize CUBLAS context
-// copy matrices from the host to the device
-stat = cublasSetMatrix (m,m, sizeof (*a) ,a,m,d_a ,m); //a -> d_a
-stat = cublasSetMatrix (m,n, sizeof (*b) ,b,m,d_b ,m); //b -> d_b
-stat = cublasSetMatrix (m,n, sizeof (*c) ,c,m,d_c ,m); //c -> d_c
-cuComplex al ={1.0f ,0.0 f}; // al =1
-cuComplex bet ={1.0f ,0.0 f}; // bet =1
-// Hermitian matrix - matrix multiplication :
-// d_c =al*d_a *d_b +bet *d_c ;
-// d_a - mxm hermitian matrix ; d_b ,d_c - mxn - general matices ;
-// al ,bet - scalars
-stat=cublasChemm(handle,CUBLAS SIDE LEFT,CUBLAS FILL MODE LOWER,
-m,n,&al,d a,m,d b,m,&bet,d c,m);
-stat = cublasGetMatrix (m,n, sizeof (*c) ,d_c ,m,c,m); // d_c -> c
-printf ("c after Chemm :\n");
+
+  // on the device
+  cuComplex * DeviceMatX; // d_a - a on the device
+  cuComplex * DeviceMatY; // d_b - b on the device
+  cuComplex * DeviceMatZ; // d_c - c on the device
+  cudaStatus = cudaMalloc ((void **)& DeviceMatX , m * m * sizeof (cuComplex));
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for X\n";
+    return EXIT_FAILURE;
+  }
+  
+  // device memory alloc for a
+  cudaStatus = cudaMalloc ((void **)& DeviceMatY , n * m * sizeof (cuComplex));
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for Y\n";
+    return EXIT_FAILURE;
+  }
+  // device memory alloc for b
+  cudaStatus = cudaMalloc ((void **)& DeviceMatZ, n * m * sizeof (cuComplex));
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for Z\n";
+    return EXIT_FAILURE;
+  }
+  // device memory alloc for c
+  
+  status = cublasCreate (& handle);  // initialize CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    return EXIT_FAILURE;
+  }
+  
+  // copy matrices from the host to the device
+  status = cublasSetMatrix (m, m, sizeof (*HostMatX) , HostMatX, m, DeviceMatX, m); //a -> d_a
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix X from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix (m, n, sizeof (*HostMatY) , HostMatY, m, DeviceMatY, m); //b -> d_b
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix Y from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix (m, n, sizeof (*HostMatZ) , HostMatZ, m, DeviceMatZ, m); //c -> d_c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix Z from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  cuComplex al ={1.0f ,0.0f}; // al =1
+  cuComplex bet ={1.0f ,0.0f}; // bet =1
+  // Hermitian matrix - matrix multiplication :
+  // d_c =al*d_a *d_b +bet *d_c ;
+  // d_a - mxm hermitian matrix ; d_b ,d_c - mxn - general matices ;
+  // al ,bet - scalars
+  
+  start = clock();
+  status = cublasChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+  m, n, &al, DeviceMatX, m, DeviceMatY, m, &bet, DeviceMatZ, m);
+  
+  end = clock();
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! kernel execution error\n");
+    return EXIT_FAILURE;
+  }
+  
+  status = cublasGetMatrix (m, n, sizeof (*HostMatZ), DeviceMatZ, m, HostMatZ, m); // d_c -> c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix Z from device to host failed\n");
+    return EXIT_FAILURE;
+  }
+ printf ("c after Chemm :\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){ // print c after Chemm
-printf (" %5.0 f +%1.0 f*I",c[ IDX2C (i,j,m)].x,
-c[ IDX2C (i,j,m)].y);
+printf (" %5.0f +%1.0f*I",HostMatZ[index(i,j,m)].x,
+HostMatZ[index(i,j,m)].y);
 }
 printf ("\n");
 }
-cudaFree (d_a ); // free device memory
+  
+  
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
+  
 
-
-cudaFree (d_b ); // free device memory
-cudaFree (d_c ); // free device memory
-cublasDestroy ( handle ); // destroy CUBLAS context
-free (a); // free host memory
-free (b); // free host memory
-free (c); // free host memory
-return EXIT_SUCCESS ;
+  cudaStatus = cudaFree (DeviceMatX); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " the device memory deallocation failed for X\n";
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatY); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " the device memory deallocation failed for Y\n";
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatZ); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " the device memory deallocation failed for Z\n";
+    return EXIT_FAILURE;   
+  }
+  
+  status  = cublasDestroy (handle); // destroy CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    return EXIT_FAILURE;
+  } 
+  
+  free (HostMatX); // free host memory
+  free (HostMatY); // free host memory
+  free (HostMatZ); // free host memory
+  return EXIT_SUCCESS ;
 }
+  
+  
+  
 // lower triangle of a:
 // 11+ 0*I
 // 12+ 0*I 17+ 0*I
