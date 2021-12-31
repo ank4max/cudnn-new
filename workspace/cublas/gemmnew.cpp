@@ -17,6 +17,9 @@
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
+//1e-9 for converting throughput in GFLOP/sec, multiplying by 2 because each multiply-add operation uses two flops and 
+// then divided it by latency to get required throughput
+
 void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
   int row, col;
   for (row = 0; row < matrix_row; row++) {
@@ -95,6 +98,8 @@ int main (int argc, char **argv) {
   int row, col;
   
   // define an mxk matrix x column by column
+  //using rand() function to generate random numbers converted them to float 
+  // and made them less than 100.
   for (row = 0; row < x_row; row++) {                                              
     for (col = 0; col < x_col; col++) {                                                   
       HostMatX[INDEX(row, col, x_row)] = (rand() % 10000 * 1.00) / 100;                                      
@@ -102,6 +107,8 @@ int main (int argc, char **argv) {
   }                                                                               
                                                                                
   // define a kxn matrix y column by column
+  //using rand() function to generate random numbers converted them to float 
+  // and made them less than 100.
   for (row = 0; row < y_row; row++) {                                      
     for (col = 0; col < y_col; col++) {                                                
       HostMatY[INDEX(row, col, y_row)] = (rand() % 10000 * 1.00) / 100;                                           
@@ -109,6 +116,8 @@ int main (int argc, char **argv) {
   }                                                       
   
   // define an mxn matrix z column by column
+  //using rand() function to generate random numbers converted them to float 
+  // and made them less than 100.
   for (row = 0; row < z_row; row++) {                             
     for (col = 0; col < z_col; col++) {                                        
       HostMatZ[INDEX(row, col, z_row)] = (rand() % 10000 * 1.00) / 100;                 
