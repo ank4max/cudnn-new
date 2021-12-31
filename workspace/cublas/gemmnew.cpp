@@ -1,5 +1,5 @@
+
 #include <iostream>
-#include <string.h>
 #include "cublas.h"
 #include "cublas_v2.h"
 
@@ -31,7 +31,7 @@ void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
 char* SubStr(char* InputArr, int len) {
   char* ResultStr = new char[len + 1];
   for (int ch = 0; ch < len; ch++) {
-    ResultStr[ch] = *(InputArr + begin + ch);
+    ResultStr[ch] = *(InputArr + BEGIN + ch);
   }
   ResultStr[len] = 0;
   return ResultStr;
@@ -75,9 +75,9 @@ int main (int argc, char **argv) {
   float *HostMatY; // kxn matrix y on the host
   float *HostMatZ; // mxn matrix z on the host
   
-  HostMatX = (float *) malloc (x_row * x_col * sizeof (float)); // host memory for x
-  HostMatY = (float *) malloc (y_row * y_col * sizeof (float)); // host memory for y
-  HostMatZ = (float *) malloc (z_row * z_col * sizeof (float)); // host memory for z
+  HostMatX = new float[x_row * x_col]; // host memory for x
+  HostMatY = new float[y_row * y_col]; // host memory for y
+  HostMatZ = new float[z_row * z_col]; // host memory for z
   
   if (HostMatX == 0) {
     fprintf (stderr, "!!!! Host memory allocation error (matrixX)\n");
@@ -226,9 +226,9 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  free (HostMatX); // free host memory
-  free (HostMatY); // free host memory
-  free (HostMatY); // free host memory
+  delete[] HostMatX; // free host memory
+  delete[] HostMatY; // free host memory
+  delete[] HostMatZ; // free host memory
 
   return EXIT_SUCCESS ;
 }
