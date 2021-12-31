@@ -48,13 +48,13 @@ int main (int argc, char **argv) {
   for (int loop_count = 1; loop_count < argc; loop_count++) {
     std::string str1(argv[loop_count]);
     if (!((str1.substr(BEGIN, FIRST_ARG_LEN)).compare(FIRST_ARG)))
-      x_row = atoi(argv[arg] + FIRST_ARG_LEN + 1);
+      x_row = atoi(argv[loop_count] + FIRST_ARG_LEN + 1);
     else if (!((str1.substr(BEGIN, SECOND_ARG_LEN)).compare(SECOND_ARG)))
-      y_col = atoi(argv[arg] + SECOND_ARG_LEN + 1);
+      y_col = atoi(argv[loop_count] + SECOND_ARG_LEN + 1);
     else if (!((str1.substr(BEGIN, THIRD_ARG_LEN)).compare(THIRD_ARG)))
-      alpha = atof(argv[arg] + THIRD_ARG_LEN + 1);
+      alpha = atof(argv[loop_count] + THIRD_ARG_LEN + 1);
     else if (!((str1.substr(BEGIN, FOURTH_ARG_LEN)).compare(FOURTH_ARG)))
-      beta = atof(argv[arg] + FOURTH_ARG_LEN + 1);
+      beta = atof(argv[loop_count] + FOURTH_ARG_LEN + 1);
   }
 
   x_col = x_row;
@@ -191,7 +191,7 @@ int main (int argc, char **argv) {
   PrintMatrix(HostMatZ, z_row, z_col);
   
   // printing latency and throughput of the function
-  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
         "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
   
   
