@@ -24,7 +24,7 @@ void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
   for (row = 0; row < matrix_row; row++) {
     std::cout << "\n";
     for (col = 0; col < matrix_col; col++) {
-      std::cout << Matrix[index(row, col, matrix_row)] << " ";
+      std::cout << Matrix[INDEX(row, col, matrix_row)] << " ";
     }
   }
   std::cout << "\n";
