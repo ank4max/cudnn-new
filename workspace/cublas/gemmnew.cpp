@@ -1,20 +1,20 @@
-
 #include <iostream>
+#include <string>
 #include "cublas.h"
 #include "cublas_v2.h"
 
-#define FIRST_ARG "x_row"
-#define SECOND_ARG "x_col"
-#define THIRD_ARG "y_col"
-#define FOURTH_ARG "alpha"
-#define FIFTH_ARG "beta"
-#define LEN_ARG_FIRST 5
-#define LEN_ARG_SECOND 5
-#define LEN_ARG_THIRD 5
-#define LEN_ARG_FOURTH 5
-#define LEN_ARG_FIFTH 4
-#define BEGIN 1
-#define INDEX(row, col, row_count) (((col)*(row_count))+(row))
+#define FIRST_ARG "x_row"    //for comparison with command line argument and initializing value of no. of rows for x
+#define SECOND_ARG "x_col"   //for comparison with command line argument and initializing value of no. of col for x
+#define THIRD_ARG "y_col"    //for comparison with command line argument and initializing value of no. of col for y
+#define FOURTH_ARG "alpha"   //for comparison with command line argument and initializing value of scalar constant alpha
+#define FIFTH_ARG "beta"     //for comparison with command line argument and initializing value of scalar constant beta
+#define LEN_ARG_FIRST 5      // defining length for   first cmd line argument for comparison
+#define LEN_ARG_SECOND 5     // defining length for  second cmd line argument for comparison
+#define LEN_ARG_THIRD 5      // defining length for  third cmd line argument  for comparison
+#define LEN_ARG_FOURTH 5     // defining length for  fourth cmd line argument for comparison
+#define LEN_ARG_FIFTH 4      // defining length for  fifth cmd line argument for comparison
+#define BEGIN 1              
+#define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 //1e-9 for converting throughput in GFLOP/sec, multiplying by 2 because each multiply-add operation uses two flops and 
@@ -31,14 +31,7 @@ void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
   std::cout << "\n";
 }
 
-char* SubStr(char* InputArr, int len) {
-  char* ResultStr = new char[len + 1];
-  for (int ch = 0; ch < len; ch++) {
-    ResultStr[ch] = *(InputArr + BEGIN + ch);
-  }
-  ResultStr[len] = 0;
-  return ResultStr;
-}
+
 
 int main (int argc, char **argv) {
   
@@ -52,15 +45,20 @@ int main (int argc, char **argv) {
 
   // reading cmd line arguments
   for (int loop_count = 1; loop_count < argc; loop_count++) {
-    if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FIRST), FIRST_ARG))
+           std::string str1(argv[loop_count]);  
+    if (!((str1.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
       x_row = atoi(argv[loop_count] + LEN_ARG_FIRST + 1);
-    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_SECOND), SECOND_ARG))
+      
+    else if (!((str1.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
       x_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
-    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_THIRD), THIRD_ARG))
+
+    else if (!((str1.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
       y_col = atoi(argv[loop_count] + LEN_ARG_THIRD + 1);
-    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FOURTH), FOURTH_ARG))
+
+    else if (!((str1.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
       alpha = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
-    else if (!strcmp(SubStr(argv[loop_count], LEN_ARG_FIFTH), FIFTH_ARG))
+
+    else if (!((str1.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
       beta = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
   }
  
