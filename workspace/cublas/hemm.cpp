@@ -6,15 +6,12 @@
 #define FIRST_ARG "x_row"    //for comparison with command line argument and initializing value of no. of rows for x
 #define SECOND_ARG "y_col"    //for comparison with command line argument and initializing value of no. of col for y
 #define THIRD_ARG "alpha_real"   //for comparison with command line argument and initializing value of scalar constant alpha
-#define FOURTH_ARG "alpha_imaginary"     //for comparison with command line argument and initializing value of scalar constant beta
-#define FIFTH_ARG "beta_real"
-#define SIXTH_ARG "beta_imaginary"
+#define FOURTH_ARG "beta_real"     //for comparison with command line argument and initializing value of scalar constant beta
+
 #define LEN_ARG_FIRST 5      // defining length for   first cmd line argument for comparison
 #define LEN_ARG_SECOND 5     // defining length for  second cmd line argument for comparison
 #define LEN_ARG_THIRD 10      // defining length for  third cmd line argument  for comparison
-#define LEN_ARG_FOURTH 15     // defining length for  fourth cmd line argument for comparison
-#define LEN_ARG_FIFTH 9      // defining length for  fifth cmd line argument for comparison
-#define LEN_ARG_SIXTH 14
+#define LEN_ARG_FOURTH 9      // defining length for  fifth cmd line argument for comparison
 #define BEGIN 1              
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
@@ -48,14 +45,10 @@ int main (int argc, char **argv) {
     else if (!((str.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
       alpha_real = atof(argv[loop_count] + LEN_ARG_THIRD + 1);
 
-    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
-      alpha_imaginary = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
 
-    else if (!((str.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
-      beta_real = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
+    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
+      beta_real = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
     
-    else if (!((str.substr(BEGIN, LEN_ARG_SIXTH)).compare(SIXTH_ARG)))
-      beta_real = atof(argv[loop_count] + LEN_ARG_SIXTH + 1);
     
   }
   
@@ -63,6 +56,8 @@ int main (int argc, char **argv) {
   y_row = x_col;
   z_row = x_row;
   z_col = y_col;
+  alpha_imaginary =0.0f;
+  beta_imaginary = 0.0f;
   
   time_t clk_start, clk_end;
   // data preparation on the host
@@ -135,7 +130,7 @@ int main (int argc, char **argv) {
   printf ("b,c:\n");
   for (row = 0; row < z_row; row++) {
     for (col = 0; col < z_col; col++) {
-      std::cout << HostMatZ[index(row, col, z_row)].x << "+" << HostMatZ[index(row, col, z_row)].y << "*I "    ;
+      std::cout << HostMatZ[INDEX(row, col, z_row)].x << "+" << HostMatZ[INDEX(row, col, z_row)].y << "*I "    ;
     }
     std::cout << "\n";
   }
@@ -211,7 +206,7 @@ int main (int argc, char **argv) {
  printf ("c after Chemm :\n");
  for (row = 0; row < z_row; row++) {
    for (col = 0; col < z_col; col++) { // print c after Chemm
-     std::cout << HostMatZ[index(row, col, z_row)].x << "+" << HostMatZ[index(row, col, z_row)].y << "*I "    ;
+     std::cout << HostMatZ[INDEX(row, col, z_row)].x << "+" << HostMatZ[INDEX(row, col, z_row)].y << "*I "    ;
    }
    std::cout << "\n";
  }
@@ -251,8 +246,6 @@ int main (int argc, char **argv) {
   delete[] HostMatZ; // free host memory
   return EXIT_SUCCESS ;
 }
-  
-  
   
 // lower triangle of a:
 // 11+ 0*I
