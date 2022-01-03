@@ -127,7 +127,7 @@ int main (int argc, char **argv) {
     }
   }
  // print b(=c) row by row
-  printf ("b,c:\n");
+  std::cout << "b,c:\n";
   for (row = 0; row < z_row; row++) {
     for (col = 0; col < z_col; col++) {
       std::cout << HostMatZ[INDEX(row, col, z_row)].x << "+" << HostMatZ[INDEX(row, col, z_row)].y << "*I "    ;
