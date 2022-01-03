@@ -1,8 +1,8 @@
 #include <iostream>
-#include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
+#include <string>
 #include <time.h>
 
 #define FIRST_ARG "x_row"    //for comparison with command line argument and initializing value of no. of rows for x
