@@ -3,17 +3,12 @@
 #include "cublas.h"
 #include "cublas_v2.h"
 
-#define FIRST_ARG "x_row"    //for comparison with command line argument and initializing value of no. of rows for x
-#define SECOND_ARG "x_col"   //for comparison with command line argument and initializing value of no. of col for x
-#define THIRD_ARG "y_col"    //for comparison with command line argument and initializing value of no. of col for y
-#define FOURTH_ARG "alpha"   //for comparison with command line argument and initializing value of scalar constant alpha
-#define FIFTH_ARG "beta"     //for comparison with command line argument and initializing value of scalar constant beta
+
 #define LEN_ARG_FIRST 5      // defining length for   first cmd line argument for comparison
 #define LEN_ARG_SECOND 5     // defining length for  second cmd line argument for comparison
 #define LEN_ARG_THIRD 5      // defining length for  third cmd line argument  for comparison
 #define LEN_ARG_FOURTH 5     // defining length for  fourth cmd line argument for comparison
-#define LEN_ARG_FIFTH 4      // defining length for  fifth cmd line argument for comparison
-#define BEGIN 1              
+#define LEN_ARG_FIFTH 4      // defining length for  fifth cmd line argument for comparison           
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
@@ -46,19 +41,19 @@ int main (int argc, char **argv) {
   // reading cmd line arguments
   for (int loop_count = 1; loop_count < argc; loop_count++) {
            std::string str(argv[loop_count]);  
-    if (!((str.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
+    if (!((str.compare("-x_row")))
       x_row = atoi(argv[loop_count] + LEN_ARG_FIRST + 1);
       
-    else if (!((str.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
+    else if (!((str.compare("-x_col")))
       x_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
 
-    else if (!((str.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
+    else if (!((str.compare("-y_col")))
       y_col = atoi(argv[loop_count] + LEN_ARG_THIRD + 1);
 
-    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
+    else if (!((str.compare("-alpha")))
       alpha = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
 
-    else if (!((str.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
+    else if (!((str.compare("-beta")))
       beta = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
   }
  
