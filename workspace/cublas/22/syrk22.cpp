@@ -3,21 +3,12 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include <string>
-#include <time.h>
-
-#define FIRST_ARG "A_row"    //for comparison with command line argument and initializing value of no. of rows for x
-#define SECOND_ARG "A_col"   //for comparison with command line argument and initializing value of no. of col for x
-#define THIRD_ARG "alpha"   //for comparison with command line argument and initializing value of scalar constant alpha
-#define FOURTH_ARG "beta"     //for comparison with command line argument and initializing value of scalar constant beta
-#define LEN_ARG_FIRST 5      // defining length for   first cmd line argument for comparison
-#define LEN_ARG_SECOND 5     // defining length for  second cmd line argument for comparison
-#define LEN_ARG_THIRD 5      // defining length for  third cmd line argument  for comparison
-#define LEN_ARG_FOURTH 4     // defining length for  fourth cmd line argument for comparison
-#define BEGIN 1              
+#include <time.h>              
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
+#define RANDOM (rand() % 10000 * 1.00) / 100
 
-void PrintMatrix(float* Matrix, int matriA_col, int matriA_row) {
+void PrintMatrix(float* Matrix, int matriA_row, int matriA_col) {
   int row, col;
   for (row = 0; row < matriA_row; row++) {
     std::cout << "\n";
@@ -31,22 +22,30 @@ void PrintMatrix(float* Matrix, int matriA_col, int matriA_row) {
 int main (int argc, char **argv) {
   int A_row, A_col, B_row, B_col;
   float alpha, beta;
-  for (int loop_count = 0; loop_count < argc; loop_count++) {
-    std::cout << argv[loop_count] << std::endl;
+  
+  std::cout << argv[0] << std::endl;
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::cout << argv[loop_count] << " ";
+    if(loop_count + 1 < argc)
+      std::cout << argv[loop_count + 1] << std::endl;
+  }
+  std::cout << std::endl;
+  //for reading command line arguements
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::string cmd_argument(argv[loop_count]);  
+    if (!(cmd_argument.compare("-A_row")))
+      A_row = atoi(argv[loop_count + 1]);
+      
+    else if (!(cmd_argument.compare("-A_column")))
+      A_col = atoi(argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-alpha")))
+      alpha = atof(argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-beta")))
+      beta = atof(argv[loop_count + 1]);
   }
   
-  for (int loop_count = 1; loop_count < argc; loop_count++) {
-    int len = sizeof(argv[loop_count]);
-    std::string str(argv[loop_count]);
-    if (!((str.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
-      A_row = atoi(argv[loop_count] + 6);
-    else if (!((str.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
-      A_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
-    else if (!((str.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
-      alpha = atof(argv[loop_count] + LEN_ARG_THIRD + 1);
-    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
-      beta = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
-  }
   
   B_row = A_row;
   B_col = A_row;
@@ -104,8 +103,8 @@ int main (int argc, char **argv) {
     }                                               // 15 ,21 ,27 ,33
   }                                                 // 16 ,22 ,28 ,34
 
-  std::cout << "\nMatriz X:";
-  PrintMatrix(HostMatA, A_col, A_row);
+  std::cout << "\nMatriz A:";
+  PrintMatrix(HostMatA, A_row, A_col);
   
   // on the device
   float * DeviceMatA; // d_a - a on the device
@@ -114,13 +113,13 @@ int main (int argc, char **argv) {
   
   cudaStatus = cudaMalloc((void **)& DeviceMatA, A_row * A_col * sizeof (*HostMatA)); // device
   if(cudaStatus != cudaSuccess) {
-    std::cout << " The device memory allocation failed for X\n";
+    std::cout << " The device memory allocation failed for A\n";
     return EXIT_FAILURE;
   }
   // memory alloc for a
   cudaStatus = cudaMalloc((void **)& DeviceMatB, B_row * B_col * sizeof (*HostMatB)); // device
   if(cudaStatus != cudaSuccess) {
-    std::cout << " The device memory allocation failed for Y\n";
+    std::cout << " The device memory allocation failed for B\n";
     return EXIT_FAILURE;
   }
   // memory alloc for c
@@ -132,12 +131,12 @@ int main (int argc, char **argv) {
   // copy matrices from the host to the device
   status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA), HostMatA, A_row, DeviceMatA, A_row); //a -> d_a
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying matrix X from host to device failed \n");
+    fprintf (stderr, "Copying matrix A from host to device failed \n");
     return EXIT_FAILURE;
   } 
   status = cublasSetMatrix (B_row, B_col, sizeof (*HostMatB), HostMatA, B_row, DeviceMatB, B_row); //c -> d_c
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying matrix Y from host to device failed \n");
+    fprintf (stderr, "Copying matrix B from host to device failed \n");
     return EXIT_FAILURE;
   }
   
@@ -179,14 +178,14 @@ int main (int argc, char **argv) {
         "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
   
   
-  cudaStatus = cudaFree (DeviceMatX); // free device memory
+  cudaStatus = cudaFree (DeviceMatA); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for X" << std::endl;
+    std::cout << " The device memory deallocation failed for A" << std::endl;
     return EXIT_FAILURE;   
   }
-  cudaStatus = cudaFree (DeviceMatY); // free device memory
+  cudaStatus = cudaFree (DeviceMatB); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for Y" << std::endl;
+    std::cout << " The device memory deallocation failed for B" << std::endl;
     return EXIT_FAILURE;   
   }
   
