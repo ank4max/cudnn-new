@@ -115,8 +115,8 @@ int main (int argc, char **argv) {
   ind =11; // b,c:
   for(col = 0; col < y_col; col++) {           // 11 ,17 ,23 ,29 ,35
     for(row = 0; row < y_row; row++) {                      // 12 ,18 ,24 ,30 ,36
-      HostMatY[INDEX(row, col, y_row)].x=( float )ind;            // 13 ,19 ,25 ,31 ,37
-      HostMatY[INDEX(i,j,y_row)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
+      HostMatY[INDEX(row, col, y_row)].x = (float)ind;            // 13 ,19 ,25 ,31 ,37
+      HostMatY[INDEX(row, col, y_row)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
                    
       ind ++;
     }
@@ -151,13 +151,13 @@ int main (int argc, char **argv) {
   }
   
   // device memory alloc for a
-  cudaStatus = cudaMalloc ((void **)& DeviceMatY , n * m * sizeof (cuComplex));
+  cudaStatus = cudaMalloc ((void **)& DeviceMatY , y_row * y_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
     std::cout << " The device memory allocation failed for Y\n";
     return EXIT_FAILURE;
   }
   // device memory alloc for b
-  cudaStatus = cudaMalloc ((void **)& DeviceMatZ, n * m * sizeof (cuComplex));
+  cudaStatus = cudaMalloc ((void **)& DeviceMatZ, z_row * z_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
     std::cout << " The device memory allocation failed for Z\n";
     return EXIT_FAILURE;
@@ -171,55 +171,55 @@ int main (int argc, char **argv) {
   }
   
   // copy matrices from the host to the device
-  status = cublasSetMatrix (m, m, sizeof (*HostMatX) , HostMatX, m, DeviceMatX, m); //a -> d_a
+  status = cublasSetMatrix (x_row, x_col, sizeof (*HostMatX) , HostMatX, x_row, DeviceMatX, x_row); //a -> d_a
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix X from host to device failed \n");
     return EXIT_FAILURE;
   }
-  status = cublasSetMatrix (m, n, sizeof (*HostMatY) , HostMatY, m, DeviceMatY, m); //b -> d_b
+  status = cublasSetMatrix (y_row, y_col, sizeof (*HostMatY) , HostMatY, y_row, DeviceMatY, y_row); //b -> d_b
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix Y from host to device failed \n");
     return EXIT_FAILURE;
   }
-  status = cublasSetMatrix (m, n, sizeof (*HostMatZ) , HostMatZ, m, DeviceMatZ, m); //c -> d_c
+  status = cublasSetMatrix (z_row, z_col, sizeof (*HostMatZ) , HostMatZ, z_row, DeviceMatZ, z_row); //c -> d_c
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix Z from host to device failed \n");
     return EXIT_FAILURE;
   }
-  cuComplex al ={1.0f ,0.0f}; // al =1
-  cuComplex bet ={1.0f ,0.0f}; // bet =1
+  cuComplex alpha ={alpha_real, alpha_imaginary}; // al =1
+  cuComplex beta ={beta_real, beta_imaginary}; // bet =1
   // Hermitian matrix - matrix multiplication :
   // d_c =al*d_a *d_b +bet *d_c ;
   // d_a - mxm hermitian matrix ; d_b ,d_c - mxn - general matices ;
   // al ,bet - scalars
   
-  start = clock();
+  clk_start = clock();
   status = cublasChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-  m, n, &al, DeviceMatX, m, DeviceMatY, m, &bet, DeviceMatZ, m);
+  x_row, y_col, &alpha, DeviceMatX, x_row, DeviceMatY, y_row, &beta, DeviceMatZ, z_row);
   
-  end = clock();
+  clk_end = clock();
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
   }
   
-  status = cublasGetMatrix (m, n, sizeof (*HostMatZ), DeviceMatZ, m, HostMatZ, m); // d_c -> c
+  status = cublasGetMatrix (z_row, z_col, sizeof (*HostMatZ), DeviceMatZ, z_row, HostMatZ, z_row); // d_c -> c
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix Z from device to host failed\n");
     return EXIT_FAILURE;
   }
  printf ("c after Chemm :\n");
-for (i=0;i<m;i ++){
-for (j=0;j<n;j ++){ // print c after Chemm
-std::cout << HostMatZ[index(i,j,m)].x << "+" << HostMatZ[index(i,j,m)].y << "*I "    ;;
-}
-std::cout << "\n";
-}
+ for (row = 0; row < z_row; row++) {
+   for (col = 0; col < z_col; col++) { // print c after Chemm
+     std::cout << HostMatZ[index(row, col, z_row)].x << "+" << HostMatZ[index(row, col, z_row)].y << "*I "    ;
+   }
+   std::cout << "\n";
+ }
   
   
   // printing latency and throughput of the function
-  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
-        "\nThroughput: " << (1e-9 * 2) / (end - start) << "\n\n";
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
   
 
   cudaStatus = cudaFree (DeviceMatX); // free device memory
@@ -246,9 +246,9 @@ std::cout << "\n";
     return EXIT_FAILURE;
   } 
   
-  free (HostMatX); // free host memory
-  free (HostMatY); // free host memory
-  free (HostMatZ); // free host memory
+  delete[] HostMatX; // free host memory
+  delete[] HostMatY; // free host memory
+  delete[] HostMatZ; // free host memory
   return EXIT_SUCCESS ;
 }
   
