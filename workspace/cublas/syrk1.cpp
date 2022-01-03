@@ -35,7 +35,7 @@ int main (int argc, char **argv) {
     std::cout << argv[loop_count] << std::endl;
   }
   
-  for (int loop_count = 1; loop_count < agrc; loop_count++) {
+  for (int loop_count = 1; loop_count < argc; loop_count++) {
     int len = sizeof(argv[loop_count]);
     std::string str(argv[loop_count]);
     if (!((str.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
@@ -54,7 +54,7 @@ int main (int argc, char **argv) {
   cudaError_t cudaStatus ; 
   cublasStatus_t status ; 
   cublasHandle_t handle ; 
-  clock_t start, end;
+  clock_t clk_start, clk_end;
   int i,j; // i-row index , j- column index
   
   float *HostMatX;                   // nxk matrix a on the host
@@ -97,7 +97,7 @@ int main (int argc, char **argv) {
   ind =11; // a:
   for(j = 0; j < x_col; j++) {                          // 11 ,17 ,23 ,29
     for(i = 0; i < x_row; i++) {                        // 12 ,18 ,24 ,30
-      HostMatX[index(i, j, x_row)] = (float)ind;        // 13 ,19 ,25 ,31
+      HostMatX[INDEX(i, j, x_row)] = (float)ind;        // 13 ,19 ,25 ,31
       ind ++;                                       // 14 ,20 ,26 ,32
     }                                               // 15 ,21 ,27 ,33
   }                                                 // 16 ,22 ,28 ,34
@@ -219,6 +219,3 @@ int main (int argc, char **argv) {
 // 2034 2131 2227 2322
 // 2115 2216 2316 2415 2513
 // 2196 2301 2405 2508 2610 2711
-
-
-
