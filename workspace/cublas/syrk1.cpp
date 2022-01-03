@@ -17,12 +17,12 @@
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
-void PrintMat(float* PrintMatrix, int col, int row) {
-  int i, j;
-  for (i = 0; i < row; i++) {
+void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
+  int row, col;
+  for (row = 0; row < matrix_row; row++) {
     std::cout << "\n";
-    for (j = 0; j < col; j++) {
-      std::cout << PrintMatrix[INDEX(i, j, row)] << " ";
+    for (col = 0; col < matrix_col; col++) {
+      std::cout << Matrix[INDEX(row, col, matrix_row)] << " ";
     }
   }
   std::cout << "\n";
@@ -55,7 +55,7 @@ int main (int argc, char **argv) {
   cublasStatus_t status ; 
   cublasHandle_t handle ; 
   clock_t clk_start, clk_end;
-  int i,j; // i-row index , j- column index
+  int row, col; // i-row index , j- column index
   
   float *HostMatX;                   // nxk matrix a on the host
   float *HostMatY;                   // nxn matrix c on the host
@@ -74,16 +74,16 @@ int main (int argc, char **argv) {
   // define the lower triangle of an nxn symmetric matrix c
   // column by column
   int ind =11; // c:
-  for(j = 0; j < y_col; j++) {                                  // 11
-    for(i = 0; i < y_row; i++) {                                // 12 ,17
-      if(i >= j) {                                           // 13 ,18 ,22
-        HostMatY[INDEX(i, j, y_row)] = (float)ind ++;              // 14 ,19 ,23 ,26
+  for(col = 0; col < y_col; col++) {                                  // 11
+    for(row = 0; row < y_row; row++) {                                // 12 ,17
+      if(row >= col) {                                           // 13 ,18 ,22
+        HostMatY[INDEX(row, col, y_row)] = (float)ind ++;              // 14 ,19 ,23 ,26
       }                                                     // 15 ,20 ,24 ,27 ,29
     }                                                      // 16 ,21 ,25 ,28 ,30 ,31
   }
   
   // print the lower triangle of c row by row
-  printf (" lower triangle of c:\n");
+  std::cout <<" lower triangle of Y:\n";
   for(i = 0; i < y_row; i++) {
     for(j = 0; j < y_col; j++) {
       if(i >= j) {
@@ -95,9 +95,9 @@ int main (int argc, char **argv) {
   
   // define an nxk matrix a column by column
   ind =11; // a:
-  for(j = 0; j < x_col; j++) {                          // 11 ,17 ,23 ,29
-    for(i = 0; i < x_row; i++) {                        // 12 ,18 ,24 ,30
-      HostMatX[INDEX(i, j, x_row)] = (float)ind;        // 13 ,19 ,25 ,31
+  for(col = 0; col < x_col; col++) {                          // 11 ,17 ,23 ,29
+    for(row = 0; row < x_row; row++) {                        // 12 ,18 ,24 ,30
+      HostMatX[INDEX(row, col, x_row)] = (float)ind;        // 13 ,19 ,25 ,31
       ind ++;                                       // 14 ,20 ,26 ,32
     }                                               // 15 ,21 ,27 ,33
   }                                                 // 16 ,22 ,28 ,34
@@ -162,14 +162,14 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-  printf (" lower triangle of updated c after Ssyrk :\n");
+  std::cout<<" lower triangle of updated c after Ssyrk :\n";
   for(i = 0; i < y_row; i++) {
     for(j = 0; j < y_col; j++) {
       if(i >=j) {  // print the lower triangle
         std::cout << HostMatY[INDEX(i, j, y_row)] << " " ;  // of c after Ssyrk
       }
     }
-    printf ("\n");
+    std::cout <<"\n";
   }
   
   // printing latency and throughput of the function
