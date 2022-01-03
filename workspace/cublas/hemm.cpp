@@ -3,26 +3,77 @@
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
 # include <string>
-#define index(i ,j , ld ) ((( j )*( ld ))+( i ))
+#define FIRST_ARG "x_row"    //for comparison with command line argument and initializing value of no. of rows for x
+#define SECOND_ARG "y_col"    //for comparison with command line argument and initializing value of no. of col for y
+#define THIRD_ARG "alpha_real"   //for comparison with command line argument and initializing value of scalar constant alpha
+#define FOURTH_ARG "alpha_imaginary"     //for comparison with command line argument and initializing value of scalar constant beta
+#define FIFTH_ARG "beta_real"
+#define SIXTH_ARG "beta_imaginary"
+#define LEN_ARG_FIRST 5      // defining length for   first cmd line argument for comparison
+#define LEN_ARG_SECOND 5     // defining length for  second cmd line argument for comparison
+#define LEN_ARG_THIRD 10      // defining length for  third cmd line argument  for comparison
+#define LEN_ARG_FOURTH 15     // defining length for  fourth cmd line argument for comparison
+#define LEN_ARG_FIFTH 9      // defining length for  fifth cmd line argument for comparison
+#define LEN_ARG_SIXTH 14
+#define BEGIN 1              
+#define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
+#define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
-#define m 6 // a - mxm matrix
-#define n 5 // b,c - mxn matrices
-int main ( void ) {
+int main (int argc, char **argv) {
+  
+  
+  
   
   cudaError_t cudaStatus ; // cudaMalloc status
   cublasStatus_t status ; // CUBLAS functions status
   cublasHandle_t handle ; // CUBLAS context
-  int i,j; // i-row index , j-col. ind.
-  time_t start, end;
+  int row, col; // i-row index , j-col. ind.
+  int x_row, x_col, y_row, y_col, z_row, z_col;
+  float alpha_real, alpha_imaginary, beta_real, beta_imaginary;
+
+  std::cout << std::endl;
+  for (int loop_count = 0; loop_count < argc; loop_count++) {
+    std::cout << argv[loop_count] << std::endl;
+  }
+  
+  // reading cmd line arguments
+  for (int loop_count = 1; loop_count < argc; loop_count++) {
+           std::string str(argv[loop_count]);  
+    if (!((str.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
+      x_row = atoi(argv[loop_count] + LEN_ARG_FIRST + 1);
+      
+    else if (!((str.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
+      y_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
+
+    else if (!((str.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
+      alpha_real = atof(argv[loop_count] + LEN_ARG_THIRD + 1);
+
+    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
+      alpha_imaginary = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
+
+    else if (!((str.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
+      beta_real = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
+    
+    else if (!((str.substr(BEGIN, LEN_ARG_SIXTH)).compare(SIXTH_ARG)))
+      beta_real = atof(argv[loop_count] + LEN_ARG_SIXTH + 1);
+    
+  }
+  
+  x_col = x_row;
+  y_row = x_col;
+  z_row = x_row;
+  z_col = y_col;
+  
+  time_t clk_start, clk_end;
   // data preparation on the host
   cuComplex *HostMatX; // mxm complex matrix a on the host
   cuComplex *HostMatY; // mxn complex matrix b on the host
   cuComplex *HostMatZ; // mxn complex matrix c on the host
-  HostMatX = (cuComplex *) malloc (m * m * sizeof (cuComplex)); // host memory
-  // alloc for a
-  HostMatY = (cuComplex *) malloc (m * n * sizeof (cuComplex)); // host memory
+  HostMatX = new cuComplex[x_row * x_col]; // host memory
+  // alloc for x
+  HostMatY = new cuComplex[y_row * col]; // host memory
   // alloc for b
-  HostMatZ = (cuComplex *) malloc (m * n * sizeof (cuComplex)); // host memory
+  HostMatZ = new cuComplex[z_row * z_col]; // host memory
   // alloc for c
   
   if (HostMatX == 0) {
@@ -42,49 +93,58 @@ int main ( void ) {
   // define the lower triangle of an mxm Hermitian matrix a in
   // lower mode column by column
   int ind =11; // a:
-  for (j = 0; j < m; j++) {                 // 11
-    for (i = 0; i < m; i++) {                                   // 12 ,17
-      if(i >=j) {                                        // 13 ,18 ,22
-        HostMatX[index(i, j, m)].x = (float)ind ++;                   // 14 ,19 ,23 ,26
-        HostMatX[index(i, j, m)].y = 0.0f;                       // 15 ,20 ,24 ,27 ,29
+  for (col = 0; col < x_col; col++) {                 // 11
+    for (row = 0; row < x_row; row++) {                                   // 12 ,17
+      if(row >= col) {                                        // 13 ,18 ,22
+        HostMatX[INDEX(row, col, x_row)].x = (float)ind ++;                   // 14 ,19 ,23 ,26
+        HostMatX[INDEX(row, col, x_row)].y = 0.0f;                       // 15 ,20 ,24 ,27 ,29
       }                                                           // 16 ,21 ,25 ,28 ,30 ,31
     }
   }
   // print the lower triangle of a row by row
-  printf (" lower triangle of a:\n");
-  for (i = 0; i < m; i++){
-    for (j = 0; j < m; j++) {
-      if(i >=j) {
-        std::cout << HostMatX[index(i,j,m)].x << "+" << HostMatX[index(i,j,m)].y << "*I "    ;                              
+  std::cout << " lower triangle of X :\n" ;
+  for (row = 0; row < x_row; row++){
+    for (col = 0; col < x_col; col++) {
+      if(row >= col) {
+        std::cout << HostMatX[INDEX(row, col, x_row)].x << "+" << HostMatX[INDEX(row, col, x_row)].y << "*I "    ;                              
       }
     }
   std::cout << "\n";
   }
   // define mxn matrices b,c column by column
   ind =11; // b,c:
-  for(j = 0; j < n; j++) {           // 11 ,17 ,23 ,29 ,35
-    for(i = 0; i < m; i++) {                      // 12 ,18 ,24 ,30 ,36
-      HostMatY[index(i,j,m)].x=( float )ind;            // 13 ,19 ,25 ,31 ,37
-      HostMatY[index(i,j,m)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
-      HostMatZ[index(i,j,m)].x=( float )ind;              // 15 ,21 ,27 ,33 ,39
-      HostMatZ[index(i,j,m)].y =0.0f;             // 16 ,22 ,28 ,34 ,40
+  for(col = 0; col < y_col; col++) {           // 11 ,17 ,23 ,29 ,35
+    for(row = 0; row < y_row; row++) {                      // 12 ,18 ,24 ,30 ,36
+      HostMatY[INDEX(row, col, y_row)].x=( float )ind;            // 13 ,19 ,25 ,31 ,37
+      HostMatY[INDEX(i,j,y_row)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
+                   
       ind ++;
     }
   }
-  // print b(=c) row by row
-printf ("b,c:\n");
-for (i=0;i<m;i ++){
-for (j=0;j<n;j ++){
-std::cout << HostMatY[index(i,j,m)].x << "+" << HostMatY[index(i,j,m)].y << "*I "    ;
-}
-std::cout << "\n";
-}
+  
+  // define mxn matrices Z column by column
+  ind =11; 
+  for(col = 0; col < z_col; col++) {           
+    for(row = 0; row < z_row; row++) {                      
+      HostMatZ[INDEX(row, col, z_row)].x = (float)ind;              
+      HostMatZ[INDEX(row, col, z_row)].y = 0.0f;             
+      ind ++;
+    }
+  }
+ // print b(=c) row by row
+  printf ("b,c:\n");
+  for (row = 0; row < z_row; row++) {
+    for (col = 0; col < z_col; col++) {
+      std::cout << HostMatZ[index(row, col, z_row)].x << "+" << HostMatZ[index(row, col, z_row)].y << "*I "    ;
+    }
+    std::cout << "\n";
+  }
 
   // on the device
   cuComplex * DeviceMatX; // d_a - a on the device
   cuComplex * DeviceMatY; // d_b - b on the device
   cuComplex * DeviceMatZ; // d_c - c on the device
-  cudaStatus = cudaMalloc ((void **)& DeviceMatX , m * m * sizeof (cuComplex));
+  cudaStatus = cudaMalloc ((void **)& DeviceMatX , x_row * x_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
     std::cout << " The device memory allocation failed for X\n";
     return EXIT_FAILURE;
