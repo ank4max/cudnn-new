@@ -17,7 +17,7 @@
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))   // for getting index values matrices
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
-void PrintMatrix(float* Matrix, int matrix_row, int matrix_col) {
+void PrintMatrix(float* Matrix, int matrix_col, int matrix_row) {
   int row, col;
   for (row = 0; row < matrix_row; row++) {
     std::cout << "\n";
@@ -49,7 +49,9 @@ int main (int argc, char **argv) {
   }
   
   y_row = x_row;
-  y_col = y_row;
+  y_col = x_row;
+
+  
   
   cudaError_t cudaStatus ; 
   cublasStatus_t status ; 
@@ -84,10 +86,10 @@ int main (int argc, char **argv) {
   
   // print the lower triangle of c row by row
   std::cout <<" lower triangle of Y:\n";
-  for(i = 0; i < y_row; i++) {
-    for(j = 0; j < y_col; j++) {
-      if(i >= j) {
-        std::cout << HostMatY[INDEX(i, j, y_row)] << " ";
+  for(row = 0; row < y_row; row++) {
+    for(col = 0; col < y_col; col++) {
+      if(row >= col) {
+        std::cout << HostMatY[INDEX(row, col, y_row)] << " ";
       }
     }
     std::cout << "\n";
@@ -103,7 +105,7 @@ int main (int argc, char **argv) {
   }                                                 // 16 ,22 ,28 ,34
 
   std::cout << "\nMatriz X:";
-  PrintMat(HostMatX, x_col, x_row);
+  PrintMatrix(HostMatX, x_col, x_row);
   
   // on the device
   float * DeviceMatX; // d_a - a on the device
@@ -163,10 +165,10 @@ int main (int argc, char **argv) {
   }
   
   std::cout<<" lower triangle of updated c after Ssyrk :\n";
-  for(i = 0; i < y_row; i++) {
-    for(j = 0; j < y_col; j++) {
-      if(i >=j) {  // print the lower triangle
-        std::cout << HostMatY[INDEX(i, j, y_row)] << " " ;  // of c after Ssyrk
+  for(row = 0; row < y_row; row++) {
+    for(col = 0; col < y_col; col++) {
+      if(row >= col) {  // print the lower triangle
+        std::cout << HostMatY[INDEX(row, col, y_row)] << " " ;  // of c after Ssyrk
       }
     }
     std::cout <<"\n";
@@ -197,6 +199,28 @@ int main (int argc, char **argv) {
   delete[] HostMatY; // free host memory
   return EXIT_SUCCESS ;
 }
+
+// lower triangle of c:
+// 11
+// 12 17
+// 13 18 22
+// 14 19 23 26
+// 15 20 24 27 29
+// 16 21 25 28 30 31
+// a:
+// 11 17 23 29
+// 12 18 24 30
+// 13 19 25 31
+// 14 20 26 32
+// 15 21 27 33
+// 16 22 28 34
+// lower triangle of updated c after Ssyrk : c=al*a*a^T+bet *c
+// 1791
+// 1872 1961
+// 1953 2046 2138
+// 2034 2131 2227 2322
+// 2115 2216 2316 2415 2513
+// 2196 2301 2405 2508 2610 2711
 
 // lower triangle of c:
 // 11
