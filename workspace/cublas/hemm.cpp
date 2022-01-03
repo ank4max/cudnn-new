@@ -2,6 +2,7 @@
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
+# include <string>
 #define index(i ,j , ld ) ((( j )*( ld ))+( i ))
 
 #define m 6 // a - mxm matrix
@@ -54,11 +55,10 @@ int main ( void ) {
   for (i = 0; i < m; i++){
     for (j = 0; j < m; j++) {
       if(i >=j) {
-        printf (" %5.0f +%2.0f*I",HostMatX[index(i,j,m)].x,
-        HostMatX[index(i,j,m)].y);
+        std::cout << HostMatX[index(i,j,m)].x << "+" << HostMatX[index(i,j,m)].y << "*I "    ;                              
       }
     }
-  printf ("\n");
+  std::cout << "\n";
   }
   // define mxn matrices b,c column by column
   ind =11; // b,c:
@@ -75,10 +75,9 @@ int main ( void ) {
 printf ("b,c:\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){
-printf (" %5.0f +%2.0f*I",HostMatY[index(i,j,m)].x,
-HostMatY[index(i,j,m)].y);
+std::cout << HostMatY[index(i,j,m)].x << "+" << HostMatY[index(i,j,m)].y << "*I "    ;
 }
-printf ("\n");
+std::cout << "\n";
 }
 
   // on the device
@@ -152,10 +151,9 @@ printf ("\n");
  printf ("c after Chemm :\n");
 for (i=0;i<m;i ++){
 for (j=0;j<n;j ++){ // print c after Chemm
-printf (" %5.0f +%1.0f*I",HostMatZ[index(i,j,m)].x,
-HostMatZ[index(i,j,m)].y);
+std::cout << HostMatZ[index(i,j,m)].x << "+" << HostMatZ[index(i,j,m)].y << "*I "    ;;
 }
-printf ("\n");
+std::cout << "\n";
 }
   
   
