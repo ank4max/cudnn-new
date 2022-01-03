@@ -45,20 +45,20 @@ int main (int argc, char **argv) {
 
   // reading cmd line arguments
   for (int loop_count = 1; loop_count < argc; loop_count++) {
-           std::string str1(argv[loop_count]);  
-    if (!((str1.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
+           std::string str(argv[loop_count]);  
+    if (!((str.substr(BEGIN, LEN_ARG_FIRST)).compare(FIRST_ARG)))
       x_row = atoi(argv[loop_count] + LEN_ARG_FIRST + 1);
       
-    else if (!((str1.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
+    else if (!((str.substr(BEGIN, LEN_ARG_SECOND)).compare(SECOND_ARG)))
       x_col = atoi(argv[loop_count] + LEN_ARG_SECOND + 1);
 
-    else if (!((str1.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
+    else if (!((str.substr(BEGIN, LEN_ARG_THIRD)).compare(THIRD_ARG)))
       y_col = atoi(argv[loop_count] + LEN_ARG_THIRD + 1);
 
-    else if (!((str1.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
+    else if (!((str.substr(BEGIN, LEN_ARG_FOURTH)).compare(FOURTH_ARG)))
       alpha = atof(argv[loop_count] + LEN_ARG_FOURTH + 1);
 
-    else if (!((str1.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
+    else if (!((str.substr(BEGIN, LEN_ARG_FIFTH)).compare(FIFTH_ARG)))
       beta = atof(argv[loop_count] + LEN_ARG_FIFTH + 1);
   }
  
