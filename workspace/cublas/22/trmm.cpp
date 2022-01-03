@@ -54,7 +54,7 @@ int main (int argc, char **argv) {
       z_col = y_col;
     }
     else if (!((str.substr(BEGIN, THIRD_ARG_LEN)).compare(THIRD_ARG))) {
-      alpha = atoi(argv[loop_count] + len_arg_3 + 1);
+      alpha = atoi(argv[loop_count] + THIRD_ARG_LEN + 1);
     }
   }
   
@@ -173,7 +173,7 @@ int main (int argc, char **argv) {
   PrintMatrix(HostMatZ, z_row, z_col);
 
   // printing latency and throughput of the function
-  std::cout << "\nLatency: " <<  ((double)(end - start)) / double(CLOCKS_PER_SEC) <<
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
 
   // free device memory
