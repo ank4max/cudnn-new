@@ -186,7 +186,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-  std::cout << "\nMatriz Z after Symm operation is:\n";
+  std::cout << "\nMatriz Z after Gemm operation is:\n";
   PrintMatrix(HostMatZ, z_row, z_col);
   
   // printing latency and throughput of the function
