@@ -51,7 +51,7 @@ int main (int argc, char **argv) {
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
-  alpha_imaginary =0.0f;
+  alpha_imaginary = 0.0f;
   beta_imaginary = 0.0f;
   
   cudaError_t cudaStatus; // cudaMalloc status
@@ -88,12 +88,12 @@ int main (int argc, char **argv) {
   // define the lower triangle of an mxm Hermitian matrix a in
   // lower mode column by column
    // a:
-  for (col = 0; col < A_col; col++) {                 // 11
-    for (row = 0; row < A_row; row++) {                                   // 12 ,17
-      if(row >= col) {                                        // 13 ,18 ,22
-        HostMatA[INDEX(row, col, A_row)].x = RANDOM;                   // 14 ,19 ,23 ,26
-        HostMatA[INDEX(row, col, A_row)].y = 0.0f;                       // 15 ,20 ,24 ,27 ,29
-      }                                                           // 16 ,21 ,25 ,28 ,30 ,31
+  for (col = 0; col < A_col; col++) {                 
+    for (row = 0; row < A_row; row++) {                                   
+      if(row >= col) {                                        
+        HostMatA[INDEX(row, col, A_row)].x = RANDOM;                   
+        HostMatA[INDEX(row, col, A_row)].y = 0.0f;                       
+      }                                                           
     }
   }
   // print the lower triangle of a row by row
@@ -106,12 +106,12 @@ int main (int argc, char **argv) {
     }
   std::cout << "\n";
   }
-  // define mxn matrices b,c column by column
+  // define mxn matrices b column by column
   // b,c:
-  for(col = 0; col < B_col; col++) {           // 11 ,17 ,23 ,29 ,35
-    for(row = 0; row < B_row; row++) {                      // 12 ,18 ,24 ,30 ,36
-      HostMatB[INDEX(row, col, B_row)].x = RANDOM;            // 13 ,19 ,25 ,31 ,37
-      HostMatB[INDEX(row, col, B_row)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
+  for(col = 0; col < B_col; col++) {           
+    for(row = 0; row < B_row; row++) {                      
+      HostMatB[INDEX(row, col, B_row)].x = RANDOM;            
+      HostMatB[INDEX(row, col, B_row)].y = 0.0f;                   
                    
     }
   }
@@ -128,6 +128,7 @@ int main (int argc, char **argv) {
   std::cout << "B:\n";
   PrintMatrix(HostMatB, B_row, B_col);
   
+  // print c row by row
   std::cout << "C:\n";
   PrintMatrix(HostMatC, C_row, C_col);
  
@@ -207,14 +208,14 @@ int main (int argc, char **argv) {
   std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
         "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
   
-
-  cudaStatus = cudaFree (DeviceMatA); // free device memory
+  //free device memory
+  cudaStatus = cudaFree (DeviceMatA); 
   if( cudaStatus != cudaSuccess) {
     std::cout << " the device memory deallocation failed for A\n";
     return EXIT_FAILURE;   
   }
   
-  cudaStatus = cudaFree (DeviceMatB); // free device memory
+  cudaStatus = cudaFree (DeviceMatB); 
   if( cudaStatus != cudaSuccess) {
     std::cout << " the device memory deallocation failed for B\n";
     return EXIT_FAILURE;   
@@ -235,5 +236,5 @@ int main (int argc, char **argv) {
   delete[] HostMatA; // free host memory
   delete[] HostMatB; // free host memory
   delete[] HostMatC; // free host memory
-  return EXIT_SUCCESS ;
+  return EXIT_SUCCESS;
 }
