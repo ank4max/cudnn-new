@@ -58,6 +58,7 @@ int main (int argc, char **argv) {
   cublasStatus_t status; // CUBLAS functions status
   cublasHandle_t handle; // CUBLAS context
   int row, col;
+  clock_t clk_start, clk_end;
   
   // data preparation on the host
   cuComplex *HostMatA; // nxk complex matrix a on the host
@@ -66,6 +67,15 @@ int main (int argc, char **argv) {
   // alloc for a
   HostMatC = new cuComplex[C_row * C_col]; // host memory
   // alloc for c
+  
+  if (HostMatA == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrix A)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatC == 0) {
+    fprintf (stderr, "!!!! host memory allocation error (matrix C)\n");
+    return EXIT_FAILURE;
+  }
   
   // define the lower triangle of an nxn Hermitian matrix c in
   // lower mode column by column ;
@@ -78,54 +88,77 @@ int main (int argc, char **argv) {
       }                                                           // 16 ,21 ,25 ,28 ,30 ,31 
     }
   }
-// print the lower triangle of c row by row
-printf (" lower triangle of c:\n");
-for (i=0;i<n;i ++){
-for (j=0;j<n;j ++){
-if(i >=j)
-printf (" %5.0 f +%2.0 f*I",c[ IDX2C (i,j,n)].x,
-c[ IDX2C (i,j,n)].y);
-}
-printf ("\n");
-}
-// define an nxk matrix a column by column
-ind =11; // a:
-for(j=0;j<k;j ++){ // 11 ,17 ,23 ,29 ,35
-for(i=0;i<n;i ++){ // 12 ,18 ,24 ,30 ,36
-a[ IDX2C (i,j,n)].x=( float )ind; // 13 ,19 ,25 ,31 ,37
-a[ IDX2C (i,j,n)].y =0.0 f; // 14 ,20 ,26 ,32 ,38
-ind ++; // 15 ,21 ,27 ,33 ,39
-} // 16 ,22 ,28 ,34 ,40
-}
-// print a row by row
-printf ("a:\n");
-for (i=0;i<n;i ++){
-for (j=0;j<k;j ++){
-printf (" %5.0 f +%2.0 f*I",a[ IDX2C (i,j,n)].x,
-a[ IDX2C (i,j,n)].y);
-}
-printf ("\n");
+  // print the lower triangle of c row by row
+  std::cout << "lower triangle of C :\n";
+  for (row = 0; row < C_row; row++){
+    for (col = 0; col < C_col; col++) {
+      if(row >= col) {
+        std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I ";                              
+      }
+    }
+  std::cout << "\n";
+  }
+  
+  //defining a matrix A
+  for(col = 0; col < A_col; col++) {           
+    for(row = 0; row < A_row; row++) {                      
+      HostMatA[INDEX(row, col, A_row)].x = RANDOM;            
+      HostMatA[INDEX(row, col, A_row)].y = 0.0f;                   
+                   
+    }
+  }
+  // print A row by row
+  std::cout << "A:\n";
+  PrintMatrix(HostMatA, A_row, A_col);
+  
+  
+
 
   
-// on the device
-cuComplex * d_a; // d_a - a on the device
-cuComplex * d_c; // d_c - c on the device
-cudaStat = cudaMalloc (( void **)& d_a ,n*k* sizeof ( cuComplex ));
-// device memory alloc for a
-cudaStat = cudaMalloc (( void **)& d_c ,n*n* sizeof ( cuComplex ));
-// device memory alloc for c
-stat = cublasCreate (& handle ); // initialize CUBLAS context
-// copy matrices from the host to the device
-stat = cublasSetMatrix (n,k, sizeof (*a) ,a,n,d_a ,n); //a -> d_a
-stat = cublasSetMatrix (n,n, sizeof (*c) ,c,n,d_c ,n); //c -> d_c
-float al =1.0 f; // al =1
-float bet =1.0 f; // bet =1
-// rank -k update of a Hermitian matrix :
-// d_c =al*d_a *d_a ^H +bet *d_c
-// d_c - nxn , Hermitian matrix ; d_a - nxk general matrix ;
-// al ,bet - scalars
-stat=cublasCherk(handle,CUBLAS FILL MODE LOWER,CUBLAS OP N,
-n,k,&al,d a,n,&bet,d c,n);
+  // on the device
+  cuComplex *DeviceMatA;  // d_a - a on the device
+  cuComplex *DeviceMatC;  // d_c - c on the device
+  
+  cudaStatus = cudaMalloc ((void **)& DeviceMatA , A_row * A_col * sizeof (cuComplex));
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for A\n";
+    return EXIT_FAILURE;
+  }
+  
+  cudaStatus = cudaMalloc ((void **)& DeviceMatC, C_row * C_col * sizeof (cuComplex));
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for C\n";
+    return EXIT_FAILURE;
+  }
+  // device memory alloc for c
+  
+  status = cublasCreate (& handle);  // initialize CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    return EXIT_FAILURE;
+  } 
+  
+   // copy matrices from the host to the device
+  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA) , HostMatA, A_row, DeviceMatA, A_row); //a -> d_a
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix A from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC) , HostMatC, C_row, DeviceMatC, C_row); //c -> d_c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix C from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  
+
+  float al =1.0 f; // al =1
+  float bet =1.0 f; // bet =1
+  // rank -k update of a Hermitian matrix :
+  // d_c =al*d_a *d_a ^H +bet *d_c
+  // d_c - nxn , Hermitian matrix ; d_a - nxk general matrix ;
+  // al ,bet - scalars
+  status = cublasCherk(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
+  n,k,&al,d a,n,&bet,d c,n);
 stat = cublasGetMatrix (n,n, sizeof (*c) ,d_c ,n,c,n); // d_c -> c
 printf (" lower triangle of c after Cherk :\n");
 for (i=0;i<n;i ++){
