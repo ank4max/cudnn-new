@@ -101,7 +101,7 @@ int main (int argc, char **argv) {
   for (row = 0; row < A_row; row++){
     for (col = 0; col < A_col; col++) {
       if(row >= col) {
-        std::cout << HostMatA[INDEX(row, col, A_row)].x << "+" << HostMatA[INDEX(row, col, A_row)].y << "*I "    ;                              
+        std::cout << HostMatA[INDEX(row, col, A_row)].x << "+" << HostMatA[INDEX(row, col, A_row)].y << "*I ";                              
       }
     }
   std::cout << "\n";
