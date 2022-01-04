@@ -7,12 +7,19 @@
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 #define RANDOM (rand() % 10000 * 1.00) / 100
 
+void PrintMatrix(cuComplex* Matrix, int matriA_row, int matriA_col) {
+  int row, col;
+  for (row = 0; row < matriA_row; row++) {
+    for (col = 0; col < matriA_col; col++) {
+      std::cout << Matrix[INDEX(row, col, matriA_row)].x << "+" << Matrix[INDEX(row, col, matriA_row)].y << "*I "    ;
+    }
+    std::cout << "\n";
+  }
+}
+  
+
 int main (int argc, char **argv) {
   
-  cudaError_t cudaStatus ; // cudaMalloc status
-  cublasStatus_t status ; // CUBLAS functions status
-  cublasHandle_t handle ; // CUBLAS context
-  int row, col; // i-row index , j-col. ind.
   int A_row, A_col, B_row, B_col, C_row, C_col ;
   float alpha_real, alpha_imaginary, beta_real, beta_imaginary;
 
@@ -47,45 +54,50 @@ int main (int argc, char **argv) {
   alpha_imaginary =0.0f;
   beta_imaginary = 0.0f;
   
+  cudaError_t cudaStatus; // cudaMalloc status
+  cublasStatus_t status; // CUBLAS functions status
+  cublasHandle_t handle; // CUBLAS context
+  int row, col; // i-row index , j-col. ind.
+  
   time_t clk_start, clk_end;
   // data preparation on the host
   cuComplex *HostMatA; // mxm complex matrix a on the host
   cuComplex *HostMatB; // mxn complex matrix b on the host
   cuComplex *HostMatC; // mxn complex matrix c on the host
   HostMatA = new cuComplex[A_row * A_col]; // host memory
-  // alloc for x
+  // alloc for A
   HostMatB = new cuComplex[B_row * B_col]; // host memory
-  // alloc for b
+  // alloc for B
   HostMatC = new cuComplex[C_row * C_col]; // host memory
-  // alloc for c
+  // alloc for C
   
   if (HostMatA == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrix X)\n");
+    fprintf (stderr, "!!!! host memory allocation error (matrix A)\n");
     return EXIT_FAILURE;
   }
   if (HostMatB == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrix Y)\n");
+    fprintf (stderr, "!!!! host memory allocation error (matrix B)\n");
     return EXIT_FAILURE;
   }
   if (HostMatC == 0) {
-    fprintf (stderr, "!!!! host memory allocation error (matrix Z)\n");
+    fprintf (stderr, "!!!! host memory allocation error (matrix C)\n");
     return EXIT_FAILURE;
   }
   
   
   // define the lower triangle of an mxm Hermitian matrix a in
   // lower mode column by column
-  int ind =11; // a:
+   // a:
   for (col = 0; col < A_col; col++) {                 // 11
     for (row = 0; row < A_row; row++) {                                   // 12 ,17
       if(row >= col) {                                        // 13 ,18 ,22
-        HostMatA[INDEX(row, col, A_row)].x = (float)ind ++;                   // 14 ,19 ,23 ,26
+        HostMatA[INDEX(row, col, A_row)].x = RANDOM;                   // 14 ,19 ,23 ,26
         HostMatA[INDEX(row, col, A_row)].y = 0.0f;                       // 15 ,20 ,24 ,27 ,29
       }                                                           // 16 ,21 ,25 ,28 ,30 ,31
     }
   }
   // print the lower triangle of a row by row
-  std::cout << " lower triangle of X :\n" ;
+  std::cout << "lower triangle of A :\n";
   for (row = 0; row < A_row; row++){
     for (col = 0; col < A_col; col++) {
       if(row >= col) {
@@ -95,54 +107,50 @@ int main (int argc, char **argv) {
   std::cout << "\n";
   }
   // define mxn matrices b,c column by column
-  ind =11; // b,c:
+  // b,c:
   for(col = 0; col < B_col; col++) {           // 11 ,17 ,23 ,29 ,35
     for(row = 0; row < B_row; row++) {                      // 12 ,18 ,24 ,30 ,36
-      HostMatB[INDEX(row, col, B_row)].x = (float)ind;            // 13 ,19 ,25 ,31 ,37
+      HostMatB[INDEX(row, col, B_row)].x = RANDOM;            // 13 ,19 ,25 ,31 ,37
       HostMatB[INDEX(row, col, B_row)].y =0.0f;                   // 14 ,20 ,26 ,32 ,38
                    
-      ind ++;
     }
   }
   
-  // define mxn matrices c column by column
-  ind =11; 
+  // define mxn matrices c column by column 
   for(col = 0; col < C_col; col++) {           
     for(row = 0; row < C_row; row++) {                      
-      HostMatC[INDEX(row, col, C_row)].x = (float)ind;              
-      HostMatC[INDEX(row, col, C_row)].y = 0.0f;             
-      ind ++;
+      HostMatC[INDEX(row, col, C_row)].x = RANDOM;              
+      HostMatC[INDEX(row, col, C_row)].y = 0.0f;                 
     }
   }
- // print b(=c) row by row
-  std::cout << "b,c:\n";
-  for (row = 0; row < C_row; row++) {
-    for (col = 0; col < C_col; col++) {
-      std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I "    ;
-    }
-    std::cout << "\n";
-  }
-
+  
+  // print B row by row
+  std::cout << "B:\n";
+  PrintMatrix(HostMatB, B_row, B_col);
+  
+  std::cout << "C:\n";
+  PrintMatrix(HostMatC, C_row, C_col);
+ 
   // on the device
   cuComplex * DeviceMatA; // d_a - a on the device
   cuComplex * DeviceMatB; // d_b - b on the device
   cuComplex * DeviceMatC; // d_c - c on the device
   cudaStatus = cudaMalloc ((void **)& DeviceMatA , A_row * A_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
-    std::cout << " The device memory allocation failed for X\n";
+    std::cout << " The device memory allocation failed for A\n";
     return EXIT_FAILURE;
   }
   
   // device memory alloc for a
   cudaStatus = cudaMalloc ((void **)& DeviceMatB , B_row * B_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
-    std::cout << " The device memory allocation failed for Y\n";
+    std::cout << " The device memory allocation failed for B\n";
     return EXIT_FAILURE;
   }
   // device memory alloc for b
   cudaStatus = cudaMalloc ((void **)& DeviceMatC, C_row * C_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
-    std::cout << " The device memory allocation failed for Z\n";
+    std::cout << " The device memory allocation failed for C\n";
     return EXIT_FAILURE;
   }
   // device memory alloc for c
@@ -192,12 +200,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
  printf ("c after Chemm :\n");
- for (row = 0; row < C_row; row++) {
-   for (col = 0; col < C_col; col++) { // print c after Chemm
-     std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I "    ;
-   }
-   std::cout << "\n";
- }
+ PrintMatrix(HostMatC, C_row, C_col);
   
   
   // printing latency and throughput of the function
@@ -207,19 +210,19 @@ int main (int argc, char **argv) {
 
   cudaStatus = cudaFree (DeviceMatA); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for X\n";
+    std::cout << " the device memory deallocation failed for A\n";
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatB); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for Y\n";
+    std::cout << " the device memory deallocation failed for B\n";
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatC); // free device memory
   if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for Z\n";
+    std::cout << " the device memory deallocation failed for C\n";
     return EXIT_FAILURE;   
   }
   
