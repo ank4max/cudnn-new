@@ -156,11 +156,82 @@ int main(int argc, char **argv) {
     fprintf (stderr, "!!!! Failed to initialize handle\n");
     return EXIT_FAILURE;
   }
+  // copy matrices from the host to the device
+  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA) , HostMatA, A_row, DeviceMatA, A_row); //a -> d_a
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix A from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix (B_row, B_col, sizeof (*HostMatB) , HostMatB, B_row, DeviceMatB, B_row); //b -> d_b
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix B from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC) , HostMatC, C_row, DeviceMatC, C_row); //c -> d_c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix C from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+  clk_start = clock();
+
+  // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
+  // d_A -mxk matrix , d_B -kxn matrix , d_C -mxn matrix
+  // alpha, beta - scalars
   
+  status = cublasCgemm3m(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row, 
+                        B_col, A_col, &alpha, DeviceMatA, A_row,
+                        DeviceMatB, B_row, &beta, DeviceMatC, C_row);
   
+  clk_end = clock();
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! kernel execution error\n");
+    return EXIT_FAILURE;
+  }
   
+  status = cublasGetMatrix (C_row, C_col, sizeof (*HostMatC),
+                            DeviceMatC, C_row, HostMatC, C_row); // copy d_z -> C
+           
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
+    return EXIT_FAILURE;
+  }
   
+  std::cout << "\nMatriz C after Gemm3mm operation is:\n";
+  PrintMatrix(HostMatC, C_row, C_col);
   
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+               "\nThroughput: " <<THROUGHPUT(clk_start, clk_end) << "\n\n";
+  cudaStatus = cudaFree (DeviceMatA); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for A" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatB); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for B" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatC); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for C" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  status  = cublasDestroy (handle); // destroy CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    return EXIT_FAILURE;
+  }
+
+  delete[] HostMatA; // free host memory
+  delete[] HostMatB; // free host memory
+  delete[] HostMatC; // free host memory
+
+  return EXIT_SUCCESS ;
+}
   
   
 
