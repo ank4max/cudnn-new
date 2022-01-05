@@ -1,21 +1,4 @@
-/**
- * Copyright 2021-2022 Enflame. All Rights Reserved.
- *
- * @file    cublas_syrk_test.cpp
- * @brief   Benchmarking Tests for cublas syrk API
- *          Symmetric rank-k update
- *          Matrix A: n x k matrix
- *          Matrix C: n x n Symmetric matrix stored in lower or upper mode
- *          alpha, beta: scalars used for multiplication
- *          Operation: C = alpha * A * A^T + beta * C
- *
- * @author  ashish(CAI)
- * @date    2022-01-04
- * @version V1.0
- * @par     Copyright (c)
- *          Enflame Tech Company.
- * @par     History:
- */
+
 
 #include <iostream>
 #include <string.h>
