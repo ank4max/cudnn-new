@@ -153,6 +153,7 @@ int main (int argc, char **argv) {
   clk_end = clock();
 
   if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << status << std::endl;
     fprintf (stderr, "!!!! kernel execution error\n");
     return EXIT_FAILURE;
   }
