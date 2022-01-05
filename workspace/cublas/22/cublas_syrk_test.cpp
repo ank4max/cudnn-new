@@ -54,6 +54,8 @@ int main (int argc, char **argv) {
   
   C_row = A_row;
   C_col = A_row;
+ 
+ std::cout<<alpha<<"\n"<<beta<<"\n";
 
   cudaError_t cudaStatus; 
   cublasStatus_t status; 
