@@ -44,16 +44,18 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-B_column")))
       B_col = atoi(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-alpha")))
-      alpha = atof(argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-alpha_real")))
+      alpha_real = atof(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-beta")))
-      beta = atof(argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-beta_real")))
+      beta_real = atof(argv[loop_count + 1]);
   }
   
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
+  alpha_imaginary = 0.0f;
+  beta_imaginary = 0.0f;
   
   cudaError_t cudaStatus; 
   cublasStatus_t status; 
