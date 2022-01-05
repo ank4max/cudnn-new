@@ -1,23 +1,4 @@
-/**
- * Copyright 2021-2022 Enflame. All Rights Reserved.
- *
- * @file    cublas_gemm_test.cpp
- * @brief   Benchmarking Tests for cublas gemm API
- *          Matrix-Matrix multiplication
- *          Matrix A: m x m Matrix
- *          Matrix B: m x n Matrix
- *          Matrix C: m x n Matrix
- *          alpha: scalar used for multiplication
- *          beta: scalar used for multiplication
- *          C = alpha * A * B + beta * C
- *
- * @author  ashish(CAI)
- * @date    2022-01-03
- * @version V1.0
- * @par     Copyright (c)
- *          Enflame Tech Company.
- * @par     History:
- */
+
 
 #include <iostream>
 #include <string>
