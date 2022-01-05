@@ -1,5 +1,6 @@
 // nvcc 038 ssyrk .c -lcublas
 # include <stdio.h>
+#include<iostream>
 # include <stdlib.h>
 # include <cuda_runtime.h>
 # include "cublas_v2.h"
@@ -13,8 +14,8 @@ cublasHandle_t handle ; // CUBLAS context
 int i,j; // i-row index , j- column index
 float * a; // nxk matrix a on the host
 float * c; // nxn matrix c on the host
-a=(float *) malloc (n*k* sizeof (float )); // host memoryfor a
-c=(float *) malloc (n*n* sizeof (float )); // host memoryfor c
+a= new float[n*k]; // host memoryfor a
+c= new float[n*n]; // host memoryfor c
 // define the lower triangle of an nxn symmetric matrix c
 // column by column
 int ind =11; // c:
@@ -81,8 +82,8 @@ printf ("\n");
 cudaFree (d_a ); //free device memory
 cudaFree (d_c ); //free device memory
 cublasDestroy ( handle ); // destroy CUBLAS context
-free (a); //free host memory
-free (c); //free host memory
+delete[] a; //free host memory
+delete[] c; //free host memory
 
 return EXIT_SUCCESS ;
 }
