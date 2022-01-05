@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string.h>
-#include "cublas.h"
+#include <cuda_runtime.h>
 #include "cublas_v2.h"
 
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))   // for getting index values matrices
