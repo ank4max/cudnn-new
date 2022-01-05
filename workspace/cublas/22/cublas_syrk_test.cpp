@@ -204,6 +204,7 @@ int main (int argc, char **argv) {
 // lower triangle of c:
 // 11
 // 12 17
+//n
 // 13 18 22
 // 14 19 23 26
 // 15 20 24 27 29
