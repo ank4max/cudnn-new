@@ -1,12 +1,10 @@
-
-
 #include <iostream>
 #include <string.h>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))   // for getting index values matrices
-#define RANDOM (rand() % 10000 * 1.00) / 100    // for getting random values
+#define RANDOM (rand() % 1000 * 1.00) / 100    // for getting random values
 
 /* 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
  finally dividing it by latency to get required throughput */
@@ -53,7 +51,7 @@ int main (int argc, char **argv) {
   }
   
   C_row = A_row;
-  C_col = A_row;
+  C_col = C_row;
  
  std::cout<<alpha<<"\n"<<beta<<"\n";
 
