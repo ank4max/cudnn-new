@@ -84,7 +84,7 @@ int main (int argc, char **argv) {
     for(row = 0; row < C_row; row++) {            // 12 ,17
       if(row >= col) {                                  // 13 ,18 ,22
         HostMatC[INDEX(row, col, C_row)].x = ( float )ind ++;     // 14 ,19 ,23 ,26
-        HostMatC[INDEX(row, col, C_row)].y = 0.0 f;                 // 15 ,20 ,24 ,27 ,29
+        HostMatC[INDEX(row, col, C_row)].y = 0.0f;                 // 15 ,20 ,24 ,27 ,29
       }                                                           // 16 ,21 ,25 ,28 ,30 ,31 
     }
   }
@@ -174,7 +174,7 @@ int main (int argc, char **argv) {
   std::cout << " lower triangle of c after Cherk :\n";
   for(row = 0; row < C_row; row++) {
     for(col = 0; col < C_col; col ++) { // print c after Cherk
-      if(row >= col)
+      if(row >= col) {
         std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I ";
       }
     }
