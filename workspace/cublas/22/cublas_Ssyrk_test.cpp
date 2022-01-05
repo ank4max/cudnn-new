@@ -118,7 +118,7 @@ int main ( void ){
   // al ,bet - scalars
   clk_start = clock();
   status = cublasSsyrk(handle,CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-  A_row, A_col, &alpha, DeviceMatA, A_row, &beta, DeviceMatC, C_row);
+  n, k, &alpha, DeviceMatA, A_row, &beta, DeviceMatC, C_row);
   
   clk_end = clock();
   
