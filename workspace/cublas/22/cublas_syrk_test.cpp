@@ -148,7 +148,7 @@ int main (int argc, char **argv) {
   // d_C - symmetric n x n matrix, d_A - general n x k matrix ;
   // alpha, beta - scalars  
   status = cublasSsyrk(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-                       A_row, A_col, &alpha, DeviceMatA, A_row, &beta, DeviceMatC, C_row);
+  A_row, A_col, &alpha, DeviceMatA, A_row, &beta, DeviceMatC, C_row);
   
   clk_end = clock();
 
