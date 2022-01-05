@@ -100,11 +100,12 @@ int main (int argc, char **argv) {
   }
   
   //defining a matrix A
+  ind =11; 
   for(col = 0; col < A_col; col++) {           
     for(row = 0; row < A_row; row++) {                      
-      HostMatA[INDEX(row, col, A_row)].x = RANDOM;            
+      HostMatA[INDEX(row, col, A_row)].x = ( float )ind;            
       HostMatA[INDEX(row, col, A_row)].y = 0.0f;                   
-                   
+      ind++;         
     }
   }
   // print A row by row
@@ -150,31 +151,65 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-
-  float al =1.0 f; // al =1
-  float bet =1.0 f; // bet =1
   // rank -k update of a Hermitian matrix :
   // d_c =al*d_a *d_a ^H +bet *d_c
   // d_c - nxn , Hermitian matrix ; d_a - nxk general matrix ;
   // al ,bet - scalars
+  
+  clk_start = clock();
   status = cublasCherk(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-  n,k,&al,d a,n,&bet,d c,n);
-stat = cublasGetMatrix (n,n, sizeof (*c) ,d_c ,n,c,n); // d_c -> c
-printf (" lower triangle of c after Cherk :\n");
-for (i=0;i<n;i ++){
-for (j=0;j<n;j ++){ // print c after Cherk
-if(i >=j)
-printf (" %5.0 f +%1.0 f*I",c[ IDX2C (i,j,n)].x,
-c[ IDX2C (i,j,n)].y);
-}
-printf ("\n");
-}
-cudaFree (d_a ); // free device memory
-cudaFree (d_c ); // free device memory
-cublasDestroy ( handle ); // destroy CUBLAS context
-free (a); // free host memory
-free (c); // free host memory
-return EXIT_SUCCESS ;
+  A_row, A_col, &alpha, DeviceMatA, A_row, &beta, DeviceMatC, C_row);
+  
+  clk_end = clock();
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! kernel execution error\n");
+    return EXIT_FAILURE;
+  }
+  status = cublasGetMatrix (C_row, C_col, sizeof (*HostMatC), DeviceMatC, C_row, HostMatC, C_row); // d_c -> c
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Copying matrix C from device to host failed\n");
+    return EXIT_FAILURE;
+  }
+  
+  std::cout << " lower triangle of c after Cherk :\n";
+  for(row = 0; row < C_row; row++) {
+    for(col = 0; col < C_col; col ++) { // print c after Cherk
+      if(row >= col)
+        std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I ";
+      }
+    }
+    std::cout << "\n";
+  }
+  
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+        "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
+
+
+
+
+  //free device memory
+  cudaStatus = cudaFree (DeviceMatA); 
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " the device memory deallocation failed for A\n";
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatC); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " the device memory deallocation failed for C\n";
+    return EXIT_FAILURE;   
+  }
+  
+  status  = cublasDestroy (handle); // destroy CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    return EXIT_FAILURE;
+  } 
+  
+  delete[] HostMatA; // free host memory
+  delete[] HostMatC; // free host memory
+  return EXIT_SUCCESS ;
 }
 // lower triangle of c:
 // 11+ 0*I
