@@ -174,6 +174,9 @@ int main(int argc, char **argv) {
     fprintf (stderr, "Copying matrix C from host to device failed \n");
     return EXIT_FAILURE;
   }
+           
+  cuComplex alpha ={alpha_real, alpha_imaginary}; // al =1
+  cuComplex beta ={beta_real, beta_imaginary}; // bet =1
   clk_start = clock();
 
   // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
