@@ -136,7 +136,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   } 
 
-  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC), HostMatA, C_row, DeviceMatC, C_row); // C -> d_C
+  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC), HostMatC, C_row, DeviceMatC, C_row); // C -> d_C
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix C from host to device failed \n");
     return EXIT_FAILURE;
