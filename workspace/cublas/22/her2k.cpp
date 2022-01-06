@@ -12,8 +12,7 @@
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 
-# define n 6 // c - nxn matrix
-# define k 5
+
 
 
 void PrintMatrix(cuComplex* Matrix, int matriA_row, int matriA_col) {
