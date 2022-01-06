@@ -51,19 +51,22 @@ int main (int argc, char **argv) {
       beta = atof(argv[loop_count + 1]);
   }
   
+  //initializing values for matrix B and C
   B_row = A_row;
   B_col = A_col;
   C_row = A_row;
   C_col = A_row;
   
+  // creating cublas handle
   cudaError_t cudaStatus; 
   cublasStatus_t status; 
   cublasHandle_t handle; 
   clock_t clk_start, clk_end;
   int row, col;
   
+  // allocating memory for matrices on host
   float *HostMatA;
-  float *HostMatB
+  float *HostMatB;
   float *HostMatC;                     
   HostMatA = new float[A_row * A_col]; 
   HostMatB = new float[B_row * B_col];
@@ -84,7 +87,8 @@ int main (int argc, char **argv) {
   
   // define the lower triangle of an nxn symmetric matrix c in
   // lower mode column by column
-  int row, col;
+  // setting up values for matrix C
+  // using RANDOM macro to generate random numbers between 0 - 100
   for(col = 0; col < C_col; col++) {
     for(row = 0; row < C_row; row++) {
       if(row >= col) {
@@ -105,6 +109,8 @@ int main (int argc, char **argv) {
   }
   
   // define n x k matrix A column by column
+  // setting up values for matrix A
+  // using RANDOM macro to generate random numbers between 0 - 100
   for(col = 0; col < A_col; col++) {
     for(row = 0; row < A_row; row++) {
       HostMatA[INDEX(row, col, A_row)] = RANDOM;
@@ -112,18 +118,23 @@ int main (int argc, char **argv) {
   }
   
   // define n x k matrix B column by column
+  // setting up values for matrix B
+  // using RANDOM macro to generate random numbers between 0 - 100
   for(col = 0; col < B_col; col++) {
     for(row = 0; row < B_row; row++) {
       HostMatB[INDEX(row, col, B_row)] = RANDOM;
     }
   }
   
+ //printing Matrix A
   std::cout << "\nMatrix A:";
   PrintMatrix(HostMatA, A_row, A_col);
   
+  //Printing Matrix B
   std::cout << "\nMatrix B:";
   PrintMatrix(HostMatB, B_row, B_col);
   
+  // allocating memory for matrices on device using cudamalloc
   float * DeviceMatA;
   float * DeviceMatB;
   float * DeviceMatC;
@@ -152,7 +163,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-  // copy matrices from the host to the device
+  // setting the values of matrices on device
   status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA), HostMatA, A_row, DeviceMatA, A_row); // A -> d_A
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix A from host to device failed \n");
@@ -175,12 +186,13 @@ int main (int argc, char **argv) {
   // d_c =al *( d_a *d_b ^T+d_b *d_a ^T)+ bet *d_c
   // d_c - symmetric nxn matrix , d_a ,d_b - general nxk matrices
   // al ,bet - scalar
-  
+  // start variable to store time
   clk_start = clock();
   
   status = cublasSsyr2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
   A_row, A_col, &alpha, DeviceMatA, A_row, DeviceMatB, B_row, &beta, DeviceMatC, C_row);
   
+  // end variable to store time
   clk_end = clock();
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << status << std::endl;
@@ -188,12 +200,14 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
+  // getting the final output
   status = cublasGetMatrix(C_row, C_col, sizeof (*HostMatC), DeviceMatC, C_row, HostMatC, C_row); 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
     return EXIT_FAILURE;
   }
   
+  // Matrix output
   std::cout<<"\nLower triangle of updated C after syr2k :\n";
   for(row = 0; row < C_row; row++) {
     for(col = 0; col < C_col; col++) {
