@@ -85,7 +85,7 @@ int main (int argc, char **argv) {
   
   // define the lower triangle of an nxn Hermitian matrix c in
   // lower mode column by column
-  // // setting up values for matrix C
+  //  setting up values for matrix C
   // using RANDOM macro to generate random numbers between 0 - 100
   for (col = 0; col < C_col; col++) {                 
     for (row = 0; row < C_row; row++) {                                   
