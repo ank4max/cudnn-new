@@ -77,13 +77,12 @@ int main (int argc, char **argv) {
   
   // define the lower triangle of an nxn Hermitian matrix c in
   // lower mode column by column ;
-  int ind =11; // c:
-  for(col = 0; col < C_col; col++) {           // 11
-    for(row = 0; row < C_row; row++) {            // 12 ,17
-      if(row >= col) {                                  // 13 ,18 ,22
-        HostMatC[INDEX(row, col, C_row)].x = ( float )ind ++;     // 14 ,19 ,23 ,26
-        HostMatC[INDEX(row, col, C_row)].y = 0.0f;                 // 15 ,20 ,24 ,27 ,29
-      }                                                           // 16 ,21 ,25 ,28 ,30 ,31 
+  for(col = 0; col < C_col; col++) {           
+    for(row = 0; row < C_row; row++) {            
+      if(row >= col) {                                  
+        HostMatC[INDEX(row, col, C_row)].x = RANDOM;
+        HostMatC[INDEX(row, col, C_row)].y = 0.0f;                 
+      }                                                           
     }
   }
   // print the lower triangle of c row by row
@@ -97,28 +96,23 @@ int main (int argc, char **argv) {
   std::cout << "\n";
   }
   
-  //defining a matrix A
-  ind =11; 
+  //defining a matrix A 
   for(col = 0; col < A_col; col++) {           
     for(row = 0; row < A_row; row++) {                      
-      HostMatA[INDEX(row, col, A_row)].x = ( float )ind;            
-      HostMatA[INDEX(row, col, A_row)].y = 0.0f;                   
-      ind++;         
+      HostMatA[INDEX(row, col, A_row)].x = RANDOM;            
+      HostMatA[INDEX(row, col, A_row)].y = 0.0f;                            
     }
   }
   // print A row by row
   std::cout << "A:\n";
   PrintMatrix(HostMatA, A_row, A_col);
   
-  
-
-
-  
+ 
   // on the device
   cuComplex *DeviceMatA;  // d_a - a on the device
   cuComplex *DeviceMatC;  // d_c - c on the device
   
-  cudaStatus = cudaMalloc ((void **)& DeviceMatA , A_row * A_col * sizeof (cuComplex));
+  cudaStatus = cudaMalloc ((void **)& DeviceMatA, A_row * A_col * sizeof (cuComplex));
   if(cudaStatus != cudaSuccess) {
     std::cout << " The device memory allocation failed for A\n";
     return EXIT_FAILURE;
@@ -131,19 +125,19 @@ int main (int argc, char **argv) {
   }
   // device memory alloc for c
   
-  status = cublasCreate (& handle);  // initialize CUBLAS context
+  status = cublasCreate (&handle);  // initialize CUBLAS context
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Failed to initialize handle\n");
     return EXIT_FAILURE;
   } 
   
    // copy matrices from the host to the device
-  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA) , HostMatA, A_row, DeviceMatA, A_row); //a -> d_a
+  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA), HostMatA, A_row, DeviceMatA, A_row); //a -> d_a
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix A from host to device failed \n");
     return EXIT_FAILURE;
   }
-  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC) , HostMatC, C_row, DeviceMatC, C_row); //c -> d_c
+  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC), HostMatC, C_row, DeviceMatC, C_row); //c -> d_c
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix C from host to device failed \n");
     return EXIT_FAILURE;
@@ -169,7 +163,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
   
-  std::cout << " lower triangle of c after Cherk :\n";
+  std::cout << "Lower triangle of c after Cherk :\n";
   for(row = 0; row < C_row; row++) {
     for(col = 0; col < C_col; col ++) { // print c after Cherk
       if(row >= col) {
@@ -222,3 +216,11 @@ int main (int argc, char **argv) {
 // 13+ 0*I 19+ 0*I 25+ 0*I 31+ 0*I 37+ 0*I
 // 14+ 0*I 20+ 0*I 26+ 0*I 32+ 0*I 38+ 0*I
 // 15+ 0*I 21+ 0*I 27+ 0*I 33+ 0*I 39+ 0*I
+// 16+ 0*I 22+ 0*I 28+ 0*I 34+ 0*I 40+ 0*I
+// lower triangle of c after Cherk :
+// 3016+0* I
+// 3132+0* I 3257+0* I
+// 3248+0* I 3378+0* I 3507+0* I // c=a*a^H +c
+// 3364+0* I 3499+0* I 3633+0* I 3766+0* I
+// 3480+0* I 3620+0* I 3759+0* I 3897+0* I 4034+0* I
+// 3596+0* I 3741+0* I 3885+0* I 4028+0* I 4170+0* I 4311+0* I
