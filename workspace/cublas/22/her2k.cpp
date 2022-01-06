@@ -10,11 +10,11 @@
  finally dividing it by latency to get required throughput */
 
 
-void PrintMatrix(cuComplex* Matrix, int matriA_row, int matriA_col) {
+void PrintMatrix(cuComplex* Matrix, int matrix_row, int matrix_col) {
   int row, col;
-  for (row = 0; row < matriA_row; row++) {
-    for (col = 0; col < matriA_col; col++) {
-      std::cout << Matrix[INDEX(row, col, matriA_row)].x << "+" << Matrix[INDEX(row, col, matriA_row)].y << "*I ";
+  for (row = 0; row < matrix_row; row++) {
+    for (col = 0; col < matrix_col; col++) {
+      std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
     }
     std::cout << "\n";
   }
