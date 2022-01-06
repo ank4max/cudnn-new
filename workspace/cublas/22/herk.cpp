@@ -10,8 +10,6 @@
 
 
 
-# define n 6 // c - nxn matrix
-# define k 5 // a - nxk matrix
 
 void PrintMatrix(cuComplex* Matrix, int matriA_row, int matriA_col) {
   int row, col;
