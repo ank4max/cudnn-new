@@ -162,19 +162,19 @@ int main (int argc, char **argv) {
   }
 
   // setting the values of matrices on device
-  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA), HostMatA, A_row, DeviceMatA, A_row); // A -> d_A
+  status = cublasSetMatrix (A_row, A_col, sizeof (*HostMatA), HostMatA, A_row, DeviceMatA, A_row); 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix A from host to device failed \n");
     return EXIT_FAILURE;
   }
  
-  status = cublasSetMatrix (B_row, B_col, sizeof (*HostMatB), HostMatB, B_row, DeviceMatB, B_row); // A -> d_A
+  status = cublasSetMatrix (B_row, B_col, sizeof (*HostMatB), HostMatB, B_row, DeviceMatB, B_row); 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix B from host to device failed \n");
     return EXIT_FAILURE;
   }
   
-  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC), HostMatC, C_row, DeviceMatC, C_row); // C -> d_C
+  status = cublasSetMatrix (C_row, C_col, sizeof (*HostMatC), HostMatC, C_row, DeviceMatC, C_row); 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying matrix C from host to device failed \n");
     return EXIT_FAILURE;
