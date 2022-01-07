@@ -111,7 +111,7 @@ int main (int argc, char **argv) {
   }
   
   
-  / define  matrix A column by column
+  // define  matrix A column by column
   // setting up values for matrix A
   // using RANDOM macro to generate random numbers between 0 - 100
   for(col = 0; col < A_col; col++) {           
@@ -192,7 +192,7 @@ int main (int argc, char **argv) {
   clk_start = clock();
   
   status = cublasCherkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-   A_row, A_col, &alpha, DeviceMatA, A_row, DeviceMatB, B_row, &beta, DeviceMatC, C_row)
+   A_row, A_col, &alpha, DeviceMatA, A_row, DeviceMatB, B_row, &beta, DeviceMatC, C_row);
    
   // end variable to store time
   clk_end = clock();
