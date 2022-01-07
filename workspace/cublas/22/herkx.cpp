@@ -208,7 +208,7 @@ int main (int argc, char **argv) {
   
   // Matrix output
   // print the updated lower triangle of C row by row
-  std::cout << "\nLower triangle of c after Cherkx :\n";
+  std::cout << "\nLower triangle of C after Cherkx :\n";
   for (row = 0; row < C_row; row++) {
     for (col = 0; col < C_col; col++) { // print c after Cherkx
       if(row >= col) {
