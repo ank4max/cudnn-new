@@ -213,7 +213,7 @@ int main (int argc, char **argv) {
   // print the updated lower triangle of c row by row
   std::cout << "Lower triangle of c after Cherkx :\n";
   for (row = 0; row < C_row; row++) {
-    for (col = 0; col < C_col; col++) { // print c after Cher2k
+    for (col = 0; col < C_col; col++) { // print c after Cherkx
       if(row >= col) {
         std::cout << HostMatC[INDEX(row, col, C_row)].x << "+" << HostMatC[INDEX(row, col, C_row)].y << "*I ";
       }
