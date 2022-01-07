@@ -2,12 +2,15 @@
 #include <string>
 #include "cublas.h"
 #include "cublas_v2.h"
-#include <cuda_runtime.h>          
+#include <cuda_runtime.h> 
+
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values 
-#define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
+
 /* 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
  finally dividing it by latency to get required throughput */
+#define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
+
 
 
 void PrintMatrix(cuComplex* Matrix, int matrix_row, int matrix_col) {
@@ -43,6 +46,9 @@ int main (int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-alpha_real")))
       alpha_real = atof(argv[loop_count + 1]);
+   
+    else if (!(cmd_argument.compare("-alpha_imaginary")))
+      alpha_imaginary = atof(argv[loop_count + 1]);
     
     else if (!(cmd_argument.compare("beta")))
       beta = atof(argv[loop_count + 1]);
@@ -53,7 +59,6 @@ int main (int argc, char **argv) {
   B_col = A_col;
   C_row = A_row;
   C_col = A_row;
-  alpha_imaginary = 0.0f;
   
   // creating cublas handle
   cudaError_t cudaStatus; 
@@ -97,7 +102,7 @@ int main (int argc, char **argv) {
   }
   
   // print the lower triangle of C row by row
-  std::cout << "lower triangle of C :\n";
+  std::cout << "\nLower triangle of C :\n";
   for (row = 0; row < C_row; row++) {
     for (col = 0; col < C_col; col++) {
       if(row >= col) {
@@ -129,11 +134,11 @@ int main (int argc, char **argv) {
  
   //printing A Matrix
   // print A row by row
-  std::cout << "A:\n";
+  std::cout << "\nA:\n";
   PrintMatrix(HostMatA, A_row, A_col);
   
   // print B row by row
-  std::cout << "B:\n";
+  std::cout << "\nB:\n";
   PrintMatrix(HostMatB, B_row, B_col);
   
   // allocating memory for matrices on device using cudamalloc
@@ -182,7 +187,7 @@ int main (int argc, char **argv) {
     return EXIT_FAILURE;
   }
            
-  cuComplex alpha ={alpha_real, alpha_imaginary}; 
+  cuComplex alpha = {alpha_real, alpha_imaginary}; 
   // Hermitian rank -2k update :
   // d_c =al*d_a *d_b ^H+\ bar {al }* d_b *a^H + bet *d_c
   // d_c - nxn , hermitian matrix ; d_a ,d_b -nxk general matrices ;
@@ -209,7 +214,7 @@ int main (int argc, char **argv) {
   
   // Matrix output
   // print the updated lower triangle of c row by row
-  std::cout << "Lower triangle of c after Cher2k :\n";
+  std::cout << "\nLower triangle of C after Cher2k :\n";
   for (row = 0; row < C_row; row++) {
     for (col = 0; col < C_col; col++) { // print c after Cher2k
       if(row >= col) {
@@ -225,20 +230,20 @@ int main (int argc, char **argv) {
   
   //free device memory
   cudaStatus = cudaFree (DeviceMatA); 
-  if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for A\n";
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for A\n";
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatB); 
-  if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for B\n";
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for B\n";
     return EXIT_FAILURE;   
   }
   
   cudaStatus = cudaFree (DeviceMatC); 
-  if( cudaStatus != cudaSuccess) {
-    std::cout << " the device memory deallocation failed for C\n";
+  if(cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for C\n";
     return EXIT_FAILURE;   
   }
   
