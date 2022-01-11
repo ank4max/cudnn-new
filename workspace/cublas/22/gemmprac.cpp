@@ -178,7 +178,7 @@ int main (int argc, char **argv) {
                        CUBLAS_OP_N, CUBLAS_OP_N,
                        A_row, B_col, A_col,
                        &alpha,
-                       DeviceMatA, A_row,
+                       const float DeviceMatA, A_row,
                        DeviceMatB, B_row,
                        &beta,
                        DeviceMatC, C_row,
