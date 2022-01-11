@@ -2,6 +2,7 @@
 #include <string>
 #include "cublas.h"
 #include "cublas_v2.h"
+#include <cublasLt.h>
            
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values 
@@ -71,7 +72,7 @@ int main (int argc, char **argv) {
   HostMatB =   new int8_t [B_row * B_col]; // host memory for B
   HostMatC =  new int8_t [C_row * C_col]; // host memory for C
   
-   if (HostMatA == 0) {
+  if (HostMatA == 0) {
     fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
     return EXIT_FAILURE;
   }
@@ -153,9 +154,25 @@ int main (int argc, char **argv) {
   }
 	
   //copying values	
-  cudaMemcpy(DeviceMatA, HostMatA, A_row * A_col, cudaMemcpyHostToDevice);
-  cudaMemcpy(DeviceMatB, HostMatB, B_row * B_col, cudaMemcpyHostToDevice);
-  cudaMemcpy(DeviceMatC, HostMatC, C_row * C_col, cudaMemcpyHostToDevice);  
+  cudaStatus = cudaMemcpy(DeviceMatA, HostMatA, A_row * A_col, cudaMemcpyHostToDevice);
+  if (cudaStatus != cudaSuccess) {
+    fprintf (stderr, "Copying matrix A from host to device failed \n");
+    return EXIT_FAILURE;
+  }
+	
+  cudaStatus = cudaMemcpy(DeviceMatB, HostMatB, B_row * B_col, cudaMemcpyHostToDevice);
+  if (cudaStatus != cudaSuccess) {
+    fprintf (stderr, "Copying matrix B from host to device failed \n");
+    return EXIT_FAILURE;
+  }	
+	
+  cudaStatus = cudaMemcpy(DeviceMatC, HostMatC, C_row * C_col, cudaMemcpyHostToDevice); 
+  if (cudaStatus != cudaSuccess) {
+    fprintf (stderr, "Copying matrix C from host to device failed \n");
+    return EXIT_FAILURE;
+  }	
+	
+  
   
   cublasLtMatmulDesc_t operationDesc = NULL;
   cublasLtMatrixLayout_t Adesc = NULL, Bdesc = NULL, Cdesc = NULL;
@@ -181,16 +198,33 @@ int main (int argc, char **argv) {
   cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb));
 
   // create matrix descriptors, we are good with the details here so no need to set any extra attributes
-  cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_8I, A_col, A_row, A_col);
-  cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_8I, B_row, B_col, B_row);
-  cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_8I, C_row, C_col, C_row);
+  status = cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_8I, A_col, A_row, A_col);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Layout create error for A \n");
+    return EXIT_FAILURE;
+  }
+
+  status = cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_8I, B_row, B_col, B_row);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Layout create error for B \n");
+    return EXIT_FAILURE;
+  }
+  status = cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_8I, C_row, C_col, C_row);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "Layout create error for C \n");
+    return EXIT_FAILURE;
+  }
 
   cublasLtMatmulPreferenceCreate(&preference);
     
   cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
   //cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
 
-  cublasLtMatmulAlgoGetHeuristic(ltHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
+  status = cublasLtMatmulAlgoGetHeuristic(ltHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << "MatmulAlgoGetHeuristic API error \n";
+    return EXIT_FAILURE;
+  }
   std::cout<<"List of algos :"<<returnedResults<<std::endl;
 	
   clk_start = clock();  
