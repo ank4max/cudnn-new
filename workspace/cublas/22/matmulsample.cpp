@@ -1,273 +1,264 @@
 #include <iostream>
-#include <iomanip>
-#include <cublas_v2.h>
+#include <string>
+#include "cublas.h"
+#include "cublas_v2.h"
+           
+#define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
+#define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values 
 
-#include <cublasLt.h>
-#include <cstdio>
-#include <cfloat>
-#include <cuda_runtime.h>
-#include <curand.h>
-#include <iostream>
-#include <cassert>
-//Helper function to convert row major to column major
-#define IDX2C(i, j, ld) (((j) * (ld)) + (i))
+/* 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
+ finally dividing it by latency to get required throughput */
+#define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
-namespace helper{
-
-    template <typename D>
-    class my_data
-    {
-        
-        public:
-        int size_;
-        D* h_ptr_;
-        D* d_ptr_;
-        my_data()
-        {
-            h_ptr_ = NULL;
-            d_ptr_ = NULL;
-            size_ = 0;
-        }
-        ~my_data()
-        {
-            if (h_ptr_ != NULL)
-                delete[] h_ptr_;
-            if (d_ptr_ != NULL)
-                cudaFree(d_ptr_);
-        }
-        void init(int size, bool eye = false, int row = 1,int col = 1)
-        {
-
-            size_ = size * sizeof(D);
-            h_ptr_ = (D *)new D[size_];
-            d_ptr_ = NULL;
-            //int ctr=0;
-            for (int i = 0; i < size_; i++){
-                    if (typeid(D) == typeid(float)) {
-                        if (eye==false){
-                            h_ptr_[i] = .1f * rand() / (float)RAND_MAX;
-                        }
-                        else{
-                            int row_ = (int)i%row;
-                            int col_ = (int)i/row;
-                            if (row_==col_){
-                                h_ptr_[i] = 1.f;
-                            }
-                            else
-                                h_ptr_[i] = 0.f;
-                        }
-
-                        
-                        //h_ptr_[i] = 1.f;
-                    }
-                    else{
-                        if (eye==false){
-                            h_ptr_[i] = rand();
-                        //h_ptr_[i] = 1;
-                        }
-                        else{
-                            int row_ = (int)i%row;
-                            int col_ = (int)i/row;
-                            if (row_==col_){
-                                h_ptr_[i] = 1;
-                            }
-                            else
-                                h_ptr_[i] = 0;
-                        }
-                    }
-                        
-                    
-            }
-
-            //std::cout<<ctr<<std::endl;
-
-            
-        }
-    };
-
-void printMatrix(const float *matrix, const int ldm, const int n, bool is_t = false) {
-    for (int i = 0; i < ldm; i++) {
-        for (int j = 0; j < n; j++) {
-            if (is_t==false)
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << matrix[IDX2C(i, j, ldm)];
-            else
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << matrix[i*n+j];
-        }
-        std::cout << std::endl;
+void PrintMatrix(int8_t* Matrix, int matrix_row, int matrix_col) {
+  int row, col;
+  for (row = 0; row < matrix_row; row++) {
+    std::cout << "\n";
+    for (col = 0; col < matrix_col; col++) {
+      std::cout << unsigned(Matrix[INDEX(row, col, matrix_row)]) << " ";
     }
+  }
+  std::cout << "\n";
 }
 
-void printMatrix(const char *matrix, const int ldm, const int n, bool is_t = false) {
-    for (int i = 0; i < ldm; i++) {
-        for (int j = 0; j < n; j++) {
-            if (is_t==false)
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << (int)matrix[IDX2C(i, j, ldm)];
-            else
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << (int)matrix[i*n+j];
-        }
-        std::cout << std::endl;
-    }
-}
+int main (int argc, char **argv) {
+  
+  int A_row, A_col, B_row, B_col, C_row, C_col;
+  float alpha, beta;
 
-void printMatrix(const int *matrix, const int ldm, const int n, bool is_t = false) {
-    for (int i = 0; i < ldm; i++) {
-        for (int j = 0; j < n; j++) {
-            if (is_t==false)
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << matrix[IDX2C(i, j, ldm)];
-            else
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << matrix[i*n+j];
-        }
-        std::cout << std::endl;
-    }
-}
+  std::cout << "\n\n" << argv[0] << std::endl;
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::cout << argv[loop_count] << " ";
+    if(loop_count + 1 < argc)
+      std::cout << argv[loop_count + 1] << std::endl;
+  }
+  std::cout << std::endl;
 
-void printMatrix(const int8_t *matrix, const int ldm, const int n, bool is_t = false) {
-    for (int i = 0; i < ldm; i++) {
-        for (int j = 0; j < n; j++) {
-            if (is_t==false)
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << (int)matrix[IDX2C(i, j, ldm)];
-            else
-                std::cout << std::fixed << std::setw(8) << std::setprecision(4) << (int)matrix[i*n+j];
-        }
-        std::cout << std::endl;
-    }
-}
-}
-using namespace helper;
+  // reading cmd line arguments
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::string cmd_argument(argv[loop_count]);  
+    if (!(cmd_argument.compare("-A_row")))
+      A_row = atoi(argv[loop_count + 1]);
+      
+    else if (!(cmd_argument.compare("-A_column")))
+      A_col = atoi(argv[loop_count + 1]);
 
-inline void checkCublasStatus(cublasStatus_t status) {
-    if (status != CUBLAS_STATUS_SUCCESS) {
-        printf("cuBLAS API failed with status %d\n", status);
-        throw std::logic_error("cuBLAS API failed");
-    }
-}
+    else if (!(cmd_argument.compare("-B_column")))
+      B_col = atoi(argv[loop_count + 1]);
 
+    else if (!(cmd_argument.compare("-alpha")))
+      alpha = atof(argv[loop_count + 1]);
 
-int main()
-{
-    //indexing in c style
-    int M, N, K;
-    M = 16; //rows of weight matrix
-    N = 2; //batch size
-    K = 16; //column of weight matrix , rows of input matrix
-    // A = M x K
-    // B= K x N
-    // C = M x N
-    // These are standard math notations
+    else if (!(cmd_argument.compare("-beta")))
+      beta = atof(argv[loop_count + 1]);
+  }
+ 
+  B_row = A_col;
+  C_row = A_row;
+  C_col = B_col;
+  
+  cudaError_t cudaStatus; 
+  cublasStatus_t status; 
+  cublasHandle_t handle;
 
+  clock_t clk_start, clk_end;   
+ 
+  int8_t *HostMatA; // mxk matrix A on the host
+  int8_t *HostMatB; // kxn matrix B on the host
+  int8_t *HostMatC; // mxn matrix C on the host
+  
+  HostMatA =  new int8_t [A_row * A_col]; // host memory for A
+  HostMatB =   new int8_t [B_row * B_col]; // host memory for B
+  HostMatC =  new int8_t [C_row * C_col]; // host memory for C
+  
+   if (HostMatA == 0) {
+    fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatB == 0) {
+    fprintf (stderr, "!!!! Host memory allocation error (matrixB)\n");
+    return EXIT_FAILURE;
+  }
+  if (HostMatC == 0) {
+    fprintf (stderr, "!!!! Host memory allocation error (matrixC)\n");
+    return EXIT_FAILURE;
+  }
 
-    float alpha = 1;
-    float beta = 0;
+  int row, col;
+  
+  
+  int ind =11;
+  
+  
+  // define an mxk matrix A column by column
+  // using RANDOM macro to generate random numbers between 0 - 100
+  for (row = 0; row < A_row; row++) {                                              
+    for (col = 0; col < A_col; col++) {                                                   
+      HostMatA[INDEX(row, col, A_row)] =   ind++;                                    
+    }                                                                                    
+  }                                                                               
+                      ind=11;                                                         
+  // define a kxn matrix B column by column
+  // using RANDOM macro to generate random numbers between 0 - 100
+  for (row = 0; row < B_row; row++) {                                      
+    for (col = 0; col < B_col; col++) {                                                
+      HostMatB[INDEX(row, col, B_row)] = ind++;                                          
+    }                                                                         
+  }                                        
+  
+   ind=11; 
+   // define an mxn matrix C column by column
+  // using RANDOM macro to generate random numbers between 0 - 100
+  for (row = 0; row < C_row; row++) {                             
+    for (col = 0; col < C_col; col++) {                                        
+      HostMatC[INDEX(row, col, C_row)] = ind++;                 
+    }                                                                  
+  }
 
-	// We define our matrices and initialize them with random variables
-    my_data<int8_t> A, B;
-    my_data<int8_t> C;
+  
+  
+  // printing input matrices
+  std::cout << "\nMatrix A:\n";
+  PrintMatrix(HostMatA, A_row, A_col);
+  std::cout << "\nMatrix B:\n";
+  PrintMatrix(HostMatB, B_row, B_col);
+  std::cout << "\nMatrix C:\n";
+  PrintMatrix(HostMatC, C_row, C_col); 
+ 
+  void *workspace;
+  size_t workspaceSize = 1024 * 1024 * 8;
+  cudaMalloc(&workspace, workspaceSize);
+ 
+  // on the device
+  int8_t *DeviceMatA; // d_A - A on the device
+  int8_t *DeviceMatB; // d_B - B on the device
+  int8_t *DeviceMatC; // d_C - C on the device
 
-    A.init(M*K);
-    // Below A is initiazed in a cublas-trasnformed fashin aka regular cpp form 
-    // this means that memory is sequentially addresssed for both A and B
-    // A is stored in row major fashion now as it is transposed
-	// Use this initializer to make A identity matrix
-    //A.init(K * M,true,K,M); 
-    B.init(K*N);
-    C.init(M*N);
+  cudaStatus = cudaMalloc ((void **) &DeviceMatA , A_row * A_col * sizeof (*HostMatA));
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for A " << std::endl;
+    return EXIT_FAILURE;
+  }
 
-    cudaMalloc(&A.d_ptr_, A.size_);
-    cudaMalloc(&B.d_ptr_, B.size_);
-    cudaMalloc(&C.d_ptr_, C.size_);
+  cudaStatus = cudaMalloc ((void **) &DeviceMatB , B_row * B_col * sizeof (*HostMatB));
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for B " << std::endl;
+    return EXIT_FAILURE;
+  }
 
-    
-    cudaMemcpy(A.d_ptr_, A.h_ptr_, A.size_, cudaMemcpyHostToDevice);
-    cudaMemcpy(B.d_ptr_, B.h_ptr_, B.size_, cudaMemcpyHostToDevice);
-    cudaMemcpy(C.d_ptr_, C.h_ptr_, C.size_, cudaMemcpyHostToDevice);
-    
-    
-    
-    
-    std::cout << "A(T):" << std::endl;
-    // A matrix was transposed to need to take that into account when printing
-    printMatrix(A.h_ptr_, M, K, true);
+  cudaStatus = cudaMalloc ((void **) &DeviceMatC , C_row * C_col * sizeof (*HostMatC));
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory allocation failed for C " << std::endl;
+    return EXIT_FAILURE;   
+  }
 	
-    std::cout << "B:" << std::endl;
-    printMatrix(B.h_ptr_, K, N);
+  //copying values	
+  cudaMemcpy(DeviceMatA, HostMatA, A_row * A_col, cudaMemcpyHostToDevice);
+  cudaMemcpy(DeviceMatB, HostMatB, B_row * B_col, cudaMemcpyHostToDevice);
+  cudaMemcpy(DeviceMatC, HostMatC, C_row * C_col, cudaMemcpyHostToDevice);  
+  
+  cublasLtMatmulDesc_t operationDesc = NULL;
+  cublasLtMatrixLayout_t Adesc = NULL, Bdesc = NULL, Cdesc = NULL;
+  cublasLtMatmulPreference_t preference = NULL;
+
+  int returnedResults                             = 0;
+  cublasLtMatmulHeuristicResult_t heuristicResult = {};
+
+  // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
+  // set the transforms for A and B
+  cublasOperation_t transa = CUBLAS_OP_T;
+  cublasOperation_t transb = CUBLAS_OP_N;
     
+  cublasLtHandle_t ltHandle;
+  status  = cublasLtCreate(&ltHandle);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    return EXIT_FAILURE;
+  }
+  
+  cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32I, CUDA_R_32F);
+  cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa));
+  cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb));
 
+  // create matrix descriptors, we are good with the details here so no need to set any extra attributes
+  cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_8I, A_col, A_row, A_col);
+  cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_8I, B_row, B_col, B_row);
+  cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_8I, C_row, C_col, C_row);
 
-    void *workspace;
-    size_t workspaceSize = 1024 * 1024 * 8;
-    cudaMalloc(&workspace, workspaceSize);
+  cublasLtMatmulPreferenceCreate(&preference);
     
-    cublasLtMatmulDesc_t operationDesc = NULL;
-    cublasLtMatrixLayout_t Adesc = NULL, Bdesc = NULL, Cdesc = NULL;
-    cublasLtMatmulPreference_t preference = NULL;
+  cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
+  //cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
 
-    int returnedResults                             = 0;
-    cublasLtMatmulHeuristicResult_t heuristicResult = {};
-
-    // create operation desciriptor; see cublasLtMatmulDescAttributes_t for details about defaults; here we just need to
-    // set the transforms for A and B
-    cublasOperation_t transa = CUBLAS_OP_T;
-    cublasOperation_t transb = CUBLAS_OP_N;
-    
-    cublasLtHandle_t ltHandle;
-    cublasLtCreate(&ltHandle);
-
-    cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32I, CUDA_R_32F);
-    cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa));
-    cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb));
-
-    // create matrix descriptors, we are good with the details here so no need to set any extra attributes
-    cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_8I, K, M, K);
-    cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_8I, K, N, K);
-    cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_8I, M, N, M);
-
-    cublasLtMatmulPreferenceCreate(&preference);
-    
-    cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
-    //cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
-
-    cublasLtMatmulAlgoGetHeuristic(ltHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
-    std::cout<<"List of algos :"<<returnedResults<<std::endl;
-	// create cuda event handles
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    //std::cout<<cublasLtGetVersion()<<std::endl;
-    cudaEventRecord(start,0);
+  cublasLtMatmulAlgoGetHeuristic(ltHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
+  std::cout<<"List of algos :"<<returnedResults<<std::endl;
+	
+  clk_start = clock();  
         
-    cublasLtMatmul(ltHandle,
+  status = cublasLtMatmul(ltHandle,
         operationDesc,
         &alpha,
-        A.d_ptr_,
+        DeviceMatA,
         Adesc,
-        B.d_ptr_,
+        DeviceMatB,
         Bdesc,
         &beta,
-        C.d_ptr_,
+        DeviceMatC,
         Cdesc,
-        C.d_ptr_,
+        DeviceMatC,
         Cdesc,
         &heuristicResult.algo,
         workspace,
         workspaceSize,
         0);
 
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! kernel execution error\n");
+    return EXIT_FAILURE;
+  }
 
-    cudaEventRecord(stop,0);
-    cudaEventSynchronize(stop);
-    float cudaElapsedTime;
-    cudaEventElapsedTime(&cudaElapsedTime, start, stop);
-    cudaMemcpy(C.h_ptr_, C.d_ptr_, C.size_, cudaMemcpyDeviceToHost);
+  clk_end = clock();
 
-    std::cout << "C out:" << std::endl;
-    printMatrix(C.h_ptr_, M, N);
-    
-    std::cout << std::setw(4) << cudaElapsedTime << " ms" << std::endl;
-    cudaFree(A.d_ptr_);
-    cudaFree(B.d_ptr_);
-    cudaFree(C.d_ptr_);
-	cublasLtDestroy(ltHandle);
-    return 0;
+  cudaMemcpy(HostMatC, DeviceMatC, C_row * C_col, cudaMemcpyDeviceToHost);
+  std::cout << "\nMatriz C after lTmatmul operation is:\n";
+  PrintMatrix(HostMatC, C_row, C_col);
+  
+  // printing latency and throughput of the function
+  std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+               "\nThroughput: " <<THROUGHPUT(clk_start, clk_end) << "\n\n";
+
+  
+  cudaStatus = cudaFree (DeviceMatA); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for A" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatB); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for B" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  cudaStatus = cudaFree (DeviceMatC); // free device memory
+  if( cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for C" << std::endl;
+    return EXIT_FAILURE;   
+  }
+  
+  status  = cublasLtDestroy (ltHandle); // destroy CUBLAS context
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    return EXIT_FAILURE;
+  }
+
+ 
 
 
+
+delete []HostMatA;
+delete []HostMatB;
+delete []HostMatC;
+
+return 0;
 }
