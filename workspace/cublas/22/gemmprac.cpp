@@ -17,7 +17,7 @@ void PrintMatrix(float** Matrix, int batch_count, int matrix_row, int matrix_col
     std::cout << "\nBatch " << batch << ": \n";
     for (row = 0; row < matrix_row; row++) {
       for (col = 0; col < matrix_col; col++) {
-        std::cout << Matrix[INDEX(row, col, matrix_row) + batch * matrix_row * matrix_col] << " ";
+        std::cout << Matrix[batch][INDEX(row, col, matrix_row) + batch * matrix_row * matrix_col] << " ";
       }
       std::cout << "\n";
     }
@@ -111,7 +111,7 @@ int main (int argc, char **argv) {
   for(batch = 0; batch < batch_count; batch++) {
     for(row = 0; row < A_row; row++) {
       for(col = 0; col < A_col; col++) {
-        *HostMatA[INDEX(row, col, A_row) + batch * A_col * A_row] = ind++;
+        HostMatA[batch][INDEX(row, col, A_row) + batch * A_col * A_row] = ind++;
       } 
     }
   }
@@ -119,7 +119,7 @@ int main (int argc, char **argv) {
   for(batch = 0; batch < batch_count; batch++) {
     for(row = 0; row < B_row; row++) {
       for(col = 0; col < B_col; col++) {
-        *HostMatB[INDEX(row, col, B_row) + batch * B_col * B_row] = ind++;
+        HostMatB[batch][INDEX(row, col, B_row) + batch * B_col * B_row] = ind++;
       } 
     }
   }
@@ -128,12 +128,19 @@ int main (int argc, char **argv) {
   for(batch = 0; batch < batch_count; batch++) {
     for(row = 0; row < C_row; row++) {
       for(col = 0; col < C_col; col++) {
-        *HostMatC[INDEX(row, col, C_row) + batch * C_col * C_row] = ind++;
+        HostMatC[batch][INDEX(row, col, C_row) + batch * C_col * C_row] = ind++;
       } 
     }
   }
   
-  
+  // Matrix input
+  std::cout << "matrix A \n";
+  PrintMatrix(HostMatA, batch_count, A_row, A_col); 
+  std::cout<<"matrix B\n";
+  PrintMatrix(HostMatB, batch_count, B_row, B_col); 
+  std::cout<<"matrixC before\n";
+  PrintMatrix(HostMatC, batch_count, C_row, C_col);
+
 
   // Create host pointer array to device matrix storage
     float **DeviceMatA, **DeviceMatB, **DeviceMatC, **h_d_A, **h_d_B, **h_d_C;
@@ -142,9 +149,9 @@ int main (int argc, char **argv) {
     h_d_C = new float *[batch_count *sizeof(float *)];
  
     for(row=0; row<batch_count; row++) {
-      cudaMalloc((void**)&h_d_A[row], A_row * A_col * sizeof(float));
-      cudaMalloc((void**)&h_d_B[row], B_row * B_col * sizeof(float));
-      cudaMalloc((void**)&h_d_C[row], C_row * C_col * sizeof(float));
+      cudaMalloc((void**)&h_d_A[batch], A_row * A_col * sizeof(float));
+      cudaMalloc((void**)&h_d_B[batch], B_row * B_col * sizeof(float));
+      cudaMalloc((void**)&h_d_C[batch], C_row * C_col * sizeof(float));
     }
   
    
@@ -160,10 +167,10 @@ int main (int argc, char **argv) {
     
     
     // Set input matrices on device
-    for(row = 0; row<batch_count; row++) {
-        cublasSetMatrix(A_row, A_col, sizeof(float), HostMatA[row], A_row, h_d_A[row], A_row);
-        cublasSetMatrix(B_row, B_col, sizeof(float), HostMatB[row], B_row, h_d_B[row], B_row);
-        cublasSetMatrix(C_row, C_col, sizeof(float), HostMatC[row], C_row, h_d_C[row], C_row);
+    for(batch = 0; row<batch_count; row++) {
+        cublasSetMatrix(A_row, A_col, sizeof(float), HostMatA[batch], A_row, h_d_A[batch], A_row);
+        cublasSetMatrix(B_row, B_col, sizeof(float), HostMatB[batch], B_row, h_d_B[batch], B_row);
+        cublasSetMatrix(C_row, C_col, sizeof(float), HostMatC[batch], C_row, h_d_C[batch], C_row);
     }
 
    // DGEMM: C = alpha*A*B + beta*C
@@ -181,23 +188,23 @@ int main (int argc, char **argv) {
                        
  
    // Retrieve result matrix from device
-    for(row =0; row<batch_count; row++)
-        cublasGetMatrix(C_row, C_col, sizeof(float), h_d_C[row], C_row, HostMatC[row], C_row);
+    for(batch =0; batch<batch_count; batch++)
+        cublasGetMatrix(C_row, C_col, sizeof(float), h_d_C[batch], C_row, HostMatC[batch], C_row);
         
   
    // Matrix output
-  std::cout << "\nMatrix C after gemmStridedBatched operation:\n";
+  std::cout << "\nMatrix C after gemmBatched operation:\n";
   PrintMatrix(HostMatC, batch_count, C_row, C_col);
   
   
   // Clean up resources
-  for(row = 0; row < batch_count; row++) {
-        free(HostMatA[row]);
-        free(HostMatB[row]);
-        free(HostMatC[row]);
-        cudaFree(h_d_A[row]);
-        cudaFree(h_d_B[row]);
-        cudaFree(h_d_C[row]);
+  for(batch = 0; batch < batch_count; batch++) {
+        free(HostMatA[batch]);
+        free(HostMatB[batch]);
+        free(HostMatC[batch]);
+        cudaFree(h_d_A[batch]);
+        cudaFree(h_d_B[batch]);
+        cudaFree(h_d_C[batch]);
   }
   
     free(HostMatA);
@@ -211,4 +218,6 @@ int main (int argc, char **argv) {
     cudaFree(DeviceMatC);
     cublasDestroy(handle);
  
+    return 0;
+}
     
