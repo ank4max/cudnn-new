@@ -27,7 +27,9 @@ int Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alp
   
   clk_start = 0;
   clk_end = 0;
- 
+  alpha= T(alpha);
+  beta = T(beta);
+  
   T *HostMatA; // mxk matrix A on the host
   T *HostMatB; // kxn matrix B on the host
   T *HostMatC; // mxn matrix C on the host
@@ -150,29 +152,12 @@ int Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alp
     clk_end = clock();
     std::cout << "API call ended\n";
     break;
-    
-    
-  case 'd' :
+    case 'd' :
     std::cout << "Calling  dGemm API\n";
-    clk_start = clock();
-    // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-    // d_A -mxk matrix , d_B -kxn matrix , d_C -mxn matrix
-    // alpha, beta - scalars
-    status = cublasDgemm (handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row, 
-                        B_col, A_col, &alpha, DeviceMatA, A_row,
-                        DeviceMatB, B_row, &beta, DeviceMatC, C_row);
-  
-    if (status != CUBLAS_STATUS_SUCCESS) {
-      fprintf (stderr, "!!!!  Dgemm kernel execution error\n");
-      return EXIT_FAILURE;
+     break;
     
-    }
-
-    clk_end = clock();
-    std::cout << "API call ended\n";
-    break;
-  }
   
+  }
   
   status = cublasGetMatrix (C_row, C_col, sizeof (*HostMatC),
                             DeviceMatC, C_row, HostMatC, C_row); // copy d_z -> C
@@ -183,7 +168,7 @@ int Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alp
   }
   
   std::cout << "\nMatriz C after sGemm operation is:\n";
-  PrintMatrix <float> (HostMatC, C_row, C_col); 
+  PrintMatrix <T> (HostMatC, C_row, C_col); 
   
   // printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
@@ -258,7 +243,7 @@ int main (int argc, char **argv) {
       beta = atof(argv[loop_count + 1]);
     
     else if (!(cmd_argument.compare("-mode")))
-      n = atoi(argv[loop_count + 1]);
+      n = *(argv[loop_count + 1]);
   }
  
   B_row = A_col;
@@ -270,13 +255,13 @@ int main (int argc, char **argv) {
   switch (n) {
   case 's' :
     std::cout << "Calling sGemm function\n";
-    gemm <float> (A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, n);
+    Gemm <float> (A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, n);
+    break;
+  case 'd' :
+    
+    std::cout << "Calling DGemm function\n";
     break;
   
-  case 'd' :
-    std::cout << "Calling DGemm function\n";
-    gemm <double> (A_row, A_col, B_row, B_col, C_row, C_col, (double)alpha, (double)beta, n);
-    break;
   
   
   }
