@@ -586,7 +586,7 @@ int main (int argc, char **argv) {
       beta = atof(argv[loop_count + 1]);
     
     else if (!(cmd_argument.compare("-mode")))
-      n = atoi(argv[loop_count + 1]);
+      n = *(argv[loop_count + 1]);
   }
  
   B_row = A_col;
@@ -608,7 +608,7 @@ int main (int argc, char **argv) {
                         
  case 'c' :
     std::cout << "Calling CGemm function\n";
-    cgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta);
+    Cgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta);
     break; 
   
   }
