@@ -242,14 +242,14 @@ int main ( int argc, char **argv) {
   
   if(n=='s') {
    std::cout << "using float templatefor dot function\n";
-   dot<float>obj1(vector_length);
-   obj1.Sdot();
+   dot<float>cublas_sdot(vector_length);
+   cublas_sdot.Sdot();
   }
   
   else if(n=='d') {
     std::cout<< "using double template for dot function\n";
-    dot<double>obj2(vector_length);
-    obj2.Ddot();
+    dot<double>cublas_ddot(vector_length);
+    cublas_ddot.Ddot();
     
   }
  
