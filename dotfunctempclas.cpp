@@ -30,7 +30,7 @@ class dot {
         
     }
     
-    int memory_allocation() {
+    int HostAlloc() {
     
       HostVecX = new T[vector_length];
       HostVecY = new T[vector_length]; 
@@ -48,7 +48,7 @@ class dot {
     }
     
     
-    void set_data() {
+    void SetData() {
     
       // setting up values in X and Y vectors
       // using RANDOM macro to generate random float numbers between 0 - 100
@@ -60,9 +60,23 @@ class dot {
         HostVecY[index] = RANDOM; 
       }
     }
+
+    void SetComplexData() {
     
-    
-    void print_data() {
+      // setting up values in X and Y vectors
+      // using RANDOM macro to generate random float numbers between 0 - 100
+      for (index = 0; index < vector_length; index++) {
+        HostVecX[index].x = RANDOM;  
+        HostVecX[index].y = 0.0f;                             
+      }
+
+      for (index = 0; index < vector_length; index++) {
+        HostVecY[index].x = RANDOM; 
+        HostVecY[index].y = 0.0f;
+      }
+    }
+
+    void PrintVec() {
     
       // printing the initial values in vector X and vector Y
       std::cout << "\nX vector initially:\n";
@@ -79,9 +93,25 @@ class dot {
       
     }
     
+    void PrintComplexVec() {
     
+      // printing the initial values in vector X and vector Y
+      std::cout << "\nX vector initially:\n";
+      for (index = 0; index < vector_length; index++) {
+        std::cout << HostVecX[index].x << "+" << HostVecX[index].y << "*I "   << " "; 
+      }
+      std::cout << "\n";
+  
+      std::cout << "\nY vector initially :\n";
+      for (index = 0; index < vector_length; index++) {
+        std::cout << HostVecY[index].x << "+" << HostVecY[index].y << "*I "   << " ";
+      }
+      std::cout << "\n";
+      
+    }
+
     
-    int devicematset() {
+    int DeviceAlloc() {
     
       cudaStatus = cudaMalloc ((void **) &DeviceVecX, vector_length * sizeof (*HostVecX));
       if( cudaStatus != cudaSuccess) {
@@ -117,43 +147,7 @@ class dot {
 
     }
     
-    int sdot() {
-    
-      std::cout<<" using sdot api\n";
-      clk_start = clock();
-
-      // performing dot product operation and storing result in dot_product variable
-      status = cublasSdot(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
-
-      clk_end = clock();
-  
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! sdot kernel execution error\n");
-        return EXIT_FAILURE;
-      }
-    
-      return EXIT_SUCCESS;
-    }
-    
-    int ddot() {
-    
-      clk_start = clock();
-
-      // performing dot product operation and storing result in dot_product variable
-      status = cublasDdot(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
-
-      clk_end = clock();
-  
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! kernel execution error\n");
-        return EXIT_FAILURE;
-      }
-      
-      return EXIT_SUCCESS;
-    }
-    
-    
-    void output() {
+    void Output() {
      
       //printing the final result
       std::cout << "\nDot product X.Y is : " << dot_product << "\n";   
@@ -164,30 +158,163 @@ class dot {
     
     
     }
+
+    void ComplexOutput() {
+     
+      //printing the final result
+      std::cout << "\nDot product X.Y is : " << dot_product.x << "+" << dot_product.y << "*I "<<"\n";  
+       
+      // printing latency and throughput of the function
+      std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
+               "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
     
-    void Sdot() {
-      memory_allocation();
-      set_data();
-      print_data();
-      devicematset();
-      sdot();
-      output();
-      freespace();
+    
     }
     
-    void Ddot() {
-      memory_allocation();
-      set_data();
-      print_data();
-      devicematset();
-      ddot();
-      output();
-      freespace();
+    int Sdot() {
+      HostAlloc();
+      SetData();
+      PrintVec();
+      DeviceAlloc();
+
+      std::cout<<" Using sdot api\n";
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasSdot(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Sdot kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+      Output();
+      DeAlloc();
+      return EXIT_SUCCESS;
+    }
+    
+    int Ddot() {
+      HostAlloc();
+      SetData();
+      PrintVec();
+      DeviceAlloc();
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasDdot(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Ddot kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+      Output();
+      DeAlloc();
+      return EXIT_SUCCESS;
+
+    }
+
+    int Cdotu() {
+      HostAlloc();
+      SetComplexData();
+      PrintComplexVec();
+      DeviceAlloc();
+      std::cout<<" using Cdot api\n";
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasCdotu(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Cdot kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+    
+      ComplexOutput();
+      DeAlloc();
+      return EXIT_SUCCESS;
 
 
-    }      
+    } 
 
-    int freespace() {
+    int Cdotc() {
+      HostAlloc();
+      SetComplexData();
+      PrintComplexVec();
+      DeviceAlloc();
+      std::cout<<" using Cdotc api\n";
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasCdotc(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Cdotc kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+    
+      ComplexOutput();
+      DeAlloc();
+      return EXIT_SUCCESS;
+
+
+    } 
+
+    int Zdotu() {
+      HostAlloc();
+      SetComplexData();
+      PrintComplexVec();
+      DeviceAlloc();
+      std::cout<<" Using Zdotu api\n";
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasZdotu(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Zdotu kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+    
+      ComplexOutput();
+      DeAlloc();
+      return EXIT_SUCCESS;
+
+    }  
+
+   int Zdotc() {
+      HostAlloc();
+      SetComplexData();
+      PrintComplexVec();
+      DeviceAlloc();
+      std::cout<<" Using Zdotc api\n";
+      clk_start = clock();
+
+      // performing dot product operation and storing result in dot_product variable
+      status = cublasZdotc(handle, vector_length, DeviceVecX, 1, DeviceVecY, 1, &dot_product);
+
+      clk_end = clock();
+  
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Zdotc kernel execution error\n");
+        return EXIT_FAILURE;
+      }
+    
+      ComplexOutput();
+      DeAlloc();
+      return EXIT_SUCCESS;
+
+    }                                     
+
+    int DeAlloc() {
     
       //freeing device memory
       cudaStatus = cudaFree (DeviceVecX);
@@ -242,18 +369,43 @@ int main ( int argc, char **argv) {
   
   if(n=='s') {
    std::cout << "using float templatefor dot function\n";
-   dot<float>cublas_sdot(vector_length);
-   cublas_sdot.Sdot();
+   dot<float>obj1(vector_length);
+   obj1.Sdot();
   }
   
   else if(n=='d') {
     std::cout<< "using double template for dot function\n";
-    dot<double>cublas_ddot(vector_length);
-    cublas_ddot.Ddot();
+    dot<double>obj2(vector_length);
+    obj2.Ddot();
     
   }
+
+  else if(n=='u') {
+    std::cout<< "using complex template for dot function\n";
+    dot<cuComplex>cublas_cdotu(vector_length);
+    cublas_cdotu.Cdotu();
+    
+  }
+
+  else if(n=='c') {
+    std::cout<< "using complex template for dot function\n";
+    dot<cuComplex>cublas_cdotc(vector_length);
+    cublas_cdotc.Cdotc();
+
+  }
  
+ else if(n=='U') {
+    std::cout<< "using double complex template for dot function\n";
+    dot<cuDoubleComplex>cublas_zdotu(vector_length);
+    cublas_zdotu.Zdotu();
+ 
+ }
+ else if(n=='C') {
+    std::cout<< "using double complex template for dot function\n";
+    dot<cuDoubleComplex>cublas_zdotc(vector_length);
+    cublas_zdotc.Zdotc();
+ 
+ }
+
   return 0;
 }
-      
-    
