@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cublas_v2.h"
 #include <cuda_runtime.h>
+
 #define RANDOM (rand() % 10000 * 1.00) / 100     // to generate random values
 #define INDEX(row, col, row_count) (((col)*(row_count))+(row))  
 /* 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
@@ -12,7 +13,6 @@
 cudaError_t cudaStatus ; 
 cublasStatus_t status ; 
 cublasHandle_t handle ;
-
 clock_t clk_start, clk_end;
 
 template<class A>
@@ -39,7 +39,6 @@ void LowPrint1(A1 * Matrix, int matrix_row, int matrix_col) {
     std::cout<<"\n";
   }
 }
-
 
 template<class Data>
 void PrintMatrix(Data* Matrix, int matrix_row, int matrix_col) {
