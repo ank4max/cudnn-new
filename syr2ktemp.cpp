@@ -12,9 +12,9 @@
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 template<class T>
-class Syrk {
+class Syr2k {
   private:
-    int A_row, A_col, C_row, C_col;
+    int A_row, A_col, B_row, B_col, C_row, C_col;
     char mode;
     T *HostMatrixA;
     T *HostMatrixB;
@@ -333,7 +333,7 @@ class Syrk {
           // alpha, beta - scalars
           status = cublasSsyr2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (float *)&alpha, (float *)DeviceMatrixA, A_row, (float *)DeviceMatrixB, 
-                                B_row, (float *)&beta, (float *)DeviceMatC, C_row);
+                                B_row, (float *)&beta, (float *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Ssyr2k kernel execution error\n");
@@ -355,7 +355,7 @@ class Syrk {
           // alpha, beta - scalars
           status = cublasDsyr2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (double *)&alpha, (double *)DeviceMatrixA, A_row, (double *)DeviceMatrixB, 
-                                B_row, (double *)&beta, (double *)DeviceMatC, C_row);
+                                B_row, (double *)&beta, (double *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Dsyr2k kernel execution error\n");
@@ -377,7 +377,7 @@ class Syrk {
           // alpha, beta - scalars
           status = cublasCsyr2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatrixA, A_row, (cuComplex *)DeviceMatrixB, 
-                                B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatC, C_row);
+                                B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Csyr2k kernel execution error\n");
@@ -399,7 +399,7 @@ class Syrk {
           // alpha, beta - scalars
           status = cublasZsyr2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB, 
-                                B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatC, C_row);
+                                B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Zsyr2k kernel execution error\n");
@@ -551,5 +551,4 @@ int main(int argc, char **argv) {
 
 
  
-
 
