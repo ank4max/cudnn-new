@@ -369,7 +369,7 @@ class Syrk {
         return EXIT_FAILURE;
       }
       
-      std::cout << "\nMatriz C after " << mode << "gemm operation is:\n";
+      std::cout << "\nMatriz C after " << mode << "Syrk operation is:\n";
 
       switch (mode) {
         case 'S': {
