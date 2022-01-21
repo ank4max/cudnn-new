@@ -1,4 +1,4 @@
-%%writefile max.cpp
+%%writefile max2.cpp
 #include <iostream>
 #include <string>
 #include "cublas_v2.h"
@@ -20,15 +20,15 @@ class Herk {
     T *HostMatrixC;
     T *DeviceMatrixA;
     T *DeviceMatrixC;
-    T alpha;
-    T beta;
+    double  alpha;
+    double beta;
     cudaError_t cudaStatus; 
     cublasStatus_t status; 
     cublasHandle_t handle;
     clock_t clk_start, clk_end;
 
   public:
-    Herk(int A_row, int A_col, int C_row, int C_col, T alpha, T beta, char mode)
+    Herk(int A_row, int A_col, int C_row, int C_col, double alpha, double beta, char mode)
         : A_row(A_row), A_col(A_col), C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
     void FreeMemory(){
@@ -203,7 +203,7 @@ class Herk {
           // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
           // alpha, beta - scalars
           status = cublasCherk(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-                               A_row, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatrixA, A_row, (cuComplex *)&beta, 
+                               A_row, A_col, (float *)&alpha, (cuComplex *)DeviceMatrixA, A_row, (float *)&beta, 
                                (cuComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
@@ -225,7 +225,7 @@ class Herk {
           // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
           // alpha, beta - scalars
           status = cublasZherk(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
-                               A_row, A_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatrixA, A_row, (cuDoubleComplex *)&beta, 
+                               A_row, A_col, (double *)&alpha, (cuDoubleComplex *)DeviceMatrixA, A_row, (double *)&beta, 
                                (cuDoubleComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
@@ -235,7 +235,7 @@ class Herk {
           }
 
           clk_end = clock();
-          std::cout << "Zhemm API call ended\n";
+          std::cout << "Zherk API call ended\n";
           break;
         }
       }
@@ -251,7 +251,7 @@ class Herk {
         return EXIT_FAILURE;
       }
       
-      std::cout << "\nMatriz C after " << mode << "Hemm operation is:\n";
+      std::cout << "\nMatriz C after " << mode << "Herk operation is:\n";
 
       switch (mode) {
         case 'C': {
@@ -280,7 +280,7 @@ class Herk {
 int main(int argc, char **argv) {
   
   int A_row, A_col, C_row, C_col, status;
-  double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
+  double alpha, beta;
   char mode;
 
   std::cout << "\n\n" << argv[0] << std::endl;
@@ -300,18 +300,12 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-A_column")))
       A_col = atoi(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-alpha_real")))
-      alpha_real = std::stod(argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-alpha")))
+      alpha = std::stod(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-alpha_imaginary")))
-      alpha_imaginary = std::stod(argv[loop_count + 1]);
-
-    else if (!(cmd_argument.compare("-beta_real")))
-      beta_real = std::stod(argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-beta")))
+      beta = std::stod(argv[loop_count + 1]);
     
-    else if (!(cmd_argument.compare("-beta_imaginary")))
-      beta_imaginary = std::stod(argv[loop_count + 1]);
-
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
@@ -323,18 +317,12 @@ int main(int argc, char **argv) {
   // function call
   switch (mode) {
     case 'C': {
-      cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
-      cuComplex beta = {(float)beta_real, (float)beta_imaginary};
-
       Herk<cuComplex> Cherk(A_row, A_col, C_row, C_col, alpha, beta, mode);
       status = Cherk.HerkApiCall();
       break;
     }
 
     case 'Z': {
-      cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
-      cuDoubleComplex beta = {beta_real, beta_imaginary};
-
       Herk<cuDoubleComplex> Zherk(A_row, A_col, C_row, C_col, alpha, beta, mode);
       status = Zherk.HerkApiCall();
       break;
