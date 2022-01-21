@@ -27,7 +27,6 @@ class Syrk {
     cublasHandle_t handle;
     clock_t clk_start, clk_end;
 
-
   public:
     Syrk(int A_row, int A_col, int C_row, int C_col, T alpha, T beta, char mode)
         : A_row(A_row), A_col(A_col), C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
@@ -91,9 +90,6 @@ class Syrk {
       } 
     }
 
-
-
-
     template<class C>
     void InitializeMatrix(C* Matrix, int matrix_row, int matrix_col) {
       int row , col;  
@@ -140,8 +136,6 @@ class Syrk {
       }
     }
    
-
-
     template<class C>
     void PrintMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
       int row , col;  
@@ -181,11 +175,9 @@ class Syrk {
       switch (mode) {
         case 'S': {
           InitializeMatrix<float>((float *)HostMatrixA, A_row, A_col);
-          
           InitializeMatrixLow<float>((float *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
-          
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
           PrintMatrixLow<float>((float *)HostMatrixC, C_row, C_col);
@@ -193,39 +185,29 @@ class Syrk {
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
           PrintMatrix<float>((float *)HostMatrixA, A_row, A_col);
-           
-          
           break;
-
         }
 
-      case 'D': {
+        case 'D': {
           InitializeMatrix<double>((double *)HostMatrixA, A_row, A_col);
-          
           InitializeMatrixLow<double>((double *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
-          
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
           PrintMatrixLow<double>((double *)HostMatrixC, C_row, C_col);
           
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
-          PrintMatrix<double>((double *)HostMatrixA, A_row, A_col);
-           
-          
-          break;
-          
+          PrintMatrix<double>((double *)HostMatrixA, A_row, A_col); 
+          break;  
         }
 
-      case 'C': {
+        case 'C': {
           InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-          
           InitializeComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
-          
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
           PrintComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
@@ -233,18 +215,14 @@ class Syrk {
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
           PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-           
-          
-          break;
-          
+          break; 
         }
-      case 'Z': {
+                            
+        case 'Z': {
           InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-          
           InitializeComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
-          
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
           PrintComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
@@ -252,12 +230,8 @@ class Syrk {
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
           PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-           
-          
-          break;
-          
+          break; 
         }
-
       }
 
       cudaStatus = cudaMalloc((void **)&DeviceMatrixA , A_row * A_col * sizeof(*HostMatrixA));
@@ -319,7 +293,8 @@ class Syrk {
           std::cout << "Ssyrk API call ended\n";
           break;
         }
-      case 'D': {
+                            
+        case 'D': {
           std::cout << "\nCalling Dsyrk API\n";
           clk_start = clock();
 
@@ -340,7 +315,7 @@ class Syrk {
           break;
         }
 
-      case 'C': {
+        case 'C': {
           std::cout << "\nCalling Csyrk API\n";
           clk_start = clock();
 
@@ -361,7 +336,7 @@ class Syrk {
           break;
         }
       
-      case 'Z': {
+        case 'Z': {
           std::cout << "\nCalling Zsyrk API\n";
           clk_start = clock();
 
@@ -416,7 +391,6 @@ class Syrk {
           PrintComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
           break;
         }
-
       }
 
       // printing latency and throughput of the function
@@ -509,9 +483,7 @@ int main(int argc, char **argv) {
       Syrk<cuDoubleComplex> Zsyrk(A_row, A_col, C_row, C_col, alpha, beta, mode);
       status = Zsyrk.SyrkApiCall();
       break;
-    }
-              
-   
+    }          
   }
 
   return EXIT_SUCCESS;
