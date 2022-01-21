@@ -1,4 +1,4 @@
-%%writefile nay1.cpp
+%%writefile max.cpp
 #include <iostream>
 #include <string>
 #include "cublas_v2.h"
@@ -30,7 +30,7 @@ class Hemm {
     clock_t clk_start, clk_end;
 
   public:
-    Syrkx(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
+    Hemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col), C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
     void FreeMemory(){
@@ -244,8 +244,8 @@ class Hemm {
           // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
           // alpha, beta - scalars
           status = cublasChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                               A_row, B_col, (cuComplex *)&alpha, (cuComplex *) DeviceMatA, A_row, (cuComplex *)DeviceMatB,
-                               B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatC, C_row);
+                               A_row, B_col, (cuComplex *)&alpha, (cuComplex *) DeviceMatrixA, A_row, (cuComplex *)DeviceMatrixB,
+                               B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Chemm kernel execution error\n");
@@ -266,8 +266,8 @@ class Hemm {
           // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
           // alpha, beta - scalars
           status = cublasZhemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                               A_row, B_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *) DeviceMatA, A_row, (cuDoubleComplex *)DeviceMatB,
-                               B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatC, C_row);
+                               A_row, B_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *) DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB,
+                               B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Zhemm kernel execution error\n");
@@ -292,7 +292,7 @@ class Hemm {
         return EXIT_FAILURE;
       }
       
-      std::cout << "\nMatriz C after " << mode << "Syrkx operation is:\n";
+      std::cout << "\nMatriz C after " << mode << "Hemm operation is:\n";
 
       switch (mode) {
         case 'C': {
