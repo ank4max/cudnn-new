@@ -3,6 +3,7 @@
 #include <string>
 #include "cublas_v2.h"
 #include <cuda_runtime.h>
+#include "cublas_utility.h"
            
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values
@@ -64,102 +65,6 @@ class Syrkx {
       }
     }
 
-    template<class C>
-    void PrintMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;
-      for (row = 0; row < matrix_row; row++) {
-        std::cout << "\n";
-        for (col = 0; col < matrix_col; col++) {
-          std::cout << Matrix[INDEX(row, col, matrix_row)] << " ";
-        }
-      }
-      std::cout << "\n";
-    }
-
-    template<class C>
-    void PrintComplexMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;
-      for (row = 0; row < matrix_row; row++) {
-        for (col = 0; col < matrix_col; col++) {
-          std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
-        }
-        std::cout << "\n";
-      } 
-    }
-
-    template<class C>
-    void PrintComplexMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;
-      for (row = 0; row < matrix_row; row++) {
-        for (col = 0; col < matrix_col; col++) {
-          if (row >= col) {
-            std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
-          }        
-        }
-        std::cout << "\n";
-      } 
-    }
-
-    template<class C>
-    void InitializeMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row , col;  
-      for (row = 0; row < matrix_row; row++) {                                              
-        for (col = 0; col < matrix_col; col++) {                                                   
-          Matrix[INDEX(row, col, matrix_row)] = RANDOM;                                      
-        }                                                                                    
-      }                                                                               
-    }
-
-    template<class C>
-    void InitializeComplexMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;  
-      for (col = 0; col < matrix_col; col++) {           
-        for (row = 0; row < matrix_row; row++) {                      
-          Matrix[INDEX(row, col, matrix_row)].x = RANDOM;             
-          Matrix[INDEX(row, col, matrix_row)].y = 0.0f;              
-        }
-      }
-    }
-
-    template<class C>
-    void InitializeMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row , col;  
-      for (row = 0; row < matrix_row; row++) {                                              
-        for (col = 0; col < matrix_col; col++) {
-          if (row >= col) {                                                  
-            Matrix[INDEX(row, col, matrix_row)] = RANDOM;
-          }
-        }                                                                                    
-      }                                                                               
-    }
-    
-    template<class C>
-    void InitializeComplexMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;  
-      for (col = 0; col < matrix_col; col++) {           
-        for (row = 0; row < matrix_row; row++) {
-          if (row >= col) {                      
-            Matrix[INDEX(row, col, matrix_row)].x = RANDOM;             
-            Matrix[INDEX(row, col, matrix_row)].y = 0.0f;
-          }              
-        }
-      }
-    }
-   
-    template<class C>
-    void PrintMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row , col;  
-      for (row = 0; row < matrix_row; row++) {                                              
-        for (col = 0; col < matrix_col; col++) {
-          if (row >= col) {                                                  
-            std::cout << Matrix[INDEX(row, col, C_row)] << " ";
-          }
-        }
-        std::cout << "\n";                                                                                    
-      }                                                                               
-    }
-
-
     int SyrkxApiCall() {
       
       // Host Memory Allocation for Matrices
@@ -190,83 +95,83 @@ class Syrkx {
 
       switch (mode) {
         case 'S': {
-          InitializeMatrix<float>((float *)HostMatrixA, A_row, A_col);
-          InitializeMatrix<float>((float *)HostMatrixB, B_row, B_col);
-          InitializeMatrixLow<float>((float *)HostMatrixC, C_row, C_col);
+          util::InitializeMatrix<float>((float *)HostMatrixA, A_row, A_col);
+          util::InitializeMatrix<float>((float *)HostMatrixB, B_row, B_col);
+          util::InitializeSymmetricMatrix<float>((float *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
-          PrintMatrixLow<float>((float *)HostMatrixC, C_row, C_col);
+          util::PrintSymmetricMatrix<float>((float *)HostMatrixC, C_row, C_col);
           
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
-          PrintMatrix<float>((float *)HostMatrixA, A_row, A_col);
+          util::PrintMatrix<float>((float *)HostMatrixA, A_row, A_col);
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintMatrix<float>((float *)HostMatrixB, B_row, B_col);
+          util::PrintMatrix<float>((float *)HostMatrixB, B_row, B_col);
           
           break;
         }
 
         case 'D': {
-          InitializeMatrix<double>((double *)HostMatrixA, A_row, A_col);
-          InitializeMatrix<double>((double *)HostMatrixB, B_row, B_col);
-          InitializeMatrixLow<double>((double *)HostMatrixC, C_row, C_col);
+          util::InitializeMatrix<double>((double *)HostMatrixA, A_row, A_col);
+          util::InitializeMatrix<double>((double *)HostMatrixB, B_row, B_col);
+          util::InitializeSymmetricMatrix<double>((double *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
-          PrintMatrixLow<double>((double *)HostMatrixC, C_row, C_col);
+          util::PrintSymmetricMatrix<double>((double *)HostMatrixC, C_row, C_col);
           
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
-          PrintMatrix<double>((double *)HostMatrixA, A_row, A_col); 
+          util::PrintMatrix<double>((double *)HostMatrixA, A_row, A_col); 
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintMatrix<double>((double *)HostMatrixB, B_row, B_col); 
+          util::PrintMatrix<double>((double *)HostMatrixB, B_row, B_col); 
           break;  
         }
 
         case 'C': {
-          InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-          InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
-          InitializeComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+          util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+          util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+          util::InitializeSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
-          PrintComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+          util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
           
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
-          PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+          util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+          util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
           break; 
         }
                             
         case 'Z': {
-          InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-          InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
-          InitializeComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+          util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+          util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+          util::InitializeSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix C
           std::cout << "\nMatrix C:\n";
-          PrintComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+          util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
           
           // printing matrix A column by column
           std::cout << "\nMatrix A:\n";
-          PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+          util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+          util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
           break; 
         }
       }
@@ -428,22 +333,22 @@ class Syrkx {
 
       switch (mode) {
         case 'S': {
-          PrintMatrixLow<float>((float *)HostMatrixC, C_row, C_col); 
+          util::PrintSymmetricMatrix<float>((float *)HostMatrixC, C_row, C_col); 
           break;
         }
 
         case 'D': {
-          PrintMatrixLow<double>((double *)HostMatrixC, C_row, C_col);  
+          util::PrintSymmetricMatrix<double>((double *)HostMatrixC, C_row, C_col);  
           break;
         }
 
         case 'C': {
-          PrintComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
           break;
         }
 
         case 'Z': {
-          PrintComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
           break;
         }
       }
