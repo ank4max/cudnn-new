@@ -3,7 +3,8 @@
 #include <string>
 #include "cublas_v2.h"
 #include <cuda_runtime.h>
-           
+#include "cublas_utility.h"
+
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values
 
@@ -63,54 +64,6 @@ class Hemm {
         fprintf (stderr, "!!!! Unable to uninitialize handle \n");
       }
     }
-
-    template<class C>
-    void PrintComplexMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;
-      for (row = 0; row < matrix_row; row++) {
-        for (col = 0; col < matrix_col; col++) {
-          std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
-        }
-        std::cout << "\n";
-      } 
-    }
-
-    template<class C>
-    void PrintComplexMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;
-      for (row = 0; row < matrix_row; row++) {
-        for (col = 0; col < matrix_col; col++) {
-          if (row >= col) {
-            std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
-          }        
-        }
-        std::cout << "\n";
-      } 
-    }
-
-    template<class C>
-    void InitializeComplexMatrix(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;  
-      for (col = 0; col < matrix_col; col++) {           
-        for (row = 0; row < matrix_row; row++) {                      
-          Matrix[INDEX(row, col, matrix_row)].x = RANDOM;             
-          Matrix[INDEX(row, col, matrix_row)].y = 0.0f;              
-        }
-      }
-    }
-
-    template<class C>
-    void InitializeComplexMatrixLow(C* Matrix, int matrix_row, int matrix_col) {
-      int row, col;  
-      for (col = 0; col < matrix_col; col++) {           
-        for (row = 0; row < matrix_row; row++) {
-          if (row >= col) {                      
-            Matrix[INDEX(row, col, matrix_row)].x = RANDOM;             
-            Matrix[INDEX(row, col, matrix_row)].y = 0.0f;
-          }              
-        }
-      }
-    }
    
   
     int HemmApiCall() {
@@ -143,42 +96,42 @@ class Hemm {
 
       switch (mode) {
         case 'C': {
-          InitializeComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-          InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
-          InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+          util::InitializeSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+          util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+          util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix A
           std::cout << "\nMatrix A:\n";
-          PrintComplexMatrixLow<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+          util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+          util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
           
           // printing matrix C column by column
           std::cout << "\nMatrix C:\n";
-          PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+          util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
           break; 
         }
                             
         case 'Z': {
-          InitializeComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-          InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
-          InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+          util::InitializeSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+          util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+          util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
 
           // printing input matrices
           //Lower triangle of Matrix A
           std::cout << "\nMatrix A:\n";
-          PrintComplexMatrixLow<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+          util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
           
           // printing matrix B column by column
           std::cout << "\nMatrix B:\n";
-          PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+          util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
           
           // printing matrix C column by column
           std::cout << "\nMatrix C:\n";
-          PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+          util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
           break; 
         }
       }
@@ -296,12 +249,12 @@ class Hemm {
 
       switch (mode) {
         case 'C': {
-          PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
           break;
         }
 
         case 'Z': {
-          PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
           break;
         }
       }
