@@ -93,7 +93,6 @@ class Her2k {
       // define an mxk matrix A, B, C column by column and based on mode passed
       // using RANDOM macro to generate random numbers between 0 - 100
 
-
       switch (mode) {
         case 'C': {
           util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
@@ -187,7 +186,6 @@ class Her2k {
         return EXIT_FAILURE;
       }
       
-
       switch (mode) {
         case 'C': {
           std::cout << "\nCalling CheR2K API\n";
@@ -235,7 +233,6 @@ class Her2k {
         }
       }
 
-
       // Copying Matrices from device to host
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
                               DeviceMatrixC, C_row, HostMatrixC, C_row);  // copy d_z -> C
@@ -250,12 +247,12 @@ class Her2k {
 
       switch (mode) {
         case 'C': {
-          util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row , C_col); 
           break;
         }
 
         case 'Z': {
-          util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
+          util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row , C_col); 
           break;
         }
       }
@@ -266,8 +263,7 @@ class Her2k {
       
       FreeMemory();
 
-      return EXIT_SUCCESS;
-      
+      return EXIT_SUCCESS;     
     }
 };        
 
@@ -317,7 +313,6 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = A_row;
 
-  
   // function call
   switch (mode) {
     case 'C': {
