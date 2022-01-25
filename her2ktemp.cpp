@@ -31,7 +31,7 @@ class Her2k {
     clock_t clk_start, clk_end;
 
   public:
-    Her2k(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
+    Her2k(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, double beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col), C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
     void FreeMemory(){
