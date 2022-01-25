@@ -13,7 +13,7 @@
 #define THROUGHPUT(clk_start, clk_end)  ((1e-9 * 2) / (clk_end - clk_start)) 
 
 template<class T>
-class Her2k {
+class Herkx {
   private:
     int A_row, A_col, B_row, B_col, C_row, C_col;
     char mode;
@@ -188,7 +188,7 @@ class Her2k {
       
       switch (mode) {
         case 'C': {
-          std::cout << "\nCalling CheRKx API\n";
+          std::cout << "\nCalling Cherkx API\n";
           clk_start = clock();
 
           // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
