@@ -88,10 +88,10 @@ class Syrkx {
         FreeMemory();
         return EXIT_FAILURE;
       }
-      
-      // define an mxk matrix A, B, C column by column and based on mode passed
+                    
+      // define a mxk matrix A and B column by column and based on mode passed
+      // define the lower triangle of an n x n symmetric matrix C
       // using RANDOM macro to generate random numbers between 0 - 100
-
 
       switch (mode) {
         case 'S': {
@@ -176,21 +176,21 @@ class Syrkx {
         }
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixA , A_row * A_col * sizeof(*HostMatrixA));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
       
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixB , B_row * B_col * sizeof(*HostMatrixB));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixB, B_row * B_col * sizeof(*HostMatrixB));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for B " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixC , C_row * C_col * sizeof(*HostMatrixC));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixC, C_row * C_col * sizeof(*HostMatrixC));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for C " << std::endl;
         FreeMemory();
@@ -227,15 +227,11 @@ class Syrkx {
         return EXIT_FAILURE;
       }
       
-
       switch (mode) {
         case 'S': {
           std::cout << "\nCalling Ssyrkx API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasSsyrkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (float *)&alpha, (float *)DeviceMatrixA, A_row, (float *)DeviceMatrixB, 
                                 B_row, (float *)&beta, (float *)DeviceMatrixC, C_row);
@@ -255,9 +251,6 @@ class Syrkx {
           std::cout << "\nCalling Dsyrkx API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasDsyrkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (double *)&alpha, (double *)DeviceMatrixA, A_row, (double *)DeviceMatrixB, 
                                 B_row, (double *)&beta, (double *)DeviceMatrixC, C_row);
@@ -277,9 +270,6 @@ class Syrkx {
           std::cout << "\nCalling Csyrkx API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasCsyrkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatrixA, A_row, (cuComplex *)DeviceMatrixB, 
                                 B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row);
@@ -299,9 +289,6 @@ class Syrkx {
           std::cout << "\nCalling Zsyrkx API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasZsyrkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB, 
                                 B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, C_row);
@@ -317,7 +304,6 @@ class Syrkx {
           break;
         }
       }
-
 
       // Copying Matrices from device to host
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
@@ -358,9 +344,7 @@ class Syrkx {
                   "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
       
       FreeMemory();
-
       return EXIT_SUCCESS;
-      
     }
 };        
 
