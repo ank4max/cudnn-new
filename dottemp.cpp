@@ -1,4 +1,4 @@
-%%writefile nex.cpp
+%%writefile nex1.cpp
 #include <iostream>
 #include <string>
 #include "cublas_v2.h"
@@ -170,11 +170,11 @@ class Dot {
         case 'S': {
           std::cout << "\nCalling Sdot API\n";
           clk_start = clock();
+          float dot_product;
 
           // performing dot product operation and storing result in dot_product variable
           status = cublasSdot(handle, vector_length, (float *)DeviceVectorX, 1, (float *)DeviceVectorY, 1, (float *)&dot_product);
 
-        
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Sdot kernel execution error\n");
             FreeMemory();
@@ -183,11 +183,13 @@ class Dot {
 
           clk_end = clock();
           std::cout << "Sdot API call ended\n";
+          std::cout << "\nDot product X.Y is : " << dot_product << "\n"; 
           break;
         }
                             
         case 'D': {
           std::cout << "\nCalling Ddot API\n";
+          double dot_product;
           clk_start = clock();
 
           // performing dot product operation and storing result in dot_product variable
@@ -201,11 +203,13 @@ class Dot {
 
           clk_end = clock();
           std::cout << "Ddot API call ended\n";
+          std::cout << "\nDot product X.Y is : " << dot_product << "\n"; 
           break;
         }
 
         case 'C': {
           std::cout << "\nCalling Cdot\n";
+          cuComplex dot_product;
           clk_start = clock();
 
           // performing dot product operation and storing result in dot_product variable
@@ -219,11 +223,13 @@ class Dot {
 
           clk_end = clock();
           std::cout << "Cdot API call ended\n";
+          std::cout << "\nDot product X.Y is : " << dot_product.x << "+" << dot_product.y << "*I "<<"\n";  
           break;
         }
       
         case 'Z': {
           std::cout << "\nCalling Zdot API\n";
+          cuDoubleComplex dot_product;
           clk_start = clock();
 
           // performing dot product operation and storing result in dot_product variable
@@ -237,33 +243,13 @@ class Dot {
 
           clk_end = clock();
           std::cout << "Zdot API call ended\n";
+          std::cout << "\nDot product X.Y is : " << dot_product.x << "+" << dot_product.y << "*I "<<"\n";  
           break;
         }
       }
       
-      std::cout << "\nThe dot product after " << mode << "dot operation is :";
-      switch (mode) {
-        case 'S': {
-          std::cout << "\nDot product X.Y is : " << dot_product << "\n"; 
-          break;
-        }
-
-        case 'D': {
-          std::cout << "\nDot product X.Y is : " << dot_product << "\n";   
-          break;
-        }
-
-        case 'C': {
-          std::cout << "\nDot product X.Y is : " << dot_product.x << "+" << dot_product.y << "*I "<<"\n";  
-          break;
-        }
-
-        case 'Z': {
-          std::cout << "\nDot product X.Y is : " << dot_product.x << "+" << dot_product.y << "*I "<<"\n";   
-          break;
-        }
-      }
-
+             
+      
       // printing latency and throughput of the function
       std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
                   "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
@@ -330,11 +316,3 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-
-
-
-
-
- 
-
- 
