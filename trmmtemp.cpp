@@ -89,7 +89,8 @@ class Trmm {
         return EXIT_FAILURE;
       }
       
-      // define an mxk matrix A, B, C column by column and based on mode passed
+      // define lower triangle of matrix A column by column
+      // define matrices B and C column by column
       // using RANDOM macro to generate random numbers between 0 - 100
 
       switch (mode) {
@@ -175,21 +176,21 @@ class Trmm {
         }
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixA , A_row * A_col * sizeof(*HostMatrixA));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
       
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixB , B_row * B_col * sizeof(*HostMatrixB));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixB, B_row * B_col * sizeof(*HostMatrixB));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for B " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixC , C_row * C_col * sizeof(*HostMatrixC));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixC, C_row * C_col * sizeof(*HostMatrixC));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for C " << std::endl;
         FreeMemory();
@@ -230,10 +231,10 @@ class Trmm {
         case 'S': {
           std::cout << "\nCalling Strmm API\n";
           clk_start = clock();
-
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
+                   
+          // triangular matrix - matrix multiplication : d_C = alpha * d_A * d_B ;
+          // d_A - mxm triangular matrix in lower mode ,
+          // d_B , d_C - mxn general matrices ; alpha - scalar
           status = cublasStrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, (float *)&alpha, 
                        (float *)DeviceMatrixA, A_row, (float *)DeviceMatrixB, B_row, (float *)DeviceMatrixC, C_row);
@@ -254,9 +255,6 @@ class Trmm {
           std::cout << "\nCalling Dtrmm API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha - scalar
           status = cublasDtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, (double *)&alpha, 
                        (double *)DeviceMatrixA, A_row, (double *)DeviceMatrixB, B_row, (double *)DeviceMatrixC, C_row);
@@ -275,10 +273,7 @@ class Trmm {
         case 'C': {
           std::cout << "\nCalling Ctrmm API\n";
           clk_start = clock();
-
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
+            
           status = cublasCtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, (cuComplex *)&alpha, 
                        (cuComplex *)DeviceMatrixA, A_row, (cuComplex *)DeviceMatrixB, B_row, (cuComplex *)DeviceMatrixC, C_row);
@@ -298,9 +293,6 @@ class Trmm {
           std::cout << "\nCalling Ztrmm API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasZtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, (cuDoubleComplex *)&alpha, 
                        (cuDoubleComplex *)DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB, B_row, (cuDoubleComplex *)DeviceMatrixC, C_row);
@@ -316,7 +308,6 @@ class Trmm {
           break;
         }
       }
-
 
       // Copying Matrices from device to host
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
