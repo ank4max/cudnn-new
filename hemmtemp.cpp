@@ -65,7 +65,6 @@ class Hemm {
       }
     }
    
-  
     int HemmApiCall() {
       
       // Host Memory Allocation for Matrices
@@ -90,7 +89,8 @@ class Hemm {
         return EXIT_FAILURE;
       }
       
-      // define an mxk matrix A, B, C column by column and based on mode passed
+      // define the lower triangle of an mxm Hermitian matrix A in lower mode column by column
+      // define mxn matrix B and C column by column
       // using RANDOM macro to generate random numbers between 0 - 100
 
 
@@ -136,21 +136,21 @@ class Hemm {
         }
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixA , A_row * A_col * sizeof(*HostMatrixA));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
       
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixB , B_row * B_col * sizeof(*HostMatrixB));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixB, B_row * B_col * sizeof(*HostMatrixB));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for B " << std::endl;
         FreeMemory();
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaMalloc((void **)&DeviceMatrixC , C_row * C_col * sizeof(*HostMatrixC));
+      cudaStatus = cudaMalloc((void **)&DeviceMatrixC, C_row * C_col * sizeof(*HostMatrixC));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for C " << std::endl;
         FreeMemory();
@@ -187,15 +187,11 @@ class Hemm {
         return EXIT_FAILURE;
       }
       
-
       switch (mode) {
         case 'C': {
           std::cout << "\nCalling Chemm API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                                A_row, B_col, (cuComplex *)&alpha, (cuComplex *) DeviceMatrixA, A_row, (cuComplex *)DeviceMatrixB,
                                B_row, (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row);
@@ -215,11 +211,8 @@ class Hemm {
           std::cout << "\nCalling Zhemm API\n";
           clk_start = clock();
 
-          // matrix - matrix multiplication : d_C = alpha * d_A * d_B + beta * d_C
-          // d_A - mxk matrix, d_B - kxn matrix, d_C - mxn matrix
-          // alpha, beta - scalars
           status = cublasZhemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                               A_row, B_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *) DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB,
+                               A_row, B_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatrixA, A_row, (cuDoubleComplex *)DeviceMatrixB,
                                B_row, (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, C_row);
         
           if (status != CUBLAS_STATUS_SUCCESS) {
@@ -233,7 +226,6 @@ class Hemm {
           break;
         }
       }
-
 
       // Copying Matrices from device to host
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
@@ -264,9 +256,7 @@ class Hemm {
                   "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
       
       FreeMemory();
-
-      return EXIT_SUCCESS;
-      
+      return EXIT_SUCCESS;      
     }
 };        
 
