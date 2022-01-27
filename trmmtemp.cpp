@@ -1,8 +1,9 @@
-%%writefile nay.cpp
+%%writefile nex.cpp
 #include <iostream>
 #include <string>
 #include "cublas_v2.h"
 #include <cuda_runtime.h>
+#include "cublas_utility.h"
            
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 10000 * 1.00) / 100    // to generate random values
@@ -90,7 +91,6 @@ class Trmm {
       
       // define an mxk matrix A, B, C column by column and based on mode passed
       // using RANDOM macro to generate random numbers between 0 - 100
-
 
       switch (mode) {
         case 'S': {
@@ -226,7 +226,6 @@ class Trmm {
         return EXIT_FAILURE;
       }
       
-
       switch (mode) {
         case 'S': {
           std::cout << "\nCalling Strmm API\n";
@@ -329,7 +328,7 @@ class Trmm {
         return EXIT_FAILURE;
       }
       
-      std::cout << "\nMatriz C after " << mode << "Syr2k operation is:\n";
+      std::cout << "\nMatrix C after " << mode << "trmm operation is:\n";
 
       switch (mode) {
         case 'S': {
@@ -358,9 +357,7 @@ class Trmm {
                   "\nThroughput: " << THROUGHPUT(clk_start, clk_end) << "\n\n";
       
       FreeMemory();
-
-      return EXIT_SUCCESS;
-      
+      return EXIT_SUCCESS; 
     }
 };        
 
@@ -454,5 +451,7 @@ int main(int argc, char **argv) {
 
 
 
+
+ 
 
  
