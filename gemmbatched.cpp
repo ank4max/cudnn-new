@@ -16,9 +16,9 @@ class GemmBatched {
     T **HostMatrixA;
     T **HostMatrixB;
     T **HostMatrixC;
-    T **HostPtrToDeviceMatrixA;
-    T **HostPtrToDeviceMatrixB;
-    T **HostPtrToDeviceMatrixC;
+    T **HostPtrToDeviceMatA;
+    T **HostPtrToDeviceMatB;
+    T **HostPtrToDeviceMatC;
     T **DeviceMatrixA;
     T **DeviceMatrixB;
     T **DeviceMatrixC;
@@ -171,7 +171,7 @@ class GemmBatched {
         }
       }
       
-      
+      int batch;
       
       for(batch = 0; batch < batch_count; batch++) {
         cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatA[batch], A_row * A_col * sizeof(*HostMatrixA));
