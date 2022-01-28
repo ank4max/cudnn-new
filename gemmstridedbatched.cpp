@@ -17,9 +17,6 @@ class GemmStridedBatched {
     T *HostMatrixA;
     T *HostMatrixB;
     T *HostMatrixC;
-    T **HostPtrToDeviceMatA;
-    T **HostPtrToDeviceMatB;
-    T **HostPtrToDeviceMatC;
     T *DeviceMatrixA;
     T *DeviceMatrixB;
     T *DeviceMatrixC;
@@ -306,7 +303,7 @@ class GemmStridedBatched {
         }
 
         case 'Z': {
-          std::cout << "\nCalling Zgemmbatched API\n";
+          std::cout << "\nCalling Zgemmstridedbatched API\n";
           clk_start = clock();
    
           status = cublasZgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
@@ -315,56 +312,49 @@ class GemmStridedBatched {
                                      (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatC, C_row, strideC, batch_count);
 
           if (status != CUBLAS_STATUS_SUCCESS) {
-            fprintf (stderr, "!!!!  Zgemmbatched kernel execution error\n");
+            fprintf (stderr, "!!!!  Zgemmstridedbatched kernel execution error\n");
             FreeMemory();
             return EXIT_FAILURE;
           }
 
           clk_end = clock();
-          std::cout << "Zgemmbatched API call ended\n";
+          std::cout << "Zgemmstridedbatched API call ended\n";
           break;
         }
       }
 
       // getting the final output
-      for (batch = 0; batch < batch_count; batch++) {
-        status = cublasGetMatrix(C_row, C_col, sizeof(T), HostPtrToDeviceMatC[batch], C_row, HostMatrixC[batch], C_row);
-        if (status != CUBLAS_STATUS_SUCCESS) {
-          fprintf (stderr, "!!!! API execution failed\n");
-          return EXIT_FAILURE;
-        }
-      }
-  
+      cudaStatus = cudaMemcpy(HostMatrixC, DeviceMatrixC,  sizeof(T) * batch_count * C_row * C_col, cudaMemcpyDeviceToHost);
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Failed to to Get values in Host Matrix C");
         return EXIT_FAILURE;
       }
 
-      std::cout << "\nMatriz C after " << mode << "gemmbatched operation is:\n";
+      std::cout << "\nMatriz C after " << mode << "gemmstridedbatched operation is:\n";
 
       switch (mode) {
         case 'S': {
-          util::PrintStridedMatrix<float>((float **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedbatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'D': {
-          util::PrintStridedMatrix<double>((double **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedbatchedMatrix<double>((double *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'C': {
-          util::PrintStridedComplexMatrix<cuComplex>((cuComplex **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedbatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'Z': {
-          util::PrintStridedComplexMatrix<cuDoubleComplex>((cuDoubleComplex **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedbatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'H': {
-          util::PrintStridedMatrix<__half>((__half **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedbatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
       }
