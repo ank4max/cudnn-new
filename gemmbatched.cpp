@@ -1,3 +1,4 @@
+%%writefile ne.cpp
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
@@ -32,7 +33,10 @@ class GemmBatched {
   public:
     GemmBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count, T alpha, T beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
-          C_row(C_row), C_col(C_col), batch_count(batch_count), alpha(alpha), beta(beta), mode(mode) {}
+          C_row(C_row), C_col(C_col), batch_count(batch_count), alpha(alpha), beta(beta), mode(mode) {
+              
+              std::cout<<"done";
+          }
 
     void FreeMemory(){
       if (HostMatrixA)
@@ -154,6 +158,8 @@ class GemmBatched {
           break;
         }
 
+       
+
         case 'H': {
           util::InitializeStridedMatrix<__half>((__half **)HostMatrixA, A_row, A_col, batch_count);
           util::InitializeStridedMatrix<__half>((__half **)HostMatrixB, B_row, B_col, batch_count);
@@ -172,21 +178,25 @@ class GemmBatched {
       }
       
       int batch;
+      HostPtrToDeviceMatA = new T*[batch_count];
+      HostPtrToDeviceMatB = new T*[batch_count];
+      HostPtrToDeviceMatC = new T*[batch_count];
+
       
       for(batch = 0; batch < batch_count; batch++) {
-        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatA[batch], A_row * A_col * sizeof(*HostMatrixA));
+        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatA[batch], A_row * A_col * sizeof(T));
         if (cudaStatus != cudaSuccess) {
           fprintf (stderr, "!!!! Device memory allocation for matrix (A) failed\n");
           return EXIT_FAILURE;
         }
 
-        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatB[batch], B_row * B_col * sizeof(*HostMatrixB));
+        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatB[batch], B_row * B_col * sizeof(T));
         if (cudaStatus != cudaSuccess) {
           fprintf (stderr, "!!!! Device memory allocation for matrix (B) failed\n");
           return EXIT_FAILURE;
         }
 
-        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatC[batch], C_row * C_col * sizeof(*HostMatrixC));
+        cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatC[batch], C_row * C_col * sizeof(T));
         if (cudaStatus != cudaSuccess) {
           fprintf (stderr, "!!!! Device memory allocation for matrix (C) failed\n");
           return EXIT_FAILURE;
@@ -194,21 +204,21 @@ class GemmBatched {
       }
 
 
-      cudaStatus = cudaMalloc((void**)&DeviceMatrixA, batch_count * sizeof(HostMatrixA*));
+      cudaStatus = cudaMalloc((void**)&DeviceMatrixA, batch_count * sizeof(T*));
         if (cudaStatus != cudaSuccess) {
           fprintf (stderr, "!!!! Device memory allocation for matrix (A) failed\n");
           FreeMemory();
           return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaMalloc((void**)&DeviceMatrixB, batch_count * sizeof(HostMatrixB*));
+      cudaStatus = cudaMalloc((void**)&DeviceMatrixB, batch_count * sizeof(T*));
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Device memory allocation for matrix (B) failed\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaMalloc((void**)&DeviceMatrixC, batch_count * sizeof(HostMatrixC*));
+      cudaStatus = cudaMalloc((void**)&DeviceMatrixC, batch_count * sizeof(T*));
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Device memory allocation for matrix (C) failed\n");
         FreeMemory();
@@ -226,36 +236,36 @@ class GemmBatched {
       }
 
       // setting the values of matrices on device
-      cudaStatus = cudaMemcpy(DeviceMatrixA, HostPtrToDeviceMatA, sizeof(HostMatrixA*) * batch_count, cudaMemcpyHostToDevice);
+      cudaStatus = cudaMemcpy(DeviceMatrixA, HostPtrToDeviceMatA, sizeof(T*) * batch_count, cudaMemcpyHostToDevice);
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Memory copy on device for matrix (A) failed\n");
         return EXIT_FAILURE;
       }
-      cudaStatus = cudaMemcpy(DeviceMatrixB, HostPtrToDeviceMatB, sizeof(HostMatrixB*) * batch_count, cudaMemcpyHostToDevice);
+      cudaStatus = cudaMemcpy(DeviceMatrixB, HostPtrToDeviceMatB, sizeof(T*) * batch_count, cudaMemcpyHostToDevice);
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Memory copy on device for matrix (B) failed\n");
         return EXIT_FAILURE;
       }
-      cudaStatus = cudaMemcpy(DeviceMatrixC, HostPtrToDeviceMatC, sizeof(HostMatrixC*) * batch_count, cudaMemcpyHostToDevice);
+      cudaStatus = cudaMemcpy(DeviceMatrixC, HostPtrToDeviceMatC, sizeof(T*) * batch_count, cudaMemcpyHostToDevice);
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Memory copy on device for matrix (C) failed\n");
         return EXIT_FAILURE;
       }
   
       for (batch = 0; batch < batch_count; batch++) {
-        status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA[batch], A_row, HostPtrToDeviceMatA[batch], A_row);
+        status = cublasSetMatrix(A_row, A_col, sizeof(T), HostMatrixA[batch], A_row, HostPtrToDeviceMatA[batch], A_row);
         if (status != CUBLAS_STATUS_SUCCESS) {
           fprintf (stderr, "!!!! Setting up values on device for Matrix A failed\n");
           return EXIT_FAILURE;
         }
 
-        status = cublasSetMatrix(B_row, B_col, sizeof(*HostMatrixB), HostMatrixB[batch], B_row, HostPtrToDeviceMatB[batch], B_row);
+        status = cublasSetMatrix(B_row, B_col, sizeof(T), HostMatrixB[batch], B_row, HostPtrToDeviceMatB[batch], B_row);
         if (status != CUBLAS_STATUS_SUCCESS) {
           fprintf (stderr, "!!!! Setting up values on device for Matrix B failed\n");
           return EXIT_FAILURE;
         }
     
-        status = cublasSetMatrix(C_row, C_col, sizeof(*HostMatrixC), HostMatrixC[batch], C_row, HostPtrToDeviceMatC[batch], C_row);
+        status = cublasSetMatrix(C_row, C_col, sizeof(T), HostMatrixC[batch], C_row, HostPtrToDeviceMatC[batch], C_row);
         if (status != CUBLAS_STATUS_SUCCESS) {
           fprintf (stderr, "!!!! Setting up values on device for Matrix C failed\n");
           return EXIT_FAILURE;
@@ -370,7 +380,7 @@ class GemmBatched {
 
       // getting the final output
       for (batch = 0; batch < batch_count; batch++) {
-        status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC), HostPtrToDeviceMatC[batch], C_row, HostMatrixC[batch], C_row);
+        status = cublasGetMatrix(C_row, C_col, sizeof(T), HostPtrToDeviceMatC[batch], C_row, HostMatrixC[batch], C_row);
         if (status != CUBLAS_STATUS_SUCCESS) {
           fprintf (stderr, "!!!! API execution failed\n");
           return EXIT_FAILURE;
@@ -451,7 +461,7 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-B_column")))
       B_col = atoi(argv[loop_count + 1]);
     
-    else if (!(cmd_argument.compare("-batch_count"))) {
+    else if (!(cmd_argument.compare("-batch_count"))) 
       batch_count = atoi(argv[loop_count + 1]);
 
     else if (!(cmd_argument.compare("-alpha_real")))
@@ -473,13 +483,14 @@ int main(int argc, char **argv) {
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
+  
 
   // function call
   switch (mode) {
     case 'S': {
       float alpha = (float)alpha_real;
       float beta = (float)beta_real;
-
+      std::cout<<"entering s case";
       GemmBatched<float> Sgemmbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
       status = Sgemmbatched.GemmBatchedApiCall();
       break;
@@ -524,4 +535,5 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
+
 
