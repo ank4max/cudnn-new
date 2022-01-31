@@ -27,7 +27,7 @@ class TrsmBatched {
     clock_t clk_start, clk_end;
 
   public:
-    GemmBatched(int A_row, int A_col, int B_row, int B_col, int batch_count, T alpha, char mode)
+    TrsmBatched(int A_row, int A_col, int B_row, int B_col, int batch_count, T alpha, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
           batch_count(batch_count), alpha(alpha), mode(mode) {}
 
@@ -71,7 +71,8 @@ class TrsmBatched {
         return EXIT_FAILURE;
       }
 
-      // define an mxk matrix A, B, C column by column and based on mode passed
+      // setting up values for matrices A and B
+      // A is a a triangular Matrix 
       // using RANDOM macro to generate random numbers
       switch (mode) {
         case 'S': {
@@ -127,7 +128,6 @@ class TrsmBatched {
       int batch;
       HostPtrToDeviceMatA = new T*[batch_count];
       HostPtrToDeviceMatB = new T*[batch_count];
-
       
       for(batch = 0; batch < batch_count; batch++) {
         cudaStatus = cudaMalloc((void**)&HostPtrToDeviceMatA[batch], A_row * A_col * sizeof(T));
@@ -201,14 +201,16 @@ class TrsmBatched {
         case 'S': {
           std::cout << "\nCalling Strsmbatched API\n";
           clk_start = clock();
- 
+          
+           // solve d_A[batch] * X[batch] = alpha * d_B[batch]
+           // d_A[batch] - m x m triangular matrix in lower mode
+           // d_B[batch], X[batch] - m x n general matrices
+           // alpha - scalar
+
           status = cublasStrsmBatched(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER, 
                               CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, A_row, B_col, 
                               (const float *)&alpha, (float* const*)DeviceMatrixA, A_row, 
                               (float* const*)DeviceMatrixB, B_row, batch_count);
-
-
-
 
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Strsmbatched kernel execution error\n");
@@ -292,11 +294,11 @@ class TrsmBatched {
       }
   
       if (cudaStatus != cudaSuccess) {
-        fprintf (stderr, "!!!! Failed to to Get values in Host Matrix C");
+        fprintf (stderr, "!!!! Failed to to Get values in Host Matrix B");
         return EXIT_FAILURE;
       }
 
-      std::cout << "\nMatriz C after " << mode << "trsmbatched operation is:\n";
+      std::cout << "\nMatriz B after " << mode << "trsmbatched operation is:\n";
 
       switch (mode) {
         case 'S': {
@@ -404,5 +406,4 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-
 
