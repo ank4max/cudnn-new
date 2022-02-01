@@ -1,7 +1,10 @@
+
+
 %%writefile ne.cpp
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
+#include "cublas.h"
 #include "cublas_v2.h"
 #include "cublas_utility.h"
 
@@ -63,11 +66,11 @@ class GemmStridedBatched {
       }
     }
 
-    int GemmBatchedApiCall() {
+    int GemmStridedBatchedApiCall() {
       // Host Memory Allocation for Matrices
-      HostMatrixA = new T*[batch_count * A_row * A_col];
-      HostMatrixB = new T*[batch_count * A_row * A_col];
-      HostMatrixC = new T*[batch_count * A_row * A_col];
+      HostMatrixA = new T[batch_count * A_row * A_col];
+      HostMatrixB = new T[batch_count * B_row * B_col];
+      HostMatrixC = new T[batch_count * C_row * C_col];
 
       if (!HostMatrixA) {
         fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
@@ -87,6 +90,14 @@ class GemmStridedBatched {
         return EXIT_FAILURE;
       }
 
+      // initialize CUBLAS context
+      status = cublasCreate(&handle);
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!! Failed to initialize handle\n");
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
       // define an mxk matrix A, B, C column by column and based on mode passed
       // using RANDOM macro to generate random numbers
       switch (mode) {
@@ -101,7 +112,25 @@ class GemmStridedBatched {
           std::cout << "\nMatrix B:\n";
           util::PrintStridedBatchedMatrix<float>((float *)HostMatrixB, B_row, B_col, batch_count);
           std::cout << "\nMatrix C:\n";
-          util::PrintStridedBatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);          
+
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(float), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(float), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(float), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
+
           break;
         }
 
@@ -118,6 +147,23 @@ class GemmStridedBatched {
           std::cout << "\nMatrix C:\n";
           util::PrintStridedBatchedMatrix<double>((double *)HostMatrixC, C_row, C_col, batch_count);
 
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(double), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(double), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(double), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
+
           break;
         }
 
@@ -133,6 +179,57 @@ class GemmStridedBatched {
           util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col, batch_count);
           std::cout << "\nMatrix C:\n";
           util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
+
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(cuComplex), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(cuComplex), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(cuComplex), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
+
+          break;
+        }
+
+        case '3': {
+          util::InitializeStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col, batch_count);
+          util::InitializeStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col, batch_count);
+          util::InitializeStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
+
+          // printing input matrices
+          std::cout << "\nMatrix A:\n";
+          util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col, batch_count);
+          std::cout << "\nMatrix B:\n";
+          util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col, batch_count);
+          std::cout << "\nMatrix C:\n";
+          util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
+
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(cuComplex), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(cuComplex), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(cuComplex), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
+
           break;
         }
 
@@ -143,47 +240,64 @@ class GemmStridedBatched {
 
           // printing input matrices
           std::cout << "\nMatrix A:\n";
-          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex **)HostMatrixA, A_row, A_col, batch_count);
+          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col, batch_count);
           std::cout << "\nMatrix B:\n";
-          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex **)HostMatrixB, B_row, B_col, batch_count);
+          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col, batch_count);
           std::cout << "\nMatrix C:\n";
-          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col, batch_count);
+
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(cuDoubleComplex), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(cuDoubleComplex), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(cuDoubleComplex), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
 
           break;
         }
 
         case 'H': {
-          util::InitializeStridedBatchedMatrix<__half>((__half **)HostMatrixA, A_row, A_col, batch_count);
-          util::InitializeStridedBatchedMatrix<__half>((__half **)HostMatrixB, B_row, B_col, batch_count);
-          util::InitializeStridedBatchedMatrix<__half>((__half **)HostMatrixC, C_row, C_col, batch_count);
+          util::InitializeStridedBatchedMatrix<__half>((__half *)HostMatrixA, A_row, A_col, batch_count);
+          util::InitializeStridedBatchedMatrix<__half>((__half *)HostMatrixB, B_row, B_col, batch_count);
+          util::InitializeStridedBatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
 
           // printing input matrices
           std::cout << "\nMatrix A:\n";
-          util::PrintStridedBatchedMatrix<__half>((__half **)HostMatrixA, A_row, A_col, batch_count);
+          util::PrintStridedBatchedMatrix<__half>((__half *)HostMatrixA, A_row, A_col, batch_count);
           std::cout << "\nMatrix B:\n";
-          util::PrintStridedBatchedMatrix<__half>((__half **)HostMatrixB, B_row, B_col, batch_count);
+          util::PrintStridedBatchedMatrix<__half>((__half *)HostMatrixB, B_row, B_col, batch_count);
           std::cout << "\nMatrix C:\n";
-          util::PrintStridedBatchedMatrix<__half>((__half **)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
+
+          //allocating matrices on device    
+          status = cublasAlloc(batch_count * A_row * A_col, sizeof(__half), (void**)&DeviceMatrixA);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (A)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * B_row * B_col, sizeof(__half), (void**)&DeviceMatrixB);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (B)\n");
+            return EXIT_FAILURE;
+          }
+          status = cublasAlloc(batch_count * C_row * C_col, sizeof(__half), (void**)&DeviceMatrixC);
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!! Device memory allocation error (C)\n");
+            return EXIT_FAILURE;
+          }
 
           break;
         }
-      }
-      
-      //allocating matrices on device    
-      status = cublasAlloc(batch_count * A_row * A_col, sizeof(T), (void**)&DeviceMatrixA);
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! Device memory allocation error (A)\n");
-        return EXIT_FAILURE;
-      }
-      status = cublasAlloc(batch_count * B_row * B_col, sizeof(T), (void**)&DeviceMatrixB);
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! Device memory allocation error (B)\n");
-        return EXIT_FAILURE;
-      }
-      status = cublasAlloc(batch_count * C_row * C_col, sizeof(T), (void**)&DeviceMatrixC);
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! Device memory allocation error (C)\n");
-        return EXIT_FAILURE;
       }
 
       // setting the values of matrices on device
@@ -201,31 +315,22 @@ class GemmStridedBatched {
       if (cudaStatus != cudaSuccess) {
         fprintf (stderr, "!!!! Setting up values on device for matrix (C) failed\n");
         return EXIT_FAILURE;
-      }
-
-      // initialize CUBLAS context
-      status = cublasCreate(&handle);
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!! Failed to initialize handle\n");
-        FreeMemory();
-        return EXIT_FAILURE;
-      }
+      }      
       
       // defining stride to differentiate between each batch
       long long int strideA = A_row * A_col;
       long long int strideB = B_row * B_col;
       long long int strideC = C_row * C_col;
      
-
       switch (mode) {
         case 'S': {
           std::cout << "\nCalling Sgemmstridedbatched API\n";
           clk_start = clock();
  
           status = cublasSgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                     A_row, B_col, A_col, (float *)&alpha, (float *)DeviceMatA,
-                                     A_row, strideA, (float *)DeviceMatB, B_row, strideB,
-                                     (float *)&beta, (float *)DeviceMatC, C_row, strideC, batch_count);
+                                     A_row, B_col, A_col, (float *)&alpha, (float *)DeviceMatrixA,
+                                     A_row, strideA, (float *)DeviceMatrixB, B_row, strideB,
+                                     (float *)&beta, (float *)DeviceMatrixC, C_row, strideC, batch_count);
 
 
 
@@ -236,7 +341,7 @@ class GemmStridedBatched {
           }
 
           clk_end = clock();
-          std::cout << "Sgemmbatched API call ended\n";
+          std::cout << "Sgemmstridedbatched API call ended\n";
           break;
         }
 
@@ -245,9 +350,9 @@ class GemmStridedBatched {
           clk_start = clock();
 
           status = cublasDgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                     A_row, B_col, A_col, (double *)&alpha, (double *)DeviceMatA,
-                                     A_row, strideA, (double *)DeviceMatB, B_row, strideB,
-                                     (double *)&beta, (double *)DeviceMatC, C_row, strideC, batch_count);
+                                     A_row, B_col, A_col, (double *)&alpha, (double *)DeviceMatrixA,
+                                     A_row, strideA, (double *)DeviceMatrixB, B_row, strideB,
+                                     (double *)&beta, (double *)DeviceMatrixC, C_row, strideC, batch_count);
 
 
           if (status != CUBLAS_STATUS_SUCCESS) {
@@ -266,9 +371,9 @@ class GemmStridedBatched {
           clk_start = clock();
 
           status = cublasHgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                     A_row, B_col, A_col, (__half *)&alpha, (__half *)DeviceMatA,
-                                     A_row, strideA, (__half *)DeviceMatB, B_row, strideB,
-                                     (__half *)&beta, (__half *)DeviceMatC, C_row, strideC, batch_count);
+                                     A_row, B_col, A_col, (__half *)&alpha, (__half *)DeviceMatrixA,
+                                     A_row, strideA, (__half *)DeviceMatrixB, B_row, strideB,
+                                     (__half *)&beta, (__half *)DeviceMatrixC, C_row, strideC, batch_count);
 
 
           if (status != CUBLAS_STATUS_SUCCESS) {
@@ -287,9 +392,9 @@ class GemmStridedBatched {
           clk_start = clock();
        
           status = cublasCgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                     A_row, B_col, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatA,
-                                     A_row, strideA, (cuComplex *)DeviceMatB, B_row, strideB,
-                                     (cuComplex *)&beta, (cuComplex *)DeviceMatC, C_row, strideC, batch_count);
+                                     A_row, B_col, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatrixA,
+                                     A_row, strideA, (cuComplex *)DeviceMatrixB, B_row, strideB,
+                                     (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row, strideC, batch_count);
 
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Cgemmstridedbatched kernel execution error\n");
@@ -302,14 +407,34 @@ class GemmStridedBatched {
           break;
         }
 
+        case '3': {
+          std::cout << "\nCalling Cgemm3mstridedbatched API\n";
+          clk_start = clock();
+       
+          status = cublasCgemm3mStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                     A_row, B_col, A_col, (cuComplex *)&alpha, (cuComplex *)DeviceMatrixA,
+                                     A_row, strideA, (cuComplex *)DeviceMatrixB, B_row, strideB,
+                                     (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, C_row, strideC, batch_count);
+
+          if (status != CUBLAS_STATUS_SUCCESS) {
+            fprintf (stderr, "!!!!  Cgemm3mstridedbatched kernel execution error\n");
+            FreeMemory();
+            return EXIT_FAILURE;
+          }
+
+          clk_end = clock();
+          std::cout << "Cgemm3mstridedbatched API call ended\n";
+          break;
+        }
+
         case 'Z': {
           std::cout << "\nCalling Zgemmstridedbatched API\n";
           clk_start = clock();
    
           status = cublasZgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                     A_row, B_col, A_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatA,
-                                     A_row, strideA, (cuDoubleComplex *)DeviceMatB, B_row, strideB,
-                                     (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatC, C_row, strideC, batch_count);
+                                     A_row, B_col, A_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceMatrixA,
+                                     A_row, strideA, (cuDoubleComplex *)DeviceMatrixB, B_row, strideB,
+                                     (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, C_row, strideC, batch_count);
 
           if (status != CUBLAS_STATUS_SUCCESS) {
             fprintf (stderr, "!!!!  Zgemmstridedbatched kernel execution error\n");
@@ -334,27 +459,32 @@ class GemmStridedBatched {
 
       switch (mode) {
         case 'S': {
-          util::PrintStridedbatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'D': {
-          util::PrintStridedbatchedMatrix<double>((double *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedMatrix<double>((double *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'C': {
-          util::PrintStridedbatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
+          break;
+        }
+
+        case '3': {
+          util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'Z': {
-          util::PrintStridedbatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
 
         case 'H': {
-          util::PrintStridedbatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
+          util::PrintStridedBatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
           break;
         }
       }
@@ -444,6 +574,14 @@ int main(int argc, char **argv) {
       cuComplex beta = {(float)beta_real, (float)beta_imaginary};
       GemmStridedBatched<cuComplex> Cgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
       status = Cgemmstridedbatched.GemmStridedBatchedApiCall();
+      break;
+    }
+
+    case '3': {
+      cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
+      cuComplex beta = {(float)beta_real, (float)beta_imaginary};
+      GemmStridedBatched<cuComplex> Cgemm3mstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Cgemm3mstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
 
