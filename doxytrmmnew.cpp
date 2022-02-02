@@ -14,7 +14,7 @@
  * template class trmm is defined having matrices ,their dimensions,
       mode and scalars quantity declared as private members
  * cublas handle, cuda status and cublas status are also declared as private members
- * clock varibles start and end are to compute throughput and latency
+ * clock varibles clk_start and clk_end are to compute throughput and latency
  */
 template<class T>
 class Trmm {
@@ -173,7 +173,7 @@ class Trmm {
       }
       
       //! Device memory allocations for input matrices 
-      //! required memory is being allocated to device matrices using cudaMalloc() with the help of HostMatrices
+      //! required memory is being allocated to device matrices using cudaMalloc() 
       cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
@@ -204,21 +204,33 @@ class Trmm {
       }
 
       //! copying host matrices values to the device matrices using cublasSetMatrix
-      
+          
+      /**
+       * The function SetMatrix copies a tile of A_row x A_col elements from a matrix A in host to matrix A in 
+            device
+       */       
       status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);  //!< A -> d_A
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix A from host to device failed\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
-      
+          
+      /**
+       * The function SetMatrix copies a tile of B_row x B_col elements from a matrix B in host to matrix B in 
+            device
+       */
       status = cublasSetMatrix(B_row, B_col, sizeof(*HostMatrixB), HostMatrixB, B_row, DeviceMatrixB, B_row);  //!< B -> d_B
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix B from host to device failed\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
-
+      
+      /**
+       * The function SetMatrix copies a tile of C_row x C_col elements from a matrix C in host to matrix C in 
+            device
+       */
       status = cublasSetMatrix(C_row, C_col, sizeof(*HostMatrixC), HostMatrixC, C_row, DeviceMatrixC, C_row);  //!< C -> d_C
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix C from host to device failed\n");
@@ -417,13 +429,13 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
-  
+  //! Initializing input matrices dimensions
   A_col = A_row;
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
   
-  // function call
+  //! Switch block has cases in which each case will make call to the function based on mode
   switch (mode) {
     case 'S': {
       float alpha = (float)alpha_real;
