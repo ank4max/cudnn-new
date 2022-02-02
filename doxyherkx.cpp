@@ -38,7 +38,7 @@ class Herkx {
     /**
      * Herkx constructor - to initialize the global varibles using initializer list
      * Herkx constructor initializes the dimensions of input matrices ,the value of
-          scalars alpha,beta and sets up the mode of API.
+          scalars alpha,beta and sets up the mode for API call.
      */
     Herkx(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, double beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
