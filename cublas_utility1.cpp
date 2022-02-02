@@ -1,4 +1,4 @@
-%%writefile cublas_utility.h
+
 #include <iostream>
 
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
