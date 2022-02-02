@@ -10,6 +10,12 @@
  */
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start)) 
 
+/**
+ * template class Herkx is defined having matrices ,their dimensions,
+      mode and scalars quantity declared as private members
+ * cublas handle, cuda status and cublas status are also declared as private members
+ * clock varibles clk_start and clk_end are to compute throughput and latency
+ */
 template<class T>
 class Herkx {
   private:
@@ -29,7 +35,11 @@ class Herkx {
     clock_t clk_start, clk_end;
 
   public:
-    //! Herkx constructor - to initialize the global varibles using initializer list
+    /**
+     * Herkx constructor - to initialize the global varibles using initializer list
+     * Herkx constructor initializes the dimensions of input matrices ,the value of
+          scalars alpha,beta and sets up the mode of API.
+     */
     Herkx(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, double beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
           C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
@@ -66,8 +76,13 @@ class Herkx {
       }
     }
   
+    /**
+     * The HerkxAPICall function where host and device memory allocations are done,
+          Matrices are set up and a particular variation of herkx API is called to 
+                  perform required operation based on the mode passed
+     */
     int HerkxApiCall() {
-      //! Host Memory Allocation for Matrices
+      //! Host Memory Allocation for Matrices based on dimensions initialized by Herkx constructor
       HostMatrixA = new T[A_row * A_col]; 
       HostMatrixB = new T[B_row * B_col]; 
       HostMatrixC = new T[C_row * C_col]; 
@@ -89,10 +104,10 @@ class Herkx {
         return EXIT_FAILURE;
       }
       
-      /** 
-       * define matrices A and B column by column
-       * define the lower triangle of an n x n Hermitian matrix C
-       * using RANDOM macro to generate random numbers
+      /**
+       * Switch case to initialize input matrices based on mode passed
+       * A and B are non-symmetric Matrices with dimensions nxk
+       * C is a Hermitian matrix stored in lower mode
        */
       switch (mode) {
         case 'C': {
@@ -125,7 +140,9 @@ class Herkx {
           break; 
         }
       }
-
+      
+      //! Device memory allocations for input matrices 
+      //! required memory is being allocated to device matrices using cudaMalloc()
       cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
@@ -156,6 +173,10 @@ class Herkx {
       }
 
       //! copy matrices from the host to the device
+      
+      /**
+       * The function SetMatrix copies a tile of A_row x A_col elements from a matrix A in host to matrix A in device
+       */   
       status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);  //!< A -> d_A
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix A from host to device failed\n");
@@ -163,13 +184,19 @@ class Herkx {
         return EXIT_FAILURE;
       }
       
+      /**
+       * The function SetMatrix copies a tile of B_row x B_col elements from a matrix B in host to matrix B in device
+       */
       status = cublasSetMatrix(B_row, B_col, sizeof(*HostMatrixB), HostMatrixB, B_row, DeviceMatrixB, B_row);  //!< B -> d_B
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix B from host to device failed\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
-
+      
+      /**
+       * The function SetMatrix copies a tile of C_row x C_col elements from a matrix C in host to matrix C in device
+       */
       status = cublasSetMatrix(C_row, C_col, sizeof(*HostMatrixC), HostMatrixC, C_row, DeviceMatrixC, C_row);  //!< C -> d_C
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix C from host to device failed\n");
@@ -181,9 +208,12 @@ class Herkx {
         case 'C': {
           std::cout << "\nCalling Cherkx API\n";
           clk_start = clock();
+          
           /**
-           * calling herkx API based on mode passed 
-           * storing result in device Matrix C
+           * This API performs the Hermitian rank- k update 
+           * d_c = alpha*d_a *d_b ^H + beta *d_c
+           * d_c - nxn hermitian matrix , d_a and d_b are nxk general matrices 
+           * alpha and beta are scalars
            */
           status = cublasCherkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuComplex *)&alpha, 
@@ -206,9 +236,12 @@ class Herkx {
         case 'Z': {
           std::cout << "\nCalling Zherkx API\n";
           clk_start = clock();
+          
           /**
-           * calling herkx API based on mode passed 
-           * storing result in device Matrix C
+           * This API performs the Hermitian rank- k update 
+           * d_c = alpha*d_a *d_b ^H + beta *d_c
+           * d_c - nxn hermitian matrix , d_a and d_b are nxk general matrices 
+           * alpha and beta are scalars
            */
           status = cublasZherkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                                 A_row, A_col, (cuDoubleComplex *)&alpha, 
@@ -229,6 +262,11 @@ class Herkx {
       }
 
       //! Copying Matrices from device to host
+      
+      /**
+       * GetMatrix function copies a tile of C_row x C_col from  matrix C in GPU memory space to a matrix C
+            in Host Memory space where each element will require (sizeof(*HostMatrixC)) bytes
+       */
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
                                DeviceMatrixC, C_row, HostMatrixC, C_row);  //!< copy d_c -> C
 
@@ -239,7 +277,8 @@ class Herkx {
       }
       
       std::cout << "\nMatriz C after " << mode << "herkx operation is:\n";
-
+      
+      //! Printing the final output Matrix C
       switch (mode) {
         case 'C': {
           util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row , C_col); 
@@ -253,7 +292,9 @@ class Herkx {
       }
 
       long long total_operations = A_row * A_col * B_col;
+      
       //! printing latency and throughput of the function
+      //! Latency and throughput calculated through time variables used to store API execution time
       std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / (double)(CLOCKS_PER_SEC) <<
                    "\nThroughput: " << THROUGHPUT(clk_start, clk_end, total_operations) << "\n\n";
       
@@ -277,7 +318,7 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  //! reading cmd line arguments
+  //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);  
     if (!(cmd_argument.compare("-A_row")))
@@ -305,7 +346,7 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = A_row;
 
-  //! function call
+  //! Switch block has cases in which any of the cases will be executed to make call to the function based on mode
   switch (mode) {
     case 'C': {
       cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
