@@ -10,6 +10,12 @@
  */
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start)) 
 
+/**
+ * template class Hemm is defined having matrices ,their dimensions,
+      mode and scalars quantity declared as private members
+ * cublas handle, cuda status and cublas status are also declared as private members
+ * clock varibles clk_start and clk_end are to compute throughput and latency
+ */
 template<class T>
 class Hemm {
   private:
@@ -29,7 +35,12 @@ class Hemm {
     clock_t clk_start, clk_end;
 
   public:
-    //! Hemm constructor - to initialize the global varibles using initializer list
+  
+    /**
+     * Hemm constructor - to initialize the global varibles using initializer list
+     * Hemm constructor initializes the dimensions of input matrices ,the value of
+          scalars alpha,beta and sets up the mode for API call.
+     */
     Hemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
         : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
           C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
@@ -65,9 +76,15 @@ class Hemm {
         fprintf (stderr, "!!!! Unable to uninitialize handle \n");
       }
     }
+    
+    /**
+     * The HemmApiCall function where host and device memory allocations are done,
+          Matrices are set up and a particular variation of hemm API is called to 
+                  perform required operation based on the mode passed
+     */
    
     int HemmApiCall() {
-      //! Host Memory Allocation for Matrices
+      //! Host Memory Allocation for Matrices based on dimensions initialized by Hemm constructor
       HostMatrixA = new T[A_row * A_col]; 
       HostMatrixB = new T[B_row * B_col]; 
       HostMatrixC = new T[C_row * C_col]; 
@@ -89,9 +106,10 @@ class Hemm {
         return EXIT_FAILURE;
       }
       
-      /** define the lower triangle of an mxm Hermitian matrix A in lower mode column by column
-       *  define mxn matrix B and C column by column
-       *  using RANDOM macro to generate random numbers
+      /**
+       * Switch case to initialize input matrices based on mode passed
+       * A is a Hermitian matrix stored in lower mode
+       * B and C are m×n matrices
        */
       switch (mode) {
         case 'C': {
@@ -124,7 +142,9 @@ class Hemm {
           break; 
         }
       }
-
+      
+      //! Device memory allocations for input matrices 
+      //! required memory is being allocated to device matrices using cudaMalloc()
       cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
       if(cudaStatus != cudaSuccess) {
         std::cout << " The device memory allocation failed for A " << std::endl;
@@ -154,7 +174,11 @@ class Hemm {
         return EXIT_FAILURE;
       }
 
-      //! copy matrices from the host to the device
+      //! copy matrices from the host to the device 
+      
+      /**
+       * The function SetMatrix copies a tile of A_row x A_col elements from a matrix A in host to matrix A in device
+       */   
       status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);  //!< A -> d_A
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix A from host to device failed\n");
@@ -162,13 +186,19 @@ class Hemm {
         return EXIT_FAILURE;
       }
       
+      /**
+       * The function SetMatrix copies a tile of B_row x B_col elements from a matrix B in host to matrix B in device
+       */
       status = cublasSetMatrix(B_row, B_col, sizeof(*HostMatrixB), HostMatrixB, B_row, DeviceMatrixB, B_row);  //!< B -> d_B
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix B from host to device failed\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
-
+      
+      /**
+       * The function SetMatrix copies a tile of C_row x C_col elements from a matrix C in host to matrix C in device
+       */
       status = cublasSetMatrix(C_row, C_col, sizeof(*HostMatrixC), HostMatrixC, C_row, DeviceMatrixC, C_row);  //!< C -> d_C
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "Copying matrix C from host to device failed\n");
@@ -180,9 +210,12 @@ class Hemm {
         case 'C': {
           std::cout << "\nCalling Chemm API\n";
           clk_start = clock();
+          
           /**
-           * calling hemm API based on mode passed 
-           * storing result in device Matrix C
+           * This API performs the Hermitian matrix-matrix multiplication 
+           * d_c =alpha*d_a *d_b +beta *d_c 
+           * d_a is mxm hermitian matrix and d_b ,d_c are mxn general matices 
+           * alpha and beta are scalars
            */
           status = cublasChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                                A_row, B_col, (cuComplex *)&alpha,
@@ -204,9 +237,12 @@ class Hemm {
         case 'Z': {
           std::cout << "\nCalling Zhemm API\n";
           clk_start = clock();
+          
           /**
-           * calling hemm API based on mode passed 
-           * storing result in device Matrix C
+           * This API performs the Hermitian matrix-matrix multiplication 
+           * d_c =alpha*d_a *d_b +beta *d_c 
+           * d_a is mxm hermitian matrix and d_b ,d_c are mxn general matices 
+           * alpha and beta are scalars
            */
           status = cublasZhemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                                A_row, B_col, (cuDoubleComplex *)&alpha,
@@ -227,6 +263,11 @@ class Hemm {
       }
 
       //! Copying Matrices from device to host
+      
+      /**
+       * GetMatrix function copies a tile of C_row x C_col from  matrix C in GPU memory space to a matrix C
+            in Host Memory space where each element will require (sizeof(*HostMatrixC)) bytes
+       */
       status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
                               DeviceMatrixC, C_row, HostMatrixC, C_row);  //!< copy d_c -> C
 
@@ -237,7 +278,8 @@ class Hemm {
       }
       
       std::cout << "\nMatriz C after " << mode << "hemm operation is:\n";
-
+      
+      //! Printing the final output Matrix C
       switch (mode) {
         case 'C': {
           util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
@@ -251,7 +293,9 @@ class Hemm {
       }
 
       long long total_operations = A_row * A_col * B_col;
+      
       //! printing latency and throughput of the function
+      //! Latency and throughput calculated through time variables used to store API execution time
       std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / (double)(CLOCKS_PER_SEC) <<
                    "\nThroughput: " << THROUGHPUT(clk_start, clk_end, total_operations) << "\n\n";
       
@@ -273,7 +317,7 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  //! reading cmd line arguments
+  //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);  
     if (!(cmd_argument.compare("-A_row")))
@@ -298,12 +342,13 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
  
+  //! initializing required dimensions for input matrices
   A_col = A_row;
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
   
-  //! function call
+  //! Switch block has cases in which any of the cases will be executed to make call to the function based on mode
   switch (mode) {
     case 'C': {
       cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
