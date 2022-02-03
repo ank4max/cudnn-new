@@ -8,8 +8,14 @@
  * 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
  * finally dividing it by latency to get required throughput 
  */
-#define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start)) 
+#define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start))
 
+/**
+ * template class Dot is defined having Vectors ,their dimensions,
+      mode and output variables declared as private members
+ * cublas handle, cuda status and cublas status are also declared as private members
+ * clock varibles clk_start and clk_end are to compute throughput and latency
+ */
 template<class T>
 class Dot {
   private:
@@ -26,10 +32,14 @@ class Dot {
     clock_t clk_start, clk_end;
 
   public:
-    //! Dot constructor - to initialize global variables using initializer list
+    /**
+     * Dot constructor - to initialize the global varibles using initializer list
+     * Dot constructor initializes the length of input vectors and sets up the mode for API call.
+     */
     Dot(int vector_length, char mode)
         : vector_length(vector_length), mode(mode) {}
-
+    
+    //! FreeMemory function - to free the allocated memory when program is ended or in case of any error
     void FreeMemory(){
       if (HostVectorX)
         delete[] HostVectorX;
@@ -52,10 +62,15 @@ class Dot {
         fprintf (stderr, "!!!! Unable to uninitialize handle \n");
       }
     }
-
+  
+    /**
+     * The DotApiCall function where host and device memory allocations are done,
+          Vectors are set up and a particular variation of Dot API is called to 
+                  perform required operation based on the mode passed
+     */
     int DotApiCall() {
       
-      //! Host Memory Allocation for Matrices
+      //! Host Memory Allocation for Vectors based on dimension initialized by Dot constructor
       HostVectorX = new T[vector_length]; 
       HostVectorY = new T[vector_length]; 
       
@@ -70,8 +85,10 @@ class Dot {
         return EXIT_FAILURE;
       }
             
-      //! defining vectors X and Y of length vector_length
-      //! using RANDOM macro to generate random numbers between 0 - 100
+      /**
+       * Switch case to initialize input Vectors based on mode passed
+       * X and Y are vectors having same length equals vector_length 
+       */
       switch (mode) {
         case 'S': {
          //! initializing vectors X and Y
