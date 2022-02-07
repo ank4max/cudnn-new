@@ -217,9 +217,9 @@ int Trmm:TrmmApiCall() {
       clk_start = clock();
       
       /**
-       * This API performs triangular matrix - matrix multiplication : DeviceMatrixC = alpha * DeviceMatrixA * DeviceMatrixB 
-       * DeviceMatrixA - m x m triangular matrix in lower mode ,
-       * DeviceMatrixB, DeviceMatrixC - m x n general matrices and alpha - scalar
+       * This API performs triangular matrix - matrix multiplication : C = alpha * A * B 
+       * A - m x m triangular matrix in lower mode ,
+       * B,C - m x n general matrices and alpha - scalar
        */
       status = cublasStrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                            CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, 
@@ -243,9 +243,9 @@ int Trmm:TrmmApiCall() {
       clk_start = clock();
       
       /**
-       * This API performs triangular matrix - matrix multiplication : DeviceMatrixC = alpha * DeviceMatrixA * DeviceMatrixB 
-       * DeviceMatrixA - m x m triangular matrix in lower mode ,
-       * DeviceMatrixB, DeviceMatrixC - m x n general matrices and alpha - scalar
+       * This API performs triangular matrix - matrix multiplication : C = alpha * A * B 
+       * A - m x m triangular matrix in lower mode ,
+       * B,C - m x n general matrices and alpha - scalar
        */
       status = cublasDtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                            CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, 
@@ -268,9 +268,9 @@ int Trmm:TrmmApiCall() {
       clk_start = clock();
       
       /**
-       * This API performs triangular matrix - matrix multiplication : DeviceMatrixC = alpha * DeviceMatrixA * DeviceMatrixB 
-       * DeviceMatrixA - m x m triangular matrix in lower mode ,
-       * DeviceMatrixB, DeviceMatrixC - m x n general matrices and alpha - scalar
+       * This API performs triangular matrix - matrix multiplication : C = alpha * A * B 
+       * A - m x m triangular matrix in lower mode ,
+       * B,C - m x n general matrices and alpha - scalar
        */
       status = cublasCtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                            CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, 
@@ -294,9 +294,9 @@ int Trmm:TrmmApiCall() {
       clk_start = clock();
       
       /**
-       * This API performs triangular matrix - matrix multiplication : DeviceMatrixC = alpha * DeviceMatrixA * DeviceMatrixB 
-       * DeviceMatrixA - m x m triangular matrix in lower mode ,
-       * DeviceMatrixB, DeviceMatrixC - m x n general matrices and alpha - scalar
+       * This API performs triangular matrix - matrix multiplication : C = alpha * A * B 
+       * A - m x m triangular matrix in lower mode ,
+       * B,C - m x n general matrices and alpha - scalar
        */
       status = cublasZtrmm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                            CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, B_row, B_col, 
