@@ -11,20 +11,16 @@
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start)) 
 
 /**
- * Template class Trmm is defined having matrices ,their dimensions,
-      mode and scalars quantity declared as private members
- * Cublas handle, cuda status and cublas status are also declared as private members
- * Clock varibles clk_start and clk_end are to compute throughput and latency
+ * The class Trmm has API named Trmm which performs triangular matrix - matrix multiplication : C = alpha * A * B 
+ * A - m x m triangular matrix in lower mode ,
+ * B,C - m x n general matrices and alpha - scalar
  */
 template<class T>
 class Trmm {
   public:
     /**
      * Trmm constructor - To initialize the class varibles using initializer list, 
-     * sets up the dimension of matrices, alpha and API mode
-     * This API performs triangular matrix - matrix multiplication : DeviceMatrixC = alpha * DeviceMatrixA * DeviceMatrixB 
-     * DeviceMatrixA - m x m triangular matrix in lower mode ,
-     * DeviceMatrixB, DeviceMatrixC - m x n general matrices and alpha - scalar  
+     * sets up the dimension of matrices, alpha and API mode  
      */
     Trmm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, char mode);
     
@@ -35,7 +31,7 @@ class Trmm {
     
     /**
      * TrmmAPICall function - To allocate host and device memory,
-          sets up matrices and calls trmm API based on the mode passed
+          sets up matrices and calls Trmm API based on the mode passed
      */
     int TrmmApiCall();
 
