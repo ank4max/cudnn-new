@@ -223,11 +223,11 @@ int Herkx<T>::HerkxApiCall() {
       break;
     }
 
-     case 'Z': {
-       util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row , C_col); 
-       break;
-     }
-   }
+    case 'Z': {
+      util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row , C_col); 
+      break;
+    }
+  }
 
   long long total_operations = A_row * A_col * B_col;
 
