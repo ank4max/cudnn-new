@@ -18,13 +18,13 @@
  * \param beta - scalar
  */
 template<class T>
-class herk {
+class Herk {
   public:
     /**
      * Herk constructor - To initialize the class varibles using initializer list,
      * sets up the API mode, alpha, beta and dimension of matrices
      */
-    Herk(int A_row, int A_col, int C_row, int C_col, T alpha, T beta, char mode);
+    Herk(int A_row, int A_col, int C_row, int C_col, double alpha, double beta, char mode);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -44,8 +44,8 @@ class herk {
     T *HostMatrixC;
     T *DeviceMatrixA;
     T *DeviceMatrixC;
-    T alpha;
-    T beta;
+    double alpha;
+    double beta;
     cudaError_t cudaStatus;
     cublasStatus_t status;
     cublasHandle_t handle;
