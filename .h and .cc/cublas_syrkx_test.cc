@@ -182,7 +182,7 @@ int Syrkx<T>::SyrkxApiCall() {
   }
 
   /**
-   * API call to performs variation of the symmetric rank- k update : C = alpha * (A * B^T + B * A^T) + beta * C
+   * API call to performs variation of the symmetric rank- k update : C = alpha * A * B^T + beta * C
    */
   switch (mode) {
     case 'S': {
