@@ -284,7 +284,7 @@ int main(int argc, char **argv) {
   C_col = A_row;
 
 
-  //! Calling Gemm API based on mode
+  //! Calling Herkx API based on mode
   switch (mode) {
     case 'C': {
       cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
