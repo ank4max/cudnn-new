@@ -1,7 +1,7 @@
 #include "cublas_herk_test.h"
 
 template<class T>
-Herk<T>::Herk(int A_row, int A_col, int C_row, int C_col, T alpha, T beta, char mode)
+Herk<T>::Herk(int A_row, int A_col, int C_row, int C_col, double alpha, double beta, char mode)
     : A_row(A_row), A_col(A_col), C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
 template<class T>
