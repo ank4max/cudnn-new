@@ -350,7 +350,6 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-beta_imaginary")))
       beta_imaginary = std::stod(argv[loop_count + 1]);
 
-
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
@@ -359,7 +358,6 @@ int main(int argc, char **argv) {
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
-
 
   //! Calling Symm API based on mode
   switch (mode) {
