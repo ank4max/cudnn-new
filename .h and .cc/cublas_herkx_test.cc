@@ -204,6 +204,30 @@ int Herkx<T>::HerkxApiCall() {
     }
 
   }
+  
+  //! Copy Matrix C, holding resultant matrix, from Device to Host using cublasGetMatrix()
+  status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
+                           DeviceMatrixC, C_row, HostMatrixC, C_row);  
+
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
+    FreeMemory();
+    return EXIT_FAILURE;
+  }
+      
+  std::cout << "\nMatriz C after " << mode << "herkx operation is:\n";
+
+  switch (mode) {
+    case 'C': {
+      util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row , C_col); 
+      break;
+    }
+
+     case 'Z': {
+       util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row , C_col); 
+       break;
+     }
+   }
 
   long long total_operations = A_row * A_col * B_col;
 
