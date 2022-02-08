@@ -25,7 +25,7 @@ class Gemm {
      * Gemm constructor - To initialize the class varibles using initializer list,
      * sets up the API mode, alpha, beta and dimension of matrices
      */
-    Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, char mode);
+    Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
