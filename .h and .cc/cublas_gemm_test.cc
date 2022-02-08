@@ -1,10 +1,13 @@
+%%writefile max.cc
 #include "cublas_gemm_test.h"
 
-Gemm::Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
+template<class T>
+Gemm<T>::Gemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
       C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
-void Gemm::FreeMemory() {
+template<class T>
+void Gemm<T>::FreeMemory() {
   //! Free Host Memory
   if (HostMatrixA)
     delete[] HostMatrixA;
@@ -38,7 +41,8 @@ void Gemm::FreeMemory() {
   }
 }
 
-int Gemm::GemmApiCall() {
+template<class T>
+int Gemm<T>::GemmApiCall() {
   //! Allocating Host Memory for Matrices
   HostMatrixA = new T[A_row * A_col];
   HostMatrixB = new T[B_row * B_col];
@@ -113,22 +117,16 @@ int Gemm::GemmApiCall() {
     }
 
     case 'Z': {
-      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA,
-                                                   A_row, A_col);
-      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB,
-                                                   B_row, B_col);
-      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC,
-                                                   C_row, C_col);
+      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
 
       std::cout << "\nMatrix A:\n";
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA,
-                                              A_row, A_col);
+      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
       std::cout << "\nMatrix B:\n";
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB,
-                                              B_row, B_col);
+      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
       std::cout << "\nMatrix C:\n";
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC,
-                                              C_row, C_col);
+      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);      
       
       break;
     }
@@ -358,7 +356,7 @@ int Gemm::GemmApiCall() {
 
   long long total_operations = A_row * A_col * B_col;
 
-  // printing latency and throughput of the function
+  //! printing latency and throughput of the function
   std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / double(CLOCKS_PER_SEC) <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_end, total_operations) << "\n\n";
 
@@ -468,5 +466,4 @@ int main(int argc, char **argv) {
 
 
   
-
 
