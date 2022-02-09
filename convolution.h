@@ -45,7 +45,8 @@ class Convolution {
     cudnnTensorFormat_t format = CUDNN_TENSOR_NCHW;
     cudnnTensorDescriptor_t input_desc;
     cudnnTensorDescriptor_t output_desc;
-    cudnnFilterDescriptor_t kernel_desc;
+    cudnnFilterDescriptor_t filter_desc;
     cudnnConvolutionDescriptor_t convolution_desc;
+    cudnnConvolutionFwdAlgo_t algo;
     
 };
