@@ -312,29 +312,7 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   
-  // Mystery kernel
-const float kernel_template[3][3] = {
-  {1,  1, 1},
-  {1, -8, 1},
-  {1,  1, 1}
-};
-
-float h_kernel[3][3][3][3];
-for (int kernel = 0; kernel < 3; ++kernel) {
-  for (int channel = 0; channel < 3; ++channel) {
-    for (int row = 0; row < 3; ++row) {
-      for (int column = 0; column < 3; ++column) {
-        h_kernel[kernel][channel][row][column] = kernel_template[row][column];
-      }
-    }
-  }
-}
-
-float* d_kernel{nullptr};
-cudaMalloc(&d_kernel, sizeof(h_kernel));
-cudaMemcpy(d_kernel, h_kernel, sizeof(h_kernel), cudaMemcpyHostToDevice);
-
-
+  
 //the convolution
 const float alpha = 1, beta = 0;
 
