@@ -2,7 +2,7 @@
 #include "cublas_gemmBatched_test.h"
 
 template<class T>
-GemmBatched<T>::GemmBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count T alpha, T beta, char mode)
+GemmBatched<T>::GemmBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count, T alpha, T beta, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
       C_row(C_row), C_col(C_col), batch_count(batch_count), alpha(alpha), beta(beta), mode(mode) {}
 
@@ -132,7 +132,7 @@ int GemmBatched<T>::GemmBatchedApiCall() {
 
   }
   
-  //allocating matrices on device    
+  //! Allocating matrices on device    
   HostPtrToDeviceMatA = new T*[batch_count];
   HostPtrToDeviceMatB = new T*[batch_count];
   HostPtrToDeviceMatC = new T*[batch_count];
@@ -191,7 +191,7 @@ int GemmBatched<T>::GemmBatchedApiCall() {
     return EXIT_FAILURE;
   }
   
-  //! Copying values of Host matrices to Device matrices using cublasSetMatrix()
+  //! Setting the values of matrices on device
   cudaStatus = cudaMemcpy(DeviceMatrixA, HostPtrToDeviceMatA, sizeof(T*) * batch_count, cudaMemcpyHostToDevice);
   if (cudaStatus != cudaSuccess) {
     fprintf (stderr, "!!!! Memory copy on device for matrix (A) failed\n");
@@ -211,6 +211,7 @@ int GemmBatched<T>::GemmBatchedApiCall() {
     return EXIT_FAILURE;
   }
   
+  //! Copying values of Host matrices to Device matrices using cublasSetMatrix()
   for (batch = 0; batch < batch_count; batch++) {
     status = cublasSetMatrix(A_row, A_col, sizeof(T), HostMatrixA[batch], A_row, HostPtrToDeviceMatA[batch], A_row);
     if (status != CUBLAS_STATUS_SUCCESS) {
@@ -250,7 +251,6 @@ int GemmBatched<T>::GemmBatchedApiCall() {
                                   (float**)DeviceMatrixA, A_row, (float**)DeviceMatrixB, 
                                    B_row, (float *)&beta, (float **)DeviceMatrixC, 
                                    C_row, batch_count);
-
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Sgemmbatched kernel execution error\n");
