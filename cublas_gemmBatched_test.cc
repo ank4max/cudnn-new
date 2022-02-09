@@ -1,5 +1,5 @@
 %%writefile max.cc
-#include "cublas_gemmBatched_test.h"
+#include "cublas_gemmbatched_test.h"
 
 template<class T>
 GemmBatched<T>::GemmBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count, T alpha, T beta, char mode)
