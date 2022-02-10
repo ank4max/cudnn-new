@@ -1,13 +1,11 @@
+%%writefile max.cc
 #include "convolution.h"
 
 //print function
 int print(const float *data, int n, int c, int h, int w) {
   std::vector<float> buffer(1 << 20);
-  cudaStatus = cudaMemcpy(buffer.data(), data, n * c * h * w * sizeof(float), cudaMemcpyDeviceToHost);
-  if( cudaStatus != cudaSuccess) {
-    printf("Copying error from device to host\n");
-    return EXIT_FAILURE;   
-  }
+   cudaMemcpy(buffer.data(), data, n * c * h * w * sizeof(float), cudaMemcpyDeviceToHost);
+  
     
   int a = 0;
   for (int i = 0; i < n; ++i) {
@@ -30,7 +28,7 @@ int print(const float *data, int n, int c, int h, int w) {
 Convolution::Convolution(int batch, int channel, int height, int width)
     : batch(batch), channel(channel), height(height), width(width) {}
 
-Convolution::FreeMemory() {
+int Convolution::FreeMemory() {
   
   cudaStatus = cudaFree(workspace_data);
   if( cudaStatus != cudaSuccess) {
@@ -62,7 +60,7 @@ Convolution::FreeMemory() {
     return EXIT_FAILURE;   
   }
 
-  status = cudnnDestroyFilterDescriptor(kernel_desc);
+  status = cudnnDestroyFilterDescriptor(filter_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Unable to Destroy Filter Descriptor\n");
     return EXIT_FAILURE;   
@@ -86,9 +84,10 @@ Convolution::FreeMemory() {
     return EXIT_FAILURE;   
   }
   
+  return EXIT_SUCCESS;
 }
 
-Convolution::ConvolutionForwardApiCall() {
+int Convolution::ConvolutionForwardApiCall() {
   // Generating random input_data 
   int size = batch * channel * height * width;
   int size_bytes = size * sizeof(float);
@@ -153,7 +152,7 @@ Convolution::ConvolutionForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetFilter4dDescriptor(filter_desc, format, dtype, filt_k, filt_c, filt_h, filt_w);
+  status = cudnnSetFilter4dDescriptor(filter_desc, dtype, format, filt_k, filt_c, filt_h, filt_w);
 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Set filter Descriptor error\n");
@@ -170,7 +169,7 @@ Convolution::ConvolutionForwardApiCall() {
   
   int size1 = filt_k * filt_c * filt_h * filt_w ;
   float fill_data[size1];
-  for (int i = 0; i < filt_k; i++) {
+
     int a = 0;
     for (int i = 0; i < filt_k; ++i) {
       for (int j = 0; j < filt_c; ++j) {  
@@ -190,7 +189,7 @@ Convolution::ConvolutionForwardApiCall() {
       }
     }
     
-  }
+
 
   cudaStatus = cudaMemcpy(filter_data, fill_data, size1 * sizeof(float), cudaMemcpyHostToDevice);
   if( cudaStatus != cudaSuccess) {
@@ -252,6 +251,7 @@ Convolution::ConvolutionForwardApiCall() {
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Creating Output Tensor descriptor error\n");
     return EXIT_FAILURE;
+  }
   
   status = cudnnSetTensor4dDescriptor(output_desc, format, dtype, out_n, out_c, out_h, out_w);
   if( status != CUDNN_STATUS_SUCCESS) {
@@ -300,7 +300,7 @@ Convolution::ConvolutionForwardApiCall() {
   //! the convolution
   clk_start=clock();
       
-  status = cudnnConvolutionForward(handle, &alpha, input_desc, input_data, filter_desc, filter_data,
+  status = cudnnConvolutionForward(handle_, &alpha, input_desc, input_data, filter_desc, filter_data,
                                    convolution_desc, algo, workspace_data, ws_size, &beta, output_desc, output_data);
   
   clk_stop=clock();
