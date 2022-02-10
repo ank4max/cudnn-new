@@ -268,152 +268,177 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
   
   switch (mode) {
     case 'S': {
-      std::cout << "\nCalling Sgemm API\n";
+      std::cout << "\nCalling Sgemmstridedbatched API\n";
       clk_start = clock();
-
-      status = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
-                           B_col, A_col, (float *)&alpha,
-                           (float *)DeviceMatrixA, A_row,
-                           (float *)DeviceMatrixB, B_row, (float *)&beta,
-                           (float *)DeviceMatrixC, C_row);
+ 
+      status = cublasSgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                         A_row, B_col, A_col, (float *)&alpha, 
+                                         (float *)DeviceMatrixA, A_row, strideA,
+                                         (float *)DeviceMatrixB, B_row, strideB,
+                                         (float *)&beta, (float *)DeviceMatrixC, 
+                                         C_row, strideC, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Sgemm kernel execution error\n");
+        fprintf (stderr, "!!!!  Sgemmstridedbatched kernel execution error\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "Sgemm API call ended\n";
+      std::cout << "Sgemmstridedbatched API call ended\n";
       break;
     }
 
     case 'D': {
-      std::cout << "\nCalling Dgemm API\n";
+      std::cout << "\nCalling Dgemmstridedbatched API\n";
       clk_start = clock();
 
-      status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
-                           B_col, A_col, (double *)&alpha,
-                           (double *)DeviceMatrixA, A_row,
-                           (double *)DeviceMatrixB, B_row,
-                           (double *)&beta,
-                           (double *)DeviceMatrixC, C_row);
+      status = cublasDgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                         A_row, B_col, A_col, (double *)&alpha, 
+                                         (double *)DeviceMatrixA, A_row, strideA,
+                                         (double *)DeviceMatrixB, B_row, strideB,
+                                         (double *)&beta, (double *)DeviceMatrixC, 
+                                         C_row, strideC, batch_count);
+
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Dgemm kernel execution error\n");
+        fprintf (stderr, "!!!!  Dgemmstridedbatched kernel execution error\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "Dgemm API call ended\n";
+      std::cout << "Dgemmstridedbatched API call ended\n";
       break;
     }
 
     case 'H': {
-      std::cout << "\nCalling Hgemm API\n";
+      std::cout << "\nCalling Hgemmstridedbatched API\n";
       clk_start = clock();
 
-      status = cublasHgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
-                           B_col, A_col, (__half *)&alpha,
-                           (__half *)DeviceMatrixA, A_row,
-                           (__half *)DeviceMatrixB, B_row,
-                           (__half *)&beta,
-                           (__half *)DeviceMatrixC, C_row);
+      status = cublasHgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                         A_row, B_col, A_col, (__half *)&alpha,
+                                         (__half *)DeviceMatrixA, A_row, strideA,
+                                         (__half *)DeviceMatrixB, B_row, strideB,
+                                         (__half *)&beta, (__half *)DeviceMatrixC,
+                                         C_row, strideC, batch_count);
+
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Hgemm kernel execution error\n");
+        fprintf (stderr, "!!!!  Hgemmstridedbatched kernel execution error\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "Hgemm API call ended\n";
+      std::cout << "Hgemmstridedbatched API call ended\n";
       break;
     }
 
     case 'C': {
-      std::cout << "\nCalling Cgemm API\n";
+      std::cout << "\nCalling Cgemmstridedbatched API\n";
       clk_start = clock();
-
-      status = cublasCgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
-                           B_col, A_col, (cuComplex *)&alpha,
-                           (cuComplex *)DeviceMatrixA, A_row,
-                           (cuComplex *)DeviceMatrixB, B_row,
-                           (cuComplex *)&beta,
-                           (cuComplex *)DeviceMatrixC, C_row);
+       
+      status = cublasCgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                         A_row, B_col, A_col, (cuComplex *)&alpha, 
+                                         (cuComplex *)DeviceMatrixA, A_row, strideA, 
+                                         (cuComplex *)DeviceMatrixB, B_row, strideB,
+                                         (cuComplex *)&beta, (cuComplex *)DeviceMatrixC, 
+                                         C_row, strideC, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Cgemm kernel execution error\n");
+        fprintf (stderr, "!!!!  Cgemmstridedbatched kernel execution error\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "Cgemm API call ended\n";
+      std::cout << "Cgemmstridedbatched API call ended\n";
+      break;
+    }
+
+    case '3': {
+      std::cout << "\nCalling Cgemm3mstridedbatched API\n";
+      clk_start = clock();
+       
+      status = cublasCgemm3mStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                           A_row, B_col, A_col, (cuComplex *)&alpha,
+                                           (cuComplex *)DeviceMatrixA, A_row, strideA,
+                                           (cuComplex *)DeviceMatrixB, B_row, strideB,
+                                           (cuComplex *)&beta, (cuComplex *)DeviceMatrixC,
+                                           C_row, strideC, batch_count);
+
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        fprintf (stderr, "!!!!  Cgemm3mstridedbatched kernel execution error\n");
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      clk_end = clock();
+      std::cout << "Cgemm3mstridedbatched API call ended\n";
       break;
     }
 
     case 'Z': {
-      std::cout << "\nCalling Zgemm API\n";
+      std::cout << "\nCalling Zgemmstridedbatched API\n";
       clk_start = clock();
-
-      status = cublasZgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
-                           B_col, A_col, (cuDoubleComplex *)&alpha,
-                           (cuDoubleComplex *)DeviceMatrixA, A_row,
-                           (cuDoubleComplex *)DeviceMatrixB, B_row,
-                           (cuDoubleComplex *)&beta,
-                           (cuDoubleComplex *)DeviceMatrixC, C_row);
+   
+      status = cublasZgemmStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                                         A_row, B_col, A_col, (cuDoubleComplex *)&alpha,
+                                         (cuDoubleComplex *)DeviceMatrixA, A_row, strideA, 
+                                         (cuDoubleComplex *)DeviceMatrixB, B_row, strideB,
+                                         (cuDoubleComplex *)&beta, (cuDoubleComplex *)DeviceMatrixC, 
+                                         C_row, strideC, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Zgemm kernel execution error\n");
+        fprintf (stderr, "!!!!  Zgemmstridedbatched kernel execution error\n");
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "Zgemm API call ended\n";
+      std::cout << "Zgemmstridedbatched API call ended\n";
       break;
     }
+
   }
   
-  //! Copy Matrix C, holding resultant matrix, from Device to Host using cublasGetMatrix()
-  status = cublasGetMatrix(C_row, C_col, sizeof(*HostMatrixC),
-                           DeviceMatrixC, C_row, HostMatrixC, C_row);
-
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
-    FreeMemory();
+  //! Getting the final output
+  cudaStatus = cudaMemcpy(HostMatrixC, DeviceMatrixC,  sizeof(T) * batch_count * C_row * C_col, cudaMemcpyDeviceToHost);
+  if (cudaStatus != cudaSuccess) {
+    fprintf (stderr, "!!!! Failed to to Get values in Host Matrix C");
     return EXIT_FAILURE;
   }
 
-  std::cout << "\nMatrix C after " << mode << "gemm operation is:\n";
+
+  std::cout << "\nMatrix C after " << mode << "gemmstridedbatched operation is:\n";
 
   switch (mode) {
-    case 'S': {  
-      util::PrintMatrix<float>((float *)HostMatrixC, C_row, C_col);
+    case 'S': {
+      util::PrintStridedBatchedMatrix<float>((float *)HostMatrixC, C_row, C_col, batch_count);
       break;
     }
 
     case 'D': {
-      util::PrintMatrix<double>((double *)HostMatrixC, C_row, C_col);
+      util::PrintStridedBatchedMatrix<double>((double *)HostMatrixC, C_row, C_col, batch_count);
       break;
     }
 
     case 'C': {
-      util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col);
+      util::PrintStridedBatchedComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col, batch_count);
       break;
     }
 
     case 'Z': {
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col);
+      util::PrintStridedBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col, batch_count);
       break;
     }
 
     case 'H': {
-      util::PrintMatrix<__half>((__half *)HostMatrixC, C_row, C_col);
+      util::PrintStridedBatchedMatrix<__half>((__half *)HostMatrixC, C_row, C_col, batch_count);
       break;
     }
+
   }
 
   long long total_operations = A_row * A_col * B_col;
@@ -429,7 +454,7 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
 
 int main(int argc, char **argv) {
 
-  int A_row, A_col, B_row, B_col, C_row, C_col, status;
+  int A_row, A_col, B_row, B_col, C_row, C_col, batch_count, status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
 
@@ -453,6 +478,9 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-B_column")))
       B_col = atoi(argv[loop_count + 1]);
+     
+    else if (!(cmd_argument.compare("-batch_count"))) 
+      batch_count = atoi(argv[loop_count + 1]);
 
     else if (!(cmd_argument.compare("-alpha_real")))
       alpha_real = std::stod(argv[loop_count + 1]);
@@ -475,52 +503,48 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = B_col;
 
-  //! Calling Gemm API based on mode
+  //! Calling GemmStridedBatched API based on mode
   switch (mode) {
     case 'S': {
       float alpha = (float)alpha_real;
       float beta = (float)beta_real;
-
-      Gemm<float> Sgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Sgemm.GemmApiCall();
+      GemmStridedBatched<float> Sgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Sgemmstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
 
     case 'D': {
       double alpha = alpha_real;
       double beta = beta_real;
-
-      Gemm<double> Dgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Dgemm.GemmApiCall();
+      GemmStridedBatched<double> Dgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Dgemmstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
 
     case 'C': {
       cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
       cuComplex beta = {(float)beta_real, (float)beta_imaginary};
-
-      Gemm<cuComplex> Cgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Cgemm.GemmApiCall();
+      GemmStridedBatched<cuComplex> Cgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Cgemmstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
 
     case 'Z': {
       cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
       cuDoubleComplex beta = {beta_real, beta_imaginary};
-
-      Gemm<cuDoubleComplex> Zgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Zgemm.GemmApiCall();
+      GemmStridedBatched<cuDoubleComplex> Zgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Zgemmstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
 
     case 'H': {
       __half alpha = (__half)alpha_real;
       __half beta = (__half)beta_real;
-
-      Gemm<__half> Hgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Hgemm.GemmApiCall();
+      GemmStridedBatched<__half> Hgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, mode);
+      status = Hgemmstridedbatched.GemmStridedBatchedApiCall();
       break;
     }
+
   }
 
   return EXIT_SUCCESS;
