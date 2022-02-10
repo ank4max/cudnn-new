@@ -1,5 +1,5 @@
 %%writefile max.cc
-#include "cublas_gemm_test.h"
+#include "cublas_gemmStridedBatched_test.h"
 
 template<class T>
 GemmStridedBatched<T>::GemmStridedBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count, T alpha, T beta, char mode)
@@ -263,7 +263,7 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
    long long int strideC = C_row * C_col;
   
   /**
-   * API call to performs matrix - matrix multiplication : C = alpha * A * B + beta * C
+   * API call to performs matrix - matrix multiplication : C[i] = alpha * A[i] * B[i] + beta * C[i]
    */
   
   switch (mode) {
