@@ -3,9 +3,6 @@
 
 //print function
 int print(const float *data, int n, int c, int h, int w) {
-  std::vector<float> buffer(1 << 20);
-   cudaMemcpy(buffer.data(), data, n * c * h * w * sizeof(float), cudaMemcpyDeviceToHost);
-  
     
   int a = 0;
   for (int i = 0; i < n; ++i) {
@@ -13,7 +10,7 @@ int print(const float *data, int n, int c, int h, int w) {
       std::cout << "n=" << i << ", c=" << j << ":" << std::endl;
       for (int k = 0; k < h; ++k) {
         for (int l = 0; l < w; ++l) {
-          std::cout << std::setw(4) << std::right << buffer[a];
+          std::cout << std::setw(4) << std::right << data[a];
           ++a;
         }
         std::cout << std::endl;
@@ -103,20 +100,20 @@ int Convolution::ConvolutionForwardApiCall() {
     printf(" Unable to initialize handle\n");
     return EXIT_FAILURE;   
   }
-  std::cout << "Created cuDNN handle" << std::endl;
+  std::cout << "\nCreated cuDNN handle" << std::endl;
   
   // create the tensor descriptor
-  std::cout << "Creating  Input descriptor" << std::endl;
+  std::cout << "\nCreating  Input descriptor" << std::endl;
   
   status = cudnnCreateTensorDescriptor(&input_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating tensor descriptor x error\n");
+    printf("\nCreating tensor descriptor x error\n");
     return EXIT_FAILURE;   
   }
   
   status = cudnnSetTensor4dDescriptor(input_desc, format, dtype, batch, channel, height, width);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting tensor descriptor x error\n");
+    printf("\nSetting tensor descriptor x error\n");
     return EXIT_FAILURE;   
   }
   
@@ -124,14 +121,14 @@ int Convolution::ConvolutionForwardApiCall() {
   cudaStatus = cudaMallocManaged(&input_data, size_bytes);
   
   if( cudaStatus != cudaSuccess) {
-    printf(" Device Memory allocation error \n");
+    printf("\nDevice Memory allocation error \n");
     return EXIT_FAILURE;   
   }
   
   //! Copying Input data from host to device
   cudaStatus = cudaMemcpy(input_data, InputData, size_bytes, cudaMemcpyHostToDevice);
   if( cudaStatus != cudaSuccess) {
-    printf(" failed to copy input data to device\n");
+    printf("\nFailed to copy input data to device\n");
     return EXIT_FAILURE;   
   }
   
@@ -215,7 +212,7 @@ int Convolution::ConvolutionForwardApiCall() {
   
   status = cudnnCreateConvolutionDescriptor(&convolution_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating convolution Descriptor error\n");
+    printf("\nCreating convolution Descriptor error\n");
     return EXIT_FAILURE;   
   }
   
@@ -223,7 +220,7 @@ int Convolution::ConvolutionForwardApiCall() {
                                            CUDNN_CROSS_CORRELATION, dtype);
 
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting Convolution Descriptor error\n");
+    printf("\nSetting Convolution Descriptor error\n");
     return EXIT_FAILURE;   
   }
   
@@ -294,7 +291,7 @@ int Convolution::ConvolutionForwardApiCall() {
     return EXIT_FAILURE;   
   } 
       
-  std::cout << "Workspace size: " << ws_size << std::endl;
+  std::cout << "\nWorkspace size: " << ws_size << std::endl;
   std::cout << std::endl;
   
   //! the convolution
@@ -311,7 +308,7 @@ int Convolution::ConvolutionForwardApiCall() {
   }
   
   double flopsCoef = 2.0;
-  std::cout << "Input n*c*h*w: " << size << 
+  std::cout << "\nInput n*c*h*w: " << size << 
                "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
   
@@ -322,14 +319,36 @@ int Convolution::ConvolutionForwardApiCall() {
   }
   
   // results
-  std::cout << "in_data:" << std::endl;
-  print(input_data, batch, channel, height, width);
+  std::cout << "\nInput_data:" << std::endl;
+  float in_data[size];
+  cudaStatus = cudaMemcpy(in_data, input_data , size_bytes, cudaMemcpyDeviceToHost);
+  if( cudaStatus != cudaSuccess) {
+    printf("\nCopying data from device to host failed\n");
+    return EXIT_FAILURE;   
+  }
+  print(in_data, batch, channel, height, width);
   
-  std::cout << "filt_data:" << std::endl;
-  print(filter_data, filt_k, filt_c, filt_h, filt_w);
+  std::cout << "\nFilter_data:" << std::endl;
+  float filt[filt_k * filt_c * filt_h * filt_w];
+
+  cudaStatus = cudaMemcpy(filt, filter_data ,filt_k * filt_c * filt_h * filt_w * sizeof(float), cudaMemcpyDeviceToHost);
+  if( cudaStatus != cudaSuccess) {
+    printf("\nCopying data from device to host failed\n");
+    return EXIT_FAILURE;   
+  }
+  print(filt, filt_k, filt_c, filt_h, filt_w);
+
   
-  std::cout << "out_data:" << std::endl;
-  print(output_data, out_n, out_c, out_h, out_w);
+  std::cout << "\nOutput_data:" << std::endl;
+  float out[out_n * out_c * out_h * out_w];
+
+  cudaStatus = cudaMemcpy(out, output_data , out_n * out_c * out_h * out_w * sizeof(float), cudaMemcpyDeviceToHost);
+  if( cudaStatus != cudaSuccess) {
+    printf("\nCopying data from device to host failed\n");
+    return EXIT_FAILURE;   
+  }
+
+  print(out, out_n, out_c, out_h, out_w);
   
   FreeMemory();
   return EXIT_SUCCESS;
