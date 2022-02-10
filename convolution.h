@@ -35,8 +35,8 @@ class Convolution {
     int batch, channel, height, width;
     float alpha = 1.0;
     float beta = 0.0;
-    float *input;
-    float *output;
+    float *input_data, *filter_data, ;
+    float *output_data, *workspace_data;
     clock_t clk_start, clk_stop;
     cudaError_t cudaStatus;
     cudnnStatus_t status;
