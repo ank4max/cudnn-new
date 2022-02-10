@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
+#include "cublas.h"
 #include "cublas_v2.h"
 #include "cublas_utility.h"
 
