@@ -1,9 +1,11 @@
+%%writefile convolution.h
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
 #include <cudnn.h>
 #include <time.h>
 #include <vector>
+#include <iomanip>
 
 /* 
  * 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and 
@@ -24,7 +26,7 @@ class Convolution {
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
      */
-    void FreeMemory();
+    int FreeMemory();
 
     /**
      * ConvolutionForwardApiCall which performs Max-pool operation on input image
@@ -35,7 +37,7 @@ class Convolution {
     int batch, channel, height, width;
     float alpha = 1.0;
     float beta = 0.0;
-    float *input_data, *filter_data, ;
+    float *input_data, *filter_data ;
     float *output_data, *workspace_data;
     clock_t clk_start, clk_stop;
     cudaError_t cudaStatus;
