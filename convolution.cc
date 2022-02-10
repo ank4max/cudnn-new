@@ -80,7 +80,7 @@ Convolution::FreeMemory() {
     return EXIT_FAILURE;   
   }
 
-  status = cudnnDestroy(handle);
+  status = cudnnDestroy(handle_);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Unable to Destroy handle\n");
     return EXIT_FAILURE;   
