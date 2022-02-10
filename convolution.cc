@@ -129,9 +129,7 @@ Convolution::ConvolutionForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetFilter4dDescriptor(
-        filter_desc, format, dtype,
-        filt_k, filt_c, filt_h, filt_w);
+  status = cudnnSetFilter4dDescriptor(filter_desc, format, dtype, filt_k, filt_c, filt_h, filt_w);
 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Set filter Descriptor error\n");
@@ -140,8 +138,7 @@ Convolution::ConvolutionForwardApiCall() {
   
   //! Device memory allocation for filter data
   float *filt_data;
-  cudaStatus = cudaMalloc(
-      &filt_data, filt_k * filt_c * filt_h * filt_w * sizeof(float));
+  cudaStatus = cudaMalloc(&filt_data, filt_k * filt_c * filt_h * filt_w * sizeof(float));
   
   if( cudaStatus != cudaSuccess) {
     printf(" Device memory allocation error \n");
@@ -170,8 +167,8 @@ Convolution::ConvolutionForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetConvolution2dDescriptor(conv_desc, pad_h, pad_w, str_h, str_w, dil_h, dil_w,
-           CUDNN_CROSS_CORRELATION, dtype);
+  status = cudnnSetConvolution2dDescriptor(convolution_desc, pad_h, pad_w, str_h, str_w, dil_h, dil_w,
+                                           CUDNN_CROSS_CORRELATION, dtype);
 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting Convolution Descriptor error\n");
@@ -184,9 +181,8 @@ Convolution::ConvolutionForwardApiCall() {
   int out_h;
   int out_w;
   
-  status = cudnnGetConvolution2dForwardOutputDim(
-        convolution_desc, input_desc, filter_desc,
-        &out_n, &out_c, &out_h, &out_w);
+  status = cudnnGetConvolution2dForwardOutputDim(convolution_desc, input_desc, filter_desc,
+                                                 &out_n, &out_c, &out_h, &out_w);
 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting GetConvolution2dForwardOutputDim error\n");
@@ -211,8 +207,7 @@ Convolution::ConvolutionForwardApiCall() {
   }
   
   float *out_data;
-  cudaStatus = cudaMallocManaged(
-        &out_data, out_n * out_c * out_h * out_w * sizeof(float));  
+  cudaStatus = cudaMallocManaged(&out_data, out_n * out_c * out_h * out_w * sizeof(float));  
 
   if( cudaStatus != cudaSuccess) {
     printf(" device Memory allocation failed\n");
@@ -220,9 +215,8 @@ Convolution::ConvolutionForwardApiCall() {
   }
     
   // algorithm
-  status = cudnnGetConvolutionForwardAlgorithm(handle_,
-        input_desc, filter_desc, convolution_desc, output_desc,
-        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &algo);
+  status = cudnnGetConvolutionForwardAlgorithm(handle_,input_desc, filter_desc, convolution_desc, output_desc,
+                                               CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, 0, &algo);
   
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Convolution Forward Algorithm  error\n");
@@ -248,11 +242,77 @@ Convolution::ConvolutionForwardApiCall() {
     printf(" device allocation failed for ws_size\n");
     return EXIT_FAILURE;   
   } 
-
-
+      
   std::cout << "Workspace size: " << ws_size << std::endl;
-  std::cout << std::endl;  
+  std::cout << std::endl;
   
+  //! the convolution
+  clk_start=clock();
+      
+  status = cudnnConvolutionForward(handle, &alpha, input_desc, in_data, filt_desc, filt_data,
+                                   conv_desc, algo, ws_data, ws_size, &beta, out_desc, out_data);
+  
+  clk_stop=clock();
+      
+  if( status != CUDNN_STATUS_SUCCESS) {
+    printf(" API faied to execute\n");
+    return EXIT_FAILURE;   
+  }
+  
+  double flopsCoef = 2.0;
+  std::cout << "Input n*c*h*w: " << size << 
+               "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
+               "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
+  
+  cudaStatus = cudaDeviceSynchronize();
+  if( cudaStatus != cudaSuccess) {
+    printf(" Device synchronization error\n");
+    return EXIT_FAILURE;   
+  }
+  
+  // results
+  std::cout << "in_data:" << std::endl;
+  print(in_data, batch, channel, height, width);
+  
+  std::cout << "filt_data:" << std::endl;
+  print(filt_data, filt_k, filt_c, filt_h, filt_w);
+  
+  std::cout << "out_data:" << std::endl;
+  print(out_data, out_n, out_c, out_h, out_w);
+  
+  FreeMemory();
+  return EXIT_SUCCESS;
+}
 
+    
+int main(int argc, char** argv) {    
+  //! Reading values for input parameters using command line arguments 
+  std::cout << "\n\n" << argv[0] << std::endl;
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::cout << argv[loop_count] << " ";
+    if (loop_count + 1 < argc)
+      std::cout << argv[loop_count + 1] << std::endl;
+  }
+  std::cout << std::endl;
+    
+  int batch, channel, height, width;
 
+  //! reading cmd line arguments and initializing the required parameters
+  for (int loop_count = 1; loop_count < argc; loop_count += 2) {
+    std::string cmd_argument(argv[loop_count]);  
+    if (!(cmd_argument.compare("-batch")))
+      batch = atoi(argv[loop_count + 1]);
+      
+    else if (!(cmd_argument.compare("-channel")))
+      channel = atoi(argv[loop_count + 1]);
 
+    else if (!(cmd_argument.compare("-height")))
+      height = std::stod(argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-width")))
+      width = std::stod(argv[loop_count + 1]);
+  }
+
+  Convolution convolution(batch, channel, height, width);
+  convolution.ConvolutionForwardApiCall();
+}
