@@ -1,16 +1,4 @@
-/**
- * Copyright 2021-2022 Enflame. All Rights Reserved.
- *
- * @file    cublas_trmm_test.cc
- * @brief   Trmm class function implementation
- *
- * @author  Aditya(CAI)
- * @date    2022-01-20
- * @version V1.0
- * @par     Copyright (c)
- *          Enflame Tech Company.
- * @par     History:
- */
+
 
 #include <unordered_map>
 #include "cublas_trmm_test.h"
