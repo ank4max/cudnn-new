@@ -1,3 +1,6 @@
+#include "cublas_hemm_test.h"
+#include <unordered_map>
+
 template<class T>
 Hemm<T>::Hemm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
@@ -151,6 +154,14 @@ int Hemm<T>::HemmApiCall() {
   /**
    * API call to performs matrix - matrix multiplication : C = alpha * A * B + beta * C
    */
+     
+  /**
+   * The possible error values returned by this API and their meanings are listed below :
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n <0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU
+   */
   switch (mode) {
     case 'C': {
       std::cout << "\nCalling Chemm API\n";
@@ -227,12 +238,43 @@ int Hemm<T>::HemmApiCall() {
   
   FreeMemory();
   return EXIT_SUCCESS;      
-}   
+}
+
+void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+            double beta_real, double beta_imaginary) {
+  
+  cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
+  cuComplex beta = {(float)beta_real, (float)beta_imaginary};
+
+  Hemm<cuComplex> Chemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
+  Chemm.HemmApiCall();
+ 
+}
+
+void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+            double beta_real, double beta_imaginary) {
+  
+  cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
+  cuDoubleComplex beta = {beta_real, beta_imaginary};
+
+  Hemm<cuDoubleComplex> Zhemm(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta, 'Z');
+  Zhemm.HemmApiCall(); 
+}
+
+
+void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
+  mode_C, mode_Z
+};
+
 
 int main(int argc, char **argv) {
   int A_row, A_col, B_row, B_col, C_row, C_col, status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
+  
+  std::unordered_map<char, int> mode_index;
+  mode_index['C'] = 0;
+  mode_index['Z'] = 1;
 
   std::cout << "\n\n" << argv[0] << std::endl;
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -273,26 +315,7 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = B_col;
   
-  //! Calling Hemm API based on mode
-  switch (mode) {
-    case 'C': {
-      cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
-      cuComplex beta = {(float)beta_real, (float)beta_imaginary};
-
-      Hemm<cuComplex> Chemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Chemm.HemmApiCall();
-      break;
-    }
-
-    case 'Z': {
-      cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
-      cuDoubleComplex beta = {beta_real, beta_imaginary};
-
-      Hemm<cuDoubleComplex> Zhemm(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta, mode);
-      status = Zhemm.HemmApiCall();
-      break;
-    }
-  }
+  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real, beta_imaginary);
 
   return EXIT_SUCCESS;
 }
