@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include "cublas_her2k_test.h"
 
 // Her2k constructor - to initialize the global varibles using initializer list
@@ -155,6 +156,14 @@ int Her2k<T>::Her2kApiCall() {
    * API call to performs Hermitian rank-2k update : 
    * C = alpha * A * B^H + alpha * B * A^H  + beta * C
    */
+    
+  /**
+   * The possible error values returned by this API and their meanings are listed below :
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters n, k <0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU
+   */
   switch (mode) {
     case 'C': {
       std::cout << "\nCalling Cher2k API\n";
@@ -233,12 +242,37 @@ int Her2k<T>::Her2kApiCall() {
   FreeMemory();
 
   return EXIT_SUCCESS;     
-}        
+}
+
+void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+            double beta_real) {
+  cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
+  
+  Her2k<cuComplex> Cher2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, 'C');
+  Cher2k.Her2kApiCall();
+}
+
+void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+            double beta_real) {
+  
+  cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
+
+  Her2k<cuDoubleComplex> Zher2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, 'Z');
+  Zher2k.Her2kApiCall();
+}
+
+void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double) = {
+  mode_C, mode_Z
+};
 
 int main(int argc, char **argv) {
   int A_row, A_col, B_row, B_col, C_row, C_col, status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
+    
+  std::unordered_map<char, int> mode_index;
+  mode_index['C'] = 0;
+  mode_index['Z'] = 1;
 
   std::cout << "\n\n" << argv[0] << std::endl;
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -277,24 +311,7 @@ int main(int argc, char **argv) {
   C_col = A_row;
 
   //! Calling Her2k API based on mode
-  switch (mode) {
-    case 'C': {
-      cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
-
-      Her2k<cuComplex> Cher2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, mode);
-      status = Cher2k.Her2kApiCall();
-      break;
-    }
-
-    case 'Z': {
-      cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
-      cuDoubleComplex beta = {beta_real, beta_imaginary};
-
-      Her2k<cuDoubleComplex> Zher2k(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta_real, mode);
-      status = Zher2k.Her2kApiCall();
-      break;
-    }          
-  }
+  
 
   return EXIT_SUCCESS;
 }
