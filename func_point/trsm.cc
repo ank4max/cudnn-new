@@ -1,3 +1,4 @@
+%%writefile max13.cc
 #include <unordered_map>
 #include "cublas_trsm_test.h"
 
@@ -287,7 +288,7 @@ void mode_S(int A_row, int A_col, int B_row, int B_col, double alpha_real, doubl
   
   float alpha = (float)alpha_real;
   Trsm<float> Strsm(A_row, A_col, B_row, B_col, alpha, 'S');
-  status = Strsm.TrsmApiCall();
+  Strsm.TrsmApiCall();
 }
 
 void mode_D(int A_row, int A_col, int B_row, int B_col, double alpha_real, double alpha_imaginary) {
