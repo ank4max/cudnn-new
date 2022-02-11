@@ -187,6 +187,15 @@ int Trmm<T>::TrmmApiCall() {
   /**
    * API call to performs Triangular matrix - matrix multiplication : C = alpha * A * B
    */
+    
+  /**
+   * The possible error values returned by this API and their meanings are listed below :
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n <0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU
+   */
+    
   switch (mode) {
     case 'S': {
       std::cout << "\nCalling Strmm API\n";
