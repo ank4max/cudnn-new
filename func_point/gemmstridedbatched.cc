@@ -1,4 +1,4 @@
-%%writefile max.cc
+%%writefile max2.cc
 #include <unordered_map>
 #include "cublas_gemmStridedBatched_test.h"
 
@@ -368,28 +368,6 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
       break;
     }
 
-    case '3': {
-      std::cout << "\nCalling Cgemm3mstridedbatched API\n";
-      clk_start = clock();
-       
-      status = cublasCgemm3mStridedBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                           A_row, B_col, A_col, (cuComplex *)&alpha,
-                                           (cuComplex *)DeviceMatrixA, A_row, strideA,
-                                           (cuComplex *)DeviceMatrixB, B_row, strideB,
-                                           (cuComplex *)&beta, (cuComplex *)DeviceMatrixC,
-                                           C_row, strideC, batch_count);
-
-      if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Cgemm3mstridedbatched kernel execution error\n");
-        FreeMemory();
-        return EXIT_FAILURE;
-      }
-
-      clk_end = clock();
-      std::cout << "Cgemm3mstridedbatched API call ended\n";
-      break;
-    }
-
     case 'Z': {
       std::cout << "\nCalling Zgemmstridedbatched API\n";
       clk_start = clock();
@@ -508,8 +486,8 @@ void mode_H(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, in
   
   __half alpha = (__half)alpha_real;
   __half beta = (__half)beta_real;
-  GemmStridedBatched<__half> Hgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, );
-  status = Hgemmstridedbatched.GemmStridedBatchedApiCall();
+  GemmStridedBatched<__half> Hgemmstridedbatched(A_row, A_col, B_row, B_col, C_row, C_col, batch_count, alpha, beta, 'H');
+  Hgemmstridedbatched.GemmStridedBatchedApiCall();
 }
 
 
