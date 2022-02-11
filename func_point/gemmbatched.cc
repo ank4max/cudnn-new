@@ -240,6 +240,16 @@ int GemmBatched<T>::GemmBatchedApiCall() {
   
   /**
    * API call to performs matrix - matrix multiplication in batches : C = alpha * A[i] * B[i] + beta * C[i]
+   * Note: C[i] matrices must not overlap, i.e. the individual gemm operations must be computable independently 
+            otherwise, undefined behavior is expected.
+   */
+    
+  /**
+   * The possible error values returned by this API and their meanings are listed below :
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n, k, batchCount<0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU
    */
   
   switch (mode) {
