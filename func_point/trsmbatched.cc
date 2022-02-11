@@ -1,4 +1,4 @@
-%%writefile max.cc
+%%writefile max12.cc
 #include <unordered_map>
 #include "cublas_trsmbatched_test.h"
 
@@ -8,7 +8,7 @@ TrsmBatched<T>::TrsmBatched(int A_row, int A_col, int B_row, int B_col, int batc
       batch_count(batch_count), alpha(alpha), mode(mode) {}
 
 template<class T>
-void GemmBatched<T>::FreeMemory() {
+void TrsmBatched<T>::FreeMemory() {
   //! Free Host Memory
   if (HostMatrixA)
     delete[] HostMatrixA;
@@ -108,7 +108,7 @@ int TrsmBatched<T>::TrsmBatchedApiCall() {
   //! Allocating matrices on device    
   HostPtrToDeviceMatA = new T*[batch_count];
   HostPtrToDeviceMatB = new T*[batch_count];
-  HostPtrToDeviceMatC = new T*[batch_count];
+  
 
   int batch;
 
