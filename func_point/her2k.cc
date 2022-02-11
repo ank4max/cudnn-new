@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = A_row;
 
-  //! Calling Her2k API based on mode
+  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real);
   
 
   return EXIT_SUCCESS;
