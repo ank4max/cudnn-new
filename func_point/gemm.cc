@@ -1,3 +1,4 @@
+%%writefile max.cc
 #include <unordered_map>
 #include "cublas_gemm_test.h"
 
@@ -203,6 +204,15 @@ int Gemm<T>::GemmApiCall() {
   /**
    * API call to performs matrix - matrix multiplication : C = alpha * A * B + beta * C
    */
+    
+  /**
+   * The Error values returned by API are :
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters m,n,k<0
+   * CUBLAS_STATUS_ARCH_MISMATCH - In the case of cublasHgemm the device does not support math in half precision.
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU
+   */
   
   switch (mode) {
     case 'S': {
@@ -365,7 +375,7 @@ int Gemm<T>::GemmApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary
+void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   float alpha = (float)alpha_real;
@@ -375,7 +385,7 @@ void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
   Sgemm.GemmApiCall();
 }
 
-void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary
+void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary, 
             double beta_real, double beta_imaginary) {
             
   double alpha = alpha_real;
@@ -385,7 +395,7 @@ void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
   Dgemm.GemmApiCall();
 }
 
-void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary
+void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
@@ -396,7 +406,7 @@ void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
 
 }
 
-void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary
+void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
@@ -407,13 +417,13 @@ void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
 
 }
 
-void mode_H(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary
+void mode_H(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
 
   __half alpha = (__half)alpha_real;
   __half beta = (__half)beta_real;
 
-  Gemm<cuDoubleComplex> Hgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'H');
+  Gemm<__half> Hgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'H');
   Hgemm.GemmApiCall();
 }
 
@@ -479,7 +489,6 @@ int main(int argc, char **argv) {
   (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real
                                        , beta_imaginary);
   
-
   return EXIT_SUCCESS;
 }
 
