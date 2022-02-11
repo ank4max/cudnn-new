@@ -1,4 +1,5 @@
 #include "cublas_symm_test.h"
+#include <unordered_map>
 
 template<class T>
 Symm<T>::Symm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
