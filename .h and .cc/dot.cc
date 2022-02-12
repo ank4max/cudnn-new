@@ -349,9 +349,7 @@ void mode_T(int vector_length) {
   Zdotc.DotApiCall();
 }
 
-
 void (*cublas_func_ptr[])(int) = {mode_S, mode_D, mode_C, mode_H, mode_Z, mode_T};
-
         
 int main(int argc, char **argv) {
   int vector_length, status;
