@@ -4,20 +4,16 @@
 
 //print function
 
-void printArr3D(float * arr, int arrH, int arrW, int batchSize)
-{
-	for(int i = 0; i < batchSize; i++)
-	{
-		for(int j = 0; j < arrH; j++)
-		{
-			for(int k = 0; k < arrW; k++)
-			{
-				printf("%f ", arr[i*arrH*arrW + j*arrW + k]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-	}
+void printArr3D(float * arr, int arrH, int arrW, int batchSize) {
+  for(int i = 0; i < batchSize; i++) {
+    for(int j = 0; j < arrH; j++) {
+      for(int k = 0; k < arrW; k++) {
+        printf("%f ", arr[i*arrH*arrW + j*arrW + k]);
+      } 
+      printf("\n");
+    }
+    printf("\n");
+  }
 }
 
 Dropout::Dropout(int batch, int channel, int height, int width, float drop_rate)
@@ -42,12 +38,6 @@ int Dropout::FreeMemory() {
   }
 
   cudaStatus = cudaFree(d_dropout_out);
-  if( cudaStatus != cudaSuccess) {
-    printf(" Device memmory deallocation error\n");
-    return EXIT_FAILURE;   
-  }
-	
-  cudaStatus = cudaFree(d_dx_dropout);
   if( cudaStatus != cudaSuccess) {
     printf(" Device memmory deallocation error\n");
     return EXIT_FAILURE;   
@@ -95,8 +85,8 @@ int Dropout::DropoutForwardApiCall() {
     printf(" Unable to initialize handle\n");
     return EXIT_FAILURE;   
   }
-  std::cout << "\nCreated cuDNN handle" << std::endl;
-  
+	
+  std::cout << "\nCreated cuDNN handle" << std::endl;  
   
   status = cudnnCreateDropoutDescriptor(&dropout_descriptor);
   if( status != CUDNN_STATUS_SUCCESS) {
@@ -153,12 +143,6 @@ int Dropout::DropoutForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  cudaStatus = cudaMalloc(&d_dx_dropout, size_bytes);
-  if( cudaStatus != cudaSuccess) {
-    printf("\nDevice Memory allocation error \n");
-    return EXIT_FAILURE;   
-  }
-  
  
   cudaStatus = cudaMalloc(&d_input,size_bytes);
   if( cudaStatus != cudaSuccess) {
@@ -196,8 +180,8 @@ int Dropout::DropoutForwardApiCall() {
   std::cout << "\nDropout \n";
 
 
-	h_arr = new float[size];
-	cudaStatus = cudaMemcpy(h_arr, d_dropout_out, size_bytes, cudaMemcpyDeviceToHost);
+  h_arr = new float[size];
+  cudaStatus = cudaMemcpy(h_arr, d_dropout_out, size_bytes, cudaMemcpyDeviceToHost);
   if( cudaStatus != cudaSuccess) {
     printf("\nFailed to copy data from Device to host \n");
     return EXIT_FAILURE;   
