@@ -39,7 +39,6 @@ class Dropout {
     float *d_input;
     float *h_arr;
     float* d_dropout_out;
-	  float* d_dx_dropout;
     size_t dropout_state_size;
 	  size_t dropout_reserve_size;
     void* states;
