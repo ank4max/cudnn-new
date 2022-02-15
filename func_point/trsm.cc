@@ -1,4 +1,4 @@
-%%writefile max13.cc
+
 #include <unordered_map>
 #include "cublas_trsm_test.h"
 
