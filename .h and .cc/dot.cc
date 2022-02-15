@@ -2,12 +2,12 @@
 #include "cublas_dot_test.h"
 
 
-// Dot constructor - to initialize the global varibles using initializer list
+//! Dot constructor - to initialize the global varibles using initializer list
 template<class T>
 Dot<T>::Dot(int vector_length, char mode)
     : vector_length(vector_length), mode(mode) {}
 
-// FreeMemory function - to free the allocated memory when program is ended or in case of any error
+//! FreeMemory function - to free the allocated memory when program is ended or in case of any error
 template<class T>
 void Dot<T>::FreeMemory() {
   //! Free Host Memory
@@ -55,6 +55,7 @@ int Dot<T>::DotApiCall() {
         
   /**
    * Switch Case - To Initialize and Print input vectors based on mode passed
+   * X and Y are general vectors
    */
   switch (mode) {
     case 'S': {
@@ -381,7 +382,6 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
   
-  //! Calling Dot API based on mode
   (*cublas_func_ptr[mode_index[mode]])(vector_length);
 
   return EXIT_SUCCESS;
