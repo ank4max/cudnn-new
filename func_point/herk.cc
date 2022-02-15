@@ -52,8 +52,8 @@ int Herk<T>::HerkApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input matrices based on mode passed,
-   *  A is a General Matrix,
-   *  C is a Hermitian Matrix
+   * A is a General Matrix,
+   * C is a Hermitian Matrix
    */
   switch (mode) {
     case 'C': {
