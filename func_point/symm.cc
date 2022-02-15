@@ -67,8 +67,8 @@ int Symm<T>::SymmApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input matrices based on mode passed,
-   *  A is a symmetric Matrix,
-   *  B and C are general Matrices
+   * A is a symmetric Matrix,
+   * B and C are general Matrices
    */
   switch (mode) {
     case 'S': {
@@ -338,6 +338,7 @@ void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
 
 void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
+    
   double alpha = alpha_real;
   double beta = beta_real;
 
@@ -347,6 +348,7 @@ void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
 
 void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
+    
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
@@ -356,6 +358,7 @@ void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, do
 
 void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
+    
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
