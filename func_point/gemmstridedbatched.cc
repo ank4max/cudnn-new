@@ -1,6 +1,6 @@
 %%writefile max2.cc
 #include <unordered_map>
-#include "cublas_gemmStridedBatched_test.h"
+#include "cublas_gemmstridedbatched_test.h"
 
 template<class T>
 GemmStridedBatched<T>::GemmStridedBatched(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, int batch_count, T alpha, T beta, char mode)
@@ -241,7 +241,7 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
      }
    }
    
-   // setting the values of matrices on device
+   //! Setting the values of matrices on device
    cudaStatus = cudaMemcpy(DeviceMatrixA, HostMatrixA, sizeof(T) * batch_count * A_row * A_col, cudaMemcpyHostToDevice);
    if (cudaStatus != cudaSuccess) {
      fprintf (stderr, "!!!! Setting up values on device for matrix (A) failed\n");
@@ -258,7 +258,7 @@ int GemmStridedBatched<T>::GemmStridedBatchedApiCall() {
      return EXIT_FAILURE;
    }
    
-   // defining stride to differentiate between each batch
+   //! Defining stride to differentiate between each batch
    long long int strideA = A_row * A_col;
    long long int strideB = B_row * B_col;
    long long int strideC = C_row * C_col;
