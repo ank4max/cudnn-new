@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  // Reading cmd line arguments and initializing the parameters
+  //! Reading cmd line arguments and initializing the parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);
     if (!(cmd_argument.compare("-A_row")))
