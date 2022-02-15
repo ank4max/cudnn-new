@@ -1,4 +1,4 @@
-%%writefile max12.cc
+
 #include <unordered_map>
 #include "cublas_trsmbatched_test.h"
 
@@ -186,6 +186,7 @@ int TrsmBatched<T>::TrsmBatchedApiCall() {
    * API call to performs matrix - matrix multiplication in batches : C = alpha * A[i] * B[i] + beta * C[i]
    * This function works for any sizes but is intended to be used for matrices of small sizes where the launch overhead is a significant factor. 
    * For bigger sizes, it might be advantageous to call batchCount times the regular cublas<t>trsm within a set of CUDA streams.
+   * The current implementation is limited to devices with compute capability above or equal 2.0.
    */
   
   /**
@@ -410,7 +411,7 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
   
-  //! initializing values for matrix A and B
+  //! Initializing values for matrix A and B
  A_col = A_row;
  B_row = A_col;
 
