@@ -1,4 +1,4 @@
-%%writefile max.cc
+
 #include <unordered_map>
 #include "cublas_herkx_test.h"
 
@@ -251,6 +251,7 @@ int Herkx<T>::HerkxApiCall() {
 
 void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real) {
+    
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   
   Herkx<cuComplex> Cherkx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, 'C');
