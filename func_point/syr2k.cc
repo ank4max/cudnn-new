@@ -68,8 +68,8 @@ int Syr2k<T>::Syr2kApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input matrices based on mode passed,
-   *  A and B are general Matrices,
-   *  C is a symmetric Matrix
+   * A and B are general Matrices,
+   * C is a symmetric Matrix
    */
   switch (mode) {
     case 'S': {
