@@ -1,5 +1,5 @@
 %%writefile max1.cc
-#include "convolution.h"
+#include "convolutiontranspose.h"
 #include "cudnn_utility.h"
 
 ConvolutionTranspose::ConvolutionTranspose(int batch, int channel, int height, int width, int filter_batch,
