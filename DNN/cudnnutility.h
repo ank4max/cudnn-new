@@ -41,6 +41,23 @@ namespace Util {
     }
   } 
 
+  void DropoutPrint(float *Tensor, int height, int width, int batchsize) {
+  for(int i = 0; i < batchsize; i++) {
+      
+    for(int j = 0; j < height; j++) {
+        
+      for(int k = 0; k < width; k++) {
+          
+        printf("%f ", Tensor[i * height * width + j * width + k]);
+
+      } 
+      
+      printf("\n");
+    }
+    printf("\n");
+  }
+}
+
   
   void InitializeFilterTensor(float *Tensor, int size) {
     for (int i = 0; i < size; i++) {
