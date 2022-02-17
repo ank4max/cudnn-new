@@ -36,13 +36,13 @@ class Dropout {
   private:
     int batch, channel, height, width;
     float drop_rate;
-    float *d_input;
-    float *h_arr;
-    float* d_dropout_out;
+    float *DeviceInputTensor;
+    float *HostOutputTensor;
+    float *DeviceOutputTensor;
     size_t dropout_state_size;
-	  size_t dropout_reserve_size;
-    void* states;
-	  void* dropout_reserve_space;
+    size_t dropout_reserve_size;
+    void *states;
+    void *dropout_reserve_space;
     clock_t clk_start, clk_stop;
     cudaError_t cudaStatus;
     cudnnStatus_t status;
