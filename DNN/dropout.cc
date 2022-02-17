@@ -1,16 +1,16 @@
-%%writefile max1.cc
+%%writefile max41.cc
 
 #include "dropout.h"
-#include "cudnn_utility.h
+#include "cudnn_utility.h"
 
 Dropout::Dropout(int batch, int channel, int height, int width, float drop_rate)
     : batch(batch), channel(channel), height(height), width(width), drop_rate(drop_rate) {}
 
 int Dropout::FreeMemory() {
   
-  if(HostOutput) {
-    delete[] HostOutput;
-    HostOutput = nullptr;
+  if(HostOutputTensor) {
+    delete[] HostOutputTensor;
+    HostOutputTensor = nullptr;
   }
   
   cudaStatus = cudaFree(states);
@@ -25,13 +25,13 @@ int Dropout::FreeMemory() {
     return EXIT_FAILURE;   
   }
 
-  cudaStatus = cudaFree(d_dropout_out);
+  cudaStatus = cudaFree(DeviceOutputTensor);
   if( cudaStatus != cudaSuccess) {
     printf(" Device memmory deallocation error\n");
     return EXIT_FAILURE;   
   }
   
-  cudaStatus = cudaFree(d_input);
+  cudaStatus = cudaFree(DeviceInputTensor);
   if( cudaStatus != cudaSuccess) {
     printf(" Device memmory deallocation error\n");
     return EXIT_FAILURE;   
@@ -48,6 +48,11 @@ int Dropout::FreeMemory() {
     printf(" Unable to Destroy drop_in_out_descriptor Descriptor\n");
     return EXIT_FAILURE;   
   }
+
+  status = cudnnDestroy(handle_);
+  if (status != CUDNN_STATUS_SUCCESS) {
+    printf("Unable to uninitialize handle\n");
+  }
   
 }
 
@@ -56,8 +61,8 @@ int Dropout::DropoutForwardApiCall() {
   int size = batch * channel * height * width;
   int size_bytes = size * sizeof(float);  
 
-  float InputData[size];
-  Util::InitializeInputTensor(InputData, size);
+  float HostInputTensor[size];
+  Util::InitializeInputTensor(HostInputTensor, size);
   
   //! Create cudnn context
   status = cudnnCreate(&handle_);
@@ -91,7 +96,7 @@ int Dropout::DropoutForwardApiCall() {
   }
  
   //! Getting states size
-  status = cudnnDropoutGetStatesSize(handle_, (size_t *)&dropout_state_size);
+  status = cudnnDropoutGetStatesSize(handle_, &dropout_state_size);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf("\nGet dropout state size error\n"); 
     FreeMemory();
@@ -99,7 +104,7 @@ int Dropout::DropoutForwardApiCall() {
   }
   
   //! Getting reverse space size
-  status = cudnnDropoutGetReserveSpaceSize(dropout_in_out_descriptor, (size_t *)&dropout_reserve_size);
+  status = cudnnDropoutGetReserveSpaceSize(dropout_in_out_descriptor, &dropout_reserve_size);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf("\nGet dropout Reverse size error\n");
     FreeMemory();
@@ -128,14 +133,14 @@ int Dropout::DropoutForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  cudaStatus = cudaMalloc(&DeviceOutput, size_bytes);
+  cudaStatus = cudaMalloc(&DeviceOutputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
     printf("\nDevice Memory allocation error \n");
     FreeMemory();
     return EXIT_FAILURE;   
   }
   
-  cudaStatus = cudaMalloc(&DeviceInput, size_bytes);
+  cudaStatus = cudaMalloc(&DeviceInputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
     printf("\nDevice Memory allocation error \n");
     FreeMemory();
@@ -143,7 +148,7 @@ int Dropout::DropoutForwardApiCall() {
   }
   
   //! Copying data from host to device
-  cudaStatus = cudaMemcpy(DeviceInput, InputData, size_bytes, cudaMemcpyHostToDevice);
+  cudaStatus = cudaMemcpy(DeviceInputTensor, HostInputTensor, size_bytes, cudaMemcpyHostToDevice);
   if( cudaStatus != cudaSuccess) {
     printf("\nFailed to copy data from host to device \n");
     FreeMemory();
@@ -151,13 +156,13 @@ int Dropout::DropoutForwardApiCall() {
   }
   
   std::cout << "\nInput \n";
-  util::DropoutPrint(InputData, height, width, batch * channel);
+  Util::DropoutPrint(HostInputTensor, height, width, batch * channel);
   
   //! API call
   clk_start=clock();
       
-  status = cudnnDropoutForward(handle_, dropout_descriptor, dropout_in_out_descriptor, DeviceInput, dropout_in_out_descriptor,
-			       DeviceOutput, dropout_reserve_space, dropout_reserve_size);
+  status = cudnnDropoutForward(handle_, dropout_descriptor, dropout_in_out_descriptor, DeviceInputTensor, dropout_in_out_descriptor,
+			       DeviceOutputTensor, dropout_reserve_space, dropout_reserve_size);
   
   clk_stop=clock();
       
@@ -173,8 +178,8 @@ int Dropout::DropoutForwardApiCall() {
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
   
   //! Copying values from device to host
-  HostOutput = new float[size];
-  cudaStatus = cudaMemcpy(HostOutput, DeviceOutput, size_bytes, cudaMemcpyDeviceToHost);
+  HostOutputTensor = new float[size];
+  cudaStatus = cudaMemcpy(HostOutputTensor, DeviceOutputTensor, size_bytes, cudaMemcpyDeviceToHost);
   if( cudaStatus != cudaSuccess) {
     printf("\nFailed to copy data from Device to host \n");
     FreeMemory();
@@ -182,7 +187,7 @@ int Dropout::DropoutForwardApiCall() {
   }
   
   std::cout << "\nDropout \n";
-  DropoutPrint(HostOutput, height, width, batch * channel);
+  Util::DropoutPrint(HostOutputTensor, height, width, batch * channel);
   FreeMemory();
   return EXIT_SUCCESS;
 }
