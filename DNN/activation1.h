@@ -35,20 +35,20 @@ class Activation {
   private:
     int batch, channel, height, width;
     std::string activation_mode;
-    float *InputDeviceArray;
-    float *OutputDeviceArray;
-    float *InputData;
-    float *OutputData;
+    float *DeviceInputTensor;
+    float *DeviceOutputTensor;
+    float *HostInputTensor;
+    float *HostOutputTensor;
     clock_t clk_start, clk_stop;
     cudaError_t cudaStatus;
     cudnnStatus_t status;
     cudnnHandle_t handle_;
     cudnnDataType_t dtype = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t format = CUDNN_TENSOR_NCHW;
-    cudnnActivationDescriptor_t activation;
+    cudnnActivationDescriptor_t activation_desc;
     cudnnActivationMode_t mode;
     cudnnNanPropagation_t prop;
-    cudnnTensorDescriptor_t x_desc;
-    cudnnTensorDescriptor_t y_desc;
+    cudnnTensorDescriptor_t input_desc;
+    cudnnTensorDescriptor_t output_desc;
 
 };
