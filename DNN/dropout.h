@@ -14,7 +14,7 @@
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start)) 
 
 /**
- * Class Dropout contains DropoutForward API which performs Forward Convolution operation on Input Image : 
+ * Class Dropout contains DropoutForward API which performs Dropout forward  operation on Input Image : 
  */
 class Dropout {
   public:
