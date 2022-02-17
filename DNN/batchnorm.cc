@@ -212,6 +212,8 @@ int BatchNormalization::BatchNormalizationApiCall() {
   Util::ActivationPrint(HostInputTensor, size);
   std::cout << std::endl;
   
+  //! mode set up
+  auto mode = CUDNN_BATCHNORM_SPATIAL_PERSISTENT;
   float alpha[channel] = {1};
   float beta[channel] = {0.0};
 
