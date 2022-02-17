@@ -53,7 +53,6 @@ class BatchNormalization {
     cudnnHandle_t handle_;
     cudnnDataType_t dtype = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t format = CUDNN_TENSOR_NCHW;
-    auto mode = CUDNN_BATCHNORM_SPATIAL_PERSISTENT;
     const cudnnBatchNormOps_t bn_ops = CUDNN_BATCHNORM_OPS_BN;
     cudnnActivationDescriptor_t activation_desc;
     cudnnTensorDescriptor_t input_desc;
