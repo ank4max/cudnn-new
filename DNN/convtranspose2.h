@@ -1,4 +1,4 @@
-%%writefile convolution.h
+%%writefile convolutiontranspose.h
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
