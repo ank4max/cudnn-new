@@ -144,8 +144,10 @@ int Activation::ActivationApiCall() {
   }
   
   //! Printing initial array before activation
-  std::cout << "Original array: "; 
+  std::cout << "\nOriginal array: "; 
   Util::ActivationPrint(InputData, size);
+  std::cout << std::endl;
+    
   float alpha[channel] = {1};
   float beta[channel] = {0.0};
 
@@ -203,11 +205,11 @@ int Activation::ActivationApiCall() {
   }
   
   double flopsCoef = 2.0;
-  std::cout << "Input n*c*h*w: " << size <<
+  std::cout << "\nInput n*c*h*w: " << size <<
                "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
  
-  std::cout << "New array: ";
+  std::cout << "\nNew array: ";
   Util::ActivationPrint(OutputData, size);
 
   FreeMemory();
