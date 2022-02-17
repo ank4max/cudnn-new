@@ -1,4 +1,4 @@
-%%writefile m2.cc
+%%writefile 5.cc
 #include "activation.h"
 #include "cudnn_utility.h"
 
@@ -8,32 +8,32 @@ Activation::Activation(int batch, int channel, int height, int width, char* acti
 
 void Activation::FreeMemory() {
     
-  if(OutputData) {
-    delete[] OutputData;
-    OutputData = nullptr;
+  if(HostOutputTensor) {
+    delete[] HostOutputTensor;
+    HostOutputTensor = nullptr;
   }  
 
-  if(InputData) {
-    delete[] InputData;
-    InputData = nullptr;
+  if(HostInputTensor) {
+    delete[] HostInputTensor;
+    HostInputTensor = nullptr;
   }  
   
-  cudaStatus = cudaFree(InputDeviceArray);
+  cudaStatus = cudaFree(DeviceInputTensor);
   if (cudaStatus != cudaSuccess) {
     printf("Device input memory deallocation error\n");
   }
 
-  cudaStatus = cudaFree(OutputDeviceArray);
+  cudaStatus = cudaFree(DeviceOutputTensor);
   if (cudaStatus != cudaSuccess) {
     printf("Device input memory deallocation error\n");
   }
 
-  status = cudnnDestroyTensorDescriptor(x_desc);
+  status = cudnnDestroyTensorDescriptor(input_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
     printf(" Unable to Destroy input Descriptor\n");
   }
 
-  status = cudnnDestroyTensorDescriptor(y_desc);
+  status = cudnnDestroyTensorDescriptor(output_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
     printf(" Unable to Destroy output Descriptor\n");
   }
@@ -49,8 +49,8 @@ int Activation::ActivationApiCall() {
   int size_bytes = size * sizeof(float);
   
   //! Initializing input data
-  InputData = new float[size];
-  Util::ActivationInitializer(InputData, size);
+  HostInputTensor = new float[size];
+  Util::ActivationInitializer(HostInputTensor, size);
  
   int num_GPUs;
   cudaStatus = cudaGetDeviceCount(&num_GPUs);
@@ -96,28 +96,28 @@ int Activation::ActivationApiCall() {
   
   std::cout << "\nCreated cuDNN handle" << std::endl;
 
-  status = cudnnCreateTensorDescriptor(&x_desc);
+  status = cudnnCreateTensorDescriptor(&input_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
     printf(" Creating tensor descriptor error\n");
     FreeMemory();
     return EXIT_FAILURE; 
   }
   
-  status = cudnnSetTensor4dDescriptor(x_desc, format, dtype, batch, channel, height, width); 
+  status = cudnnSetTensor4dDescriptor(input_desc, format, dtype, batch, channel, height, width); 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting tensor descriptor error\n");
     FreeMemory();
     return EXIT_FAILURE; 
   }
 
-  status = cudnnCreateTensorDescriptor(&y_desc);
+  status = cudnnCreateTensorDescriptor(&output_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
     printf(" Creating tensor descriptor error\n");
     FreeMemory();
     return EXIT_FAILURE;  
   }
   
-  status = cudnnSetTensor4dDescriptor(y_desc, format, dtype, batch, channel, height, width); 
+  status = cudnnSetTensor4dDescriptor(output_desc, format, dtype, batch, channel, height, width); 
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting tensor descriptor error\n");
     FreeMemory();
@@ -125,14 +125,14 @@ int Activation::ActivationApiCall() {
   }
 
   //! Device memory allocation for Input and Output Arrays
-  cudaStatus = cudaMallocManaged(&InputDeviceArray, size_bytes);
+  cudaStatus = cudaMallocManaged(&DeviceInputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
     printf(" the device memory allocation failed\n");
     FreeMemory();
     return EXIT_FAILURE;  
   }
   
-  cudaStatus = cudaMallocManaged(&OutputDeviceArray, size_bytes);
+  cudaStatus = cudaMallocManaged(&DeviceOutputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
     printf(" the device memory allocation failed\n");
     FreeMemory();
@@ -140,7 +140,7 @@ int Activation::ActivationApiCall() {
   }
 
   //! Copying Input values from host to device                 
-  cudaStatus = cudaMemcpy(InputDeviceArray, InputData, size_bytes, cudaMemcpyHostToDevice);
+  cudaStatus = cudaMemcpy(DeviceInputTensor, HostInputTensor, size_bytes, cudaMemcpyHostToDevice);
   if (cudaStatus != cudaSuccess) {
     fprintf (stderr, "!!!! Setting up values on device for Input tensor failed\n");
     FreeMemory(); 
@@ -149,7 +149,7 @@ int Activation::ActivationApiCall() {
   
   //! Printing initial array before activation
   std::cout << "\nOriginal array: "; 
-  Util::ActivationPrint(InputData, size);
+  Util::ActivationPrint(HostInputTensor, size);
   std::cout << std::endl;
     
   float alpha[channel] = {1};
@@ -168,14 +168,14 @@ int Activation::ActivationApiCall() {
 
   //! Setting activation descriptor
   prop = CUDNN_NOT_PROPAGATE_NAN;
-  status = cudnnCreateActivationDescriptor(&activation);
+  status = cudnnCreateActivationDescriptor(&activation_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Creating activation descriptor error\n");
     FreeMemory();
     return EXIT_FAILURE;   
   }
   
-  status = cudnnSetActivationDescriptor(activation, mode, prop, 0.0f);
+  status = cudnnSetActivationDescriptor(activation_desc, mode, prop, 0.0f);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf("Setting activation  descriptor error\n");
     FreeMemory();
@@ -185,13 +185,13 @@ int Activation::ActivationApiCall() {
   //! API call
   clk_start=clock();
   status = cudnnActivationForward(handle_,
-                                  activation,
+                                  activation_desc,
                                   alpha,
-                                  x_desc,
-                                  InputDeviceArray,
+                                  input_desc,
+                                  DeviceInputTensor,
                                   beta,
-                                  y_desc,
-                                  OutputDeviceArray 
+                                  output_desc,
+                                  DeviceOutputTensor 
                                   ); 
   clk_stop=clock();
 
@@ -201,10 +201,10 @@ int Activation::ActivationApiCall() {
     return EXIT_FAILURE;   
   }
   
-  OutputData= new float[size];
+  HostOutputTensor= new float[size];
   
   //! Copying data from device to host
-  cudaStatus = cudaMemcpy( OutputData, OutputDeviceArray, size_bytes, cudaMemcpyDeviceToHost);
+  cudaStatus = cudaMemcpy( HostOutputTensor, DeviceOutputTensor, size_bytes, cudaMemcpyDeviceToHost);
   if (cudaStatus != cudaSuccess) {
     fprintf (stderr, "!!!! Setting up values on host for output tensor failed\n");
     FreeMemory();
@@ -217,7 +217,7 @@ int Activation::ActivationApiCall() {
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
  
   std::cout << "\nNew array: ";
-  Util::ActivationPrint(OutputData, size);
+  Util::ActivationPrint(HostOutputTensor, size);
 
   FreeMemory();
   return EXIT_SUCCESS;
