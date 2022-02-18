@@ -10,14 +10,20 @@ ConvolutionTranspose::ConvolutionTranspose(int batch, int channel, int height, i
                                            stride(stride), dilation(dilation) {}
  
 void ConvolutionTranspose::FreeMemory() {
-  if (HostInputTensor)
+  if (HostInputTensor) {
     delete[] HostInputTensor;
+    HostInputTensor = nullptr;
+  }
   
-  if (HostOutputTensor)
+  if (HostOutputTensor) {
     delete[] HostOutputTensor;
+    HostOutputTensor = nullptr;
+  }
     
-  if (HostFilterTensor)
+  if (HostFilterTensor) {
     delete[] HostFilterTensor;
+    HostFilterTensor = nullptr;
+  }
 
   cudaStatus = cudaFree(DeviceInputTensor);
   if( cudaStatus != cudaSuccess) {
@@ -178,8 +184,9 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
     return EXIT_FAILURE;   
   }
 
-  int output_dim = (height - 1) * stride - 2 * padding + (filter_height - 1) + 1;
-  int output_size = output_dim * output_dim;
+  int output_height = (height - 1) * stride - 2 * padding_height + (filter_height - 1) + 1;
+  int output_width =  (width - 1) * stride - 2 * padding_width + (filter_width - 1) + 1;
+  int output_size = output_height * output_width;
   int output_size_bytes = output_size * sizeof(float);
   
   HostOutputTensor = new float[output_size];
@@ -198,7 +205,7 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
   }
   
   status = cudnnSetTensor4dDescriptor(output_desc, data_format, data_type, batch, 
-                                      channel, output_dim, output_dim);
+                                      channel, output_height, output_width);
   if( status != CUDNN_STATUS_SUCCESS) {
     printf(" Setting Output Tensor descriptor error\n");  
     FreeMemory();
@@ -265,7 +272,7 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
   
   //! Printing the output
   std::cout << "\nOutput_data:" << std::endl;
-  Util::PrintTensor(HostOutputTensor, batch, channel, output_dim, output_dim);
+  Util::PrintTensor(HostOutputTensor, batch, channel, output_height, output_width);
   
   FreeMemory();
   return EXIT_SUCCESS;
