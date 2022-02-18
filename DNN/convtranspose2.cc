@@ -186,7 +186,7 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
 
   int output_height = (height - 1) * stride - 2 * padding_height + (filter_height - 1) + 1;
   int output_width =  (width - 1) * stride - 2 * padding_width + (filter_width - 1) + 1;
-  int output_size = output_height * output_width;
+  int output_size = batch * channel * output_height * output_width;
   int output_size_bytes = output_size * sizeof(float);
   
   HostOutputTensor = new float[output_size];
