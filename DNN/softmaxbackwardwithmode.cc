@@ -145,13 +145,13 @@ int SoftmaxBackward::SoftmaxBackwardApiCall() {
                                softmax_algo,                //softmax algo
                                softmax_mode,                //softmax mode
                                &alpha,                      //alpha
-                               input_desc,                  //xDesc
-                               DeviceInputTensor,           //x
-                               input_desc, 
-                               DeviceInputTensor,
+                               input_desc,                  //yDesc
+                               DeviceInputTensor,           //y
+                               input_desc,                  //dydesc
+                               DeviceInputTensor,           //dy
                                &beta,                       //beta
-                               output_desc,                 //yDesc
-                               DeviceOutputTensor);         //y
+                               output_desc,                 //xDesc
+                               DeviceOutputTensor);         //x
 
   clk_stop=clock();
 
