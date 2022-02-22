@@ -1,3 +1,4 @@
+%%writefile batchnorm.h
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
@@ -52,6 +53,7 @@ class BatchNormalizationForward {
     cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t data_format = CUDNN_TENSOR_NCHW;
     cudnnBatchNormOps_t bn_ops = CUDNN_BATCHNORM_OPS_BN;
+    cudnnBatchNormMode_t  bn_mode;
     cudnnActivationDescriptor_t activation_desc;
     cudnnTensorDescriptor_t input_desc;
     cudnnTensorDescriptor_t output_desc;
