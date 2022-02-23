@@ -3,11 +3,11 @@
 #include "cudnn_utility.h"
 
 ConvolutionForward::ConvolutionForward(int batch, int channel, int height, int width, int filter_batch,
-               int filter_channel, int filter_height, int filter_width, int padding, 
-               int stride, int dilation) : batch(batch), channel(channel), height(height),
-               width(width), filter_batch(filter_batch), filter_channel(filter_channel), 
-               filter_height(filter_height), filter_width(filter_width), padding(padding),
-               stride(stride), dilation(dilation) {}
+                                       int filter_channel, int filter_height, int filter_width, int padding, 
+                                       int stride, int dilation) : batch(batch), channel(channel), height(height),
+                                       width(width), filter_batch(filter_batch), filter_channel(filter_channel), 
+                                       filter_height(filter_height), filter_width(filter_width), padding(padding),
+                                       stride(stride), dilation(dilation) {}
  
 void ConvolutionForward::FreeMemory() {
   if (HostInputTensor) {
