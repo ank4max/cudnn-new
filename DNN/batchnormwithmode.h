@@ -13,14 +13,14 @@
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start))
 
 /**
- * Class BatchNormalization contains BatchNormalization API which performs batchnormal forward training  operation on Input Image based on mode :
+ * Class BatchNormalizationForward contains BatchNormalizationForward API which performs batchnormal forward training  operation on Input Image based on mode :
  */
 class BatchNormalizationForward {
   public:
     /**
-     * BatchNormalization constructor - To initialize the class varibles using initializer list
+     * BatchNormalizationforward constructor - To initialize the class varibles using initializer list
      */
-    BatchNormalizationForward(int batch, int channel, int height, int width, char *batchnorm_mode);
+    BatchNormalizationForward(int batch, int channel, int height, int width, char *mode);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -28,13 +28,13 @@ class BatchNormalizationForward {
     void FreeMemory();
 
     /**
-     * BatchNormalizationApiCall which performs batchnormal forward training operation on input image
+     * BatchNormalizationforwardApiCall which performs batchnormal forward training operation on input image
      */
     int BatchNormalizationForwardApiCall();
 
   private:
     int batch, channel, height, width;
-    std::string batchnorm_mode;
+    std::string mode;
     float alpha;
     float beta;
     float *HostInputTensor;
@@ -49,11 +49,10 @@ class BatchNormalizationForward {
     clock_t clk_start, clk_stop;
     cudaError_t cudaStatus;
     cudnnStatus_t status;
+    cudnnBatchNormMode_t bn_mode;
     cudnnHandle_t handle_;
     cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t data_format = CUDNN_TENSOR_NCHW;
-    cudnnBatchNormOps_t bn_ops = CUDNN_BATCHNORM_OPS_BN;
-    cudnnBatchNormMode_t  bn_mode;
     cudnnActivationDescriptor_t activation_desc;
     cudnnTensorDescriptor_t input_desc;
     cudnnTensorDescriptor_t output_desc;
