@@ -1,4 +1,4 @@
-%%writefile softmaxbackward.h
+%%writefile softmaxback.h
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
@@ -20,7 +20,7 @@ class SoftmaxBackward {
     /**
      * SoftmaxBackward constructor - To initialize the class varibles using initializer list
      */
-    SoftmaxBackward(int batch, int channel, int height, int width, char *mode);
+    SoftmaxBackward(int batch, int channel, int height, int width, char *mode, char *algo);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -34,9 +34,9 @@ class SoftmaxBackward {
 
   private:
     int batch, channel, height, width;
-    std::string mode;
-    float alpha = 1.0;
-    float beta = 0.0;
+    std::string mode, algo;
+    float alpha;
+    float beta;
     float *HostInputTensor;
     float *HostOutputTensor;
     float *DeviceInputTensor;
@@ -45,6 +45,7 @@ class SoftmaxBackward {
     cudaError_t cudaStatus;
     cudnnStatus_t status;
     cudnnSoftmaxMode_t softmax_mode;
+    cudnnSoftmaxAlgorithm_t softmax_algo;
     cudnnHandle_t handle_;
     cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t data_format = CUDNN_TENSOR_NCHW;
