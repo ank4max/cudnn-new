@@ -1,9 +1,9 @@
-%%writefile softmaxback.cc
-#include "softmaxbackward.h"
+%%writefile me.cc
+#include "softmaxback.h"
 #include "cudnn_utility.h"
 
-SoftmaxBackward::SoftmaxBackward(int batch, int channel, int height, int width, char *mode)
-    : batch(batch), channel(channel), height(height), width(width), mode(mode) {}
+SoftmaxBackward::SoftmaxBackward(int batch, int channel, int height, int width, char *mode, char *algo)
+    : batch(batch), channel(channel), height(height), width(width), mode(mode), algo(algo) {}
 
 void SoftmaxBackward::FreeMemory() {
   if (HostInputTensor) {
@@ -121,13 +121,14 @@ int SoftmaxBackward::SoftmaxBackwardApiCall() {
    *    The softmax operation is computed per spatial location (H,W) per image (N) across
    *    the dimension C.
    */
-  if (mode == "softmax_mode_instance") {
-    softmax_mode = CUDNN_SOFTMAX_MODE_INSTANCE;
-  }
-
-  else if (mode == "softmax_mode_channel") {
+  if (mode == "channel") {
     softmax_mode = CUDNN_SOFTMAX_MODE_CHANNEL;
+    std::cout << "\nUsing softmax_mode : CUDNN_SOFTMAX_MODE_CHANNEL\n";
   } 
+  else {  // default mode
+    softmax_mode = CUDNN_SOFTMAX_MODE_INSTANCE;
+    std::cout << "\nUsing  softmax_mode : CUDNN_SOFTMAX_MODE_INSTANCE\n";
+  }
 
   /* CUDNN_SOFTMAX_FAST
    *    This implementation applies the straightforward softmax operation.
@@ -138,20 +139,31 @@ int SoftmaxBackward::SoftmaxBackwardApiCall() {
    *    This entry performs the Log softmax operation, avoiding overflows by scaling each
    *    point in the input domain as in CUDNN_SOFTMAX_ACCURATE
    */
-  cudnnSoftmaxAlgorithm_t softmax_algo = CUDNN_SOFTMAX_FAST;
+  if (algo == "accurate") {
+    softmax_algo = CUDNN_SOFTMAX_ACCURATE;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_ACCURATE\n";
+  } 
+  else if (algo == "log") {
+    softmax_algo = CUDNN_SOFTMAX_LOG;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_LOG\n";
+  } 
+  else {
+    softmax_algo = CUDNN_SOFTMAX_FAST;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_FAST\n";
+  }
 
   clk_start=clock();
   status = cudnnSoftmaxBackward(handle_,                     //handle
-                               softmax_algo,                //softmax algo
-                               softmax_mode,                //softmax mode
-                               &alpha,                      //alpha
-                               input_desc,                  //yDesc
-                               DeviceInputTensor,           //y
-                               input_desc,                  //dydesc
-                               DeviceInputTensor,           //dy
-                               &beta,                       //beta
-                               output_desc,                 //xDesc
-                               DeviceOutputTensor);         //x
+                                softmax_algo,                //softmax algo
+                                softmax_mode,                //softmax mode
+                                &alpha,                      //alpha
+                                input_desc,                  //yDesc
+                                DeviceInputTensor,           //y
+                                input_desc,                  //dydesc
+                                DeviceInputTensor,           //dy
+                                &beta,                       //beta
+                                output_desc,                 //xDesc
+                                DeviceOutputTensor);         //x
 
   clk_stop=clock();
 
@@ -168,7 +180,7 @@ int SoftmaxBackward::SoftmaxBackwardApiCall() {
     return EXIT_FAILURE;
   }
 
-  std::cout << "Input n*c*h*w: " << size <<
+  std::cout << "\nInput n*c*h*w: " << size <<
                "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
 
@@ -199,6 +211,7 @@ int main(int argc, char** argv) {
 
   int batch, channel, height, width;
   char *mode;
+  char *algo;
 
   //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -215,10 +228,13 @@ int main(int argc, char** argv) {
     else if (!(cmd_argument.compare("-width")))
       width = std::atoi(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-mode")))
-      mode = (argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-softmax_mode")))
+      mode = argv[loop_count + 1];
+    
+    else if (!(cmd_argument.compare("-softmax_algo")))
+      algo = argv[loop_count + 1];
   }
 
-  SoftmaxBackward softmaxbackward(batch, channel, height, width, mode);
+  SoftmaxBackward softmaxbackward(batch, channel, height, width, mode, algo);
   softmaxbackward.SoftmaxBackwardApiCall();
 }
