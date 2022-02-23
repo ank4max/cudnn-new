@@ -1,11 +1,11 @@
-%%writefile m.cc
-#include "softmax.h"
+%%writefile max.cc
+#include "cudnn_softmaxforward_test.h"
 #include "cudnn_utility.h"
 
-Softmax::Softmax(int batch, int channel, int height, int width, char *mode)
-    : batch(batch), channel(channel), height(height), width(width), mode(mode) {}
+SoftmaxForward::SoftmaxForward(int batch, int channel, int height, int width, char *mode, char *algo)
+    : batch(batch), channel(channel), height(height), width(width), mode(mode), algo(algo) {}
 
-void Softmax::FreeMemory() {
+void SoftmaxForward::FreeMemory() {
   if (HostInputTensor) {
     delete[] HostInputTensor;
     HostInputTensor = nullptr;
@@ -18,31 +18,31 @@ void Softmax::FreeMemory() {
 
   cudaStatus = cudaFree(DeviceInputTensor);
   if (cudaStatus != cudaSuccess) {
-    printf("Device input memory deallocation error\n");
+    std::cout << "Device input memory deallocation error" << std::endl;
   }
 
   cudaStatus = cudaFree(DeviceOutputTensor);
   if (cudaStatus != cudaSuccess) {
-    printf("Device output memory deallocation error\n");
+    std::cout << "Device output memory deallocation error" << std::endl;
   }
 
   status = cudnnDestroyTensorDescriptor(input_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to Destroy input Descriptor\n");
+    std::cout << " Unable to Destroy input Descriptor" << std::endl;
   }
 
   status = cudnnDestroyTensorDescriptor(output_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to Destroy output Descriptor\n");
+    std::cout << " Unable to Destroy output Descriptor" << std::endl;
   }
 
   status = cudnnDestroy(handle_);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf("Unable to uninitialize handle\n");
+    std::cout << "Unable to uninitialize handle" << std::endl;
   }
 }
 
-int Softmax::SoftmaxForwardApiCall() {
+int SoftmaxForward::SoftmaxForwardApiCall() {
   int size = batch * channel * height * width;
   int size_bytes = size * sizeof(float);
 
@@ -57,7 +57,7 @@ int Softmax::SoftmaxForwardApiCall() {
   // Create cudnn handle
   status = cudnnCreate(&handle_);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to initialize handle\n");
+    std::cout << " Unable to initialize handle\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -65,51 +65,54 @@ int Softmax::SoftmaxForwardApiCall() {
 
   status = cudnnCreateTensorDescriptor(&input_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating input tensor descriptor error\n");
+    std::cout << " Creating input tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnSetTensor4dDescriptor(input_desc, data_format, data_type, batch, channel, height, width);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting input tensor descriptor error\n");
+    std::cout << " Setting input tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnCreateTensorDescriptor(&output_desc);
    if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating ouput tensor descriptor error\n");
+    std::cout << " Creating ouput tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnSetTensor4dDescriptor(output_desc, data_format, data_type, batch, channel, height, width);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting output tensor descriptor error \n");
+    std::cout << " Setting output tensor descriptor error \n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMalloc(&DeviceInputTensor, size_bytes);
   if(cudaStatus != cudaSuccess) {
-    printf(" Memory allocation on device for input tensor failed\n");
+    std::cout << " Memory allocation on device for input tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
   cudaStatus = cudaMalloc(&DeviceOutputTensor, size_bytes);
   if(cudaStatus != cudaSuccess) {
-    printf(" Memory allocation on device for output tensor failed\n");
+    std::cout << " Memory allocation on device for output tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMemcpy(DeviceInputTensor, HostInputTensor, size_bytes, cudaMemcpyHostToDevice);
   if (cudaStatus != cudaSuccess) {
-    fprintf (stderr, "!!!! Setting up values on device for input tensor failed\n");
+    std::cout << "!!!! Setting up values on device for input tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
+
+  alpha = ALPHA_INITIAL_VALUE;
+  beta = BETA_INITIAL_VALUE;
 
   /*
    * CUDNN_SOFTMAX_MODE_INSTANCE
@@ -118,13 +121,14 @@ int Softmax::SoftmaxForwardApiCall() {
    *    The softmax operation is computed per spatial location (H,W) per image (N) across
    *    the dimension C.
    */
-  
-  if (mode == "softmax_mode_instance") {
-    softmax_mode = CUDNN_SOFTMAX_MODE_INSTANCE;
-  }
-  else if (mode == "softmax_mode_channel") {
+  if (mode == "channel") {
     softmax_mode = CUDNN_SOFTMAX_MODE_CHANNEL;
+    std::cout << "\nUsing softmax_mode : CUDNN_SOFTMAX_MODE_CHANNEL\n";
   } 
+  else {  // default mode
+    softmax_mode = CUDNN_SOFTMAX_MODE_INSTANCE;
+    std::cout << "\nUsing  softmax_mode : CUDNN_SOFTMAX_MODE_INSTANCE\n";
+  }
 
   /* CUDNN_SOFTMAX_FAST
    *    This implementation applies the straightforward softmax operation.
@@ -135,7 +139,18 @@ int Softmax::SoftmaxForwardApiCall() {
    *    This entry performs the Log softmax operation, avoiding overflows by scaling each
    *    point in the input domain as in CUDNN_SOFTMAX_ACCURATE
    */
-  cudnnSoftmaxAlgorithm_t softmax_algo = CUDNN_SOFTMAX_FAST;
+  if (algo == "accurate") {
+    softmax_algo = CUDNN_SOFTMAX_ACCURATE;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_ACCURATE\n";
+  } 
+  else if (algo == "log") {
+    softmax_algo = CUDNN_SOFTMAX_LOG;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_LOG\n";
+  } 
+  else {
+    softmax_algo = CUDNN_SOFTMAX_FAST;
+    std::cout << "\nUsing softmax_algo : CUDNN_SOFTMAX_FAST\n";
+  }
 
   clk_start=clock();
   status = cudnnSoftmaxForward(handle_,                     //handle
@@ -151,25 +166,25 @@ int Softmax::SoftmaxForwardApiCall() {
   clk_stop=clock();
 
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Kernel execution error\n");
+    std::cout << " Kernel execution error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMemcpy(HostOutputTensor, DeviceOutputTensor, size_bytes, cudaMemcpyDeviceToHost);
   if (cudaStatus != cudaSuccess) {
-    fprintf (stderr, "!!!! Setting up values on host for output tensor failed\n");
+    std::cout << "!!!! Setting up values on host for output tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  std::cout << "Input n*c*h*w: " << size <<
+  std::cout << "\nInput n*c*h*w: " << size <<
                "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, size) << std::endl;
 
   cudaStatus = cudaDeviceSynchronize();
   if( cudaStatus != cudaSuccess) {
-    printf(" Device synchronization error\n");
+    std::cout << " Device synchronization error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -194,6 +209,7 @@ int main(int argc, char** argv) {
 
   int batch, channel, height, width;
   char *mode;
+  char *algo;
 
   //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -210,12 +226,13 @@ int main(int argc, char** argv) {
     else if (!(cmd_argument.compare("-width")))
       width = std::atoi(argv[loop_count + 1]);
 
-   else if (!(cmd_argument.compare("-mode")))
+    else if (!(cmd_argument.compare("-softmax_mode")))
       mode = argv[loop_count + 1];
+    
+    else if (!(cmd_argument.compare("-softmax_algo")))
+      algo = argv[loop_count + 1];
   }
 
-  
-
-  Softmax softmax(batch, channel, height, width, mode);
-  softmax.SoftmaxForwardApiCall();
+  SoftmaxForward softmaxforward(batch, channel, height, width, mode, algo);
+  softmaxforward.SoftmaxForwardApiCall();
 }
