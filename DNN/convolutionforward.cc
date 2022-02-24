@@ -4,10 +4,10 @@
 
 ConvolutionForward::ConvolutionForward(int batch, int channel, int height, int width, int filter_batch,
                                        int filter_channel, int filter_height, int filter_width, int padding, 
-                                       int stride, int dilation) : batch(batch), channel(channel), height(height),
+                                       int stride, int dilation, char *mode, char *fwd_preference) : batch(batch), channel(channel), height(height),
                                        width(width), filter_batch(filter_batch), filter_channel(filter_channel), 
                                        filter_height(filter_height), filter_width(filter_width), padding(padding),
-                                       stride(stride), dilation(dilation) {}
+                                       stride(stride), dilation(dilation), mode(mode), fwd_preference(fwd_preference) {}
  
 void ConvolutionForward::FreeMemory() {
   if (HostInputTensor) {
@@ -167,6 +167,26 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
   stride_width = stride;
   dilation_height = dilation;
   dilation_width = dilation;
+
+  /**
+   * CUDNN_CONVOLUTION
+   *     In this configuration, a convolution operation 
+   *     will be done when applying the filter to the images.    
+   * CUDNN_CROSS_CORRELATION
+   *     In this configuration, a cross-correlation operation 
+   *     will be done when applying the filter to the images.
+   */
+
+  //! Setting convolution mode
+  if (mode == "convolution") {
+    convolution_mode = CUDNN_CONVOLUTION;
+    std::cout << "Using convolution_mode : CUDNN_CONVOLUTION" << std::endl;
+  }
+
+  else {
+    convolution_mode = CUDNN_CROSS_CORRELATION;
+    std::cout << "Using convolution_mode : CUDNN_CROSS_CORRELATION" << std::endl; 
+  }
   
   status = cudnnCreateConvolutionDescriptor(&convolution_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
@@ -177,7 +197,7 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
   
   status = cudnnSetConvolution2dDescriptor(convolution_desc, padding_height, padding_width, 
                                            stride_height, stride_width, dilation_height, 
-                                           dilation_width, CUDNN_CROSS_CORRELATION, data_type);
+                                           dilation_width, convolution_mode, data_type);
   if( status != CUDNN_STATUS_SUCCESS) {
     std::cout << " Setting Convolution Descriptor error\n" << std::endl;  
     FreeMemory();
@@ -221,10 +241,40 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
 
   alpha = ALPHA_INITIAL_VALUE;
   beta = BETA_INITIAL_VALUE;
+
+  /**
+   * CUDNN_CONVOLUTION_FWD_NO_WORKSPACE
+   *     In this configuration, the routine
+   *     cudnnGetConvolutionForwardAlgorithm() is guaranteed to return an
+   *     algorithm that does not require any extra workspace to be provided by the user.
+   * CUDNN_CONVOLUTION_FWD_PREFER_FASTEST
+   *     In this configuration, the routine
+   *     cudnnGetConvolutionForwardAlgorithm() will return the fastest
+   *     algorithm regardless how much workspace is needed to execute it.
+   * CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT
+   *     In this configuration, the routine
+   *     cudnnGetConvolutionForwardAlgorithm() will return the fastest
+   *     algorithm that fits within the memory limit that the user provided.
+   */
+
+  if (fwd_preference == "no_workspace") {
+    data_preference =  CUDNN_CONVOLUTION_FWD_NO_WORKSPACE;
+    std::cout << "Using data_preference : CUDNN_CONVOLUTION_FWD_NO_WORKSPACE" << std::endl;
+  }
+
+  else if (fwd_preference == "specify_workspace_limit") {
+    data_preference =  CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT;
+    std::cout << "Using data_preference : CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT" << std::endl;
+  }
+
+  else {
+    data_preference =  CUDNN_CONVOLUTION_FWD_PREFER_FASTEST;
+    std::cout << "Using data_preference : CUDNN_CONVOLUTION_FWD_PREFER_FASTEST" << std::endl;
+  }
   
   // algorithm
   status = cudnnGetConvolutionForwardAlgorithm(handle_, input_desc, filter_desc, convolution_desc, 
-                                               output_desc, CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+                                               output_desc, data_preference,
                                                /*GPUmemoryLimitInbytes*/ 0, &convolution_algo);
   if( status != CUDNN_STATUS_SUCCESS) {
     std::cout << " Getting Convolution Forward Algorithm error\n" << std::endl;  
@@ -298,6 +348,7 @@ int main(int argc, char** argv) {
     
   int batch, channel, height, width, filter_batch, filter_channel, filter_height, filter_width;
   int padding, stride, dilation;
+  char *mode, *fwd_preference;
   //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);  
@@ -333,9 +384,15 @@ int main(int argc, char** argv) {
 
     else if (!(cmd_argument.compare("-dilation")))
       dilation = std::stod(argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-mode")))
+      mode = (argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-preference")))
+      fwd_preference = (argv[loop_count + 1]);
   }
 
   ConvolutionForward convolutionforward(batch, channel, height, width, filter_batch, filter_channel, 
-                          filter_height, filter_width, padding, stride, dilation);
+                          filter_height, filter_width, padding, stride, dilation, mode, fwd_preference);
   convolutionforward.ConvolutionForwardApiCall();
 }
