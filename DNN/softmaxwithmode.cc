@@ -153,15 +153,9 @@ int SoftmaxForward::SoftmaxForwardApiCall() {
   }
 
   clk_start=clock();
-  status = cudnnSoftmaxForward(handle_,                     //handle
-                               softmax_algo,                //softmax algo
-                               softmax_mode,                //softmax mode
-                               &alpha,                      //alpha
-                               input_desc,                  //xDesc
-                               DeviceInputTensor,           //x
-                               &beta,                       //beta
-                               output_desc,                 //yDesc
-                               DeviceOutputTensor);         //y
+  status = cudnnSoftmaxForward(handle_, softmax_algo, softmax_mode, &alpha,                      
+                               input_desc, DeviceInputTensor, &beta,                       
+                               output_desc, DeviceOutputTensor);         
 
   clk_stop=clock();
 
