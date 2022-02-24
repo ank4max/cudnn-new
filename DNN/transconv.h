@@ -23,7 +23,7 @@ class ConvolutionTranspose {
      */
     ConvolutionTranspose(int batch, int channel, int height, int width, int filter_batch,
                          int filter_channel, int filter_height, int filter_width, int padding,
-                         int stride, int dilation, char *bwd_preference);
+                         int stride, int dilation, char *mode, char *preference);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -31,13 +31,13 @@ class ConvolutionTranspose {
     void FreeMemory();
 
     /**
-     * ConvolutionTransposeApiCall which performs Convolution operation on input image
+     * ConvolutionTransposeApiCall which performs Transpose Convolution operation on input image
      */
     int ConvolutionTransposeApiCall();
 
   private:
     int batch, channel, height, width;
-    std::string bwd_preference;
+    std::string mode, preference;
     int output_batch, output_channel, output_height, output_width;
     int filter_batch, filter_channel, filter_height, filter_width;
     int padding, stride, dilation;
@@ -68,5 +68,6 @@ class ConvolutionTranspose {
     cudnnFilterDescriptor_t filter_desc;
     cudnnConvolutionDescriptor_t convolution_desc;
     cudnnConvolutionBwdDataAlgo_t convolution_algo;
+    cudnnConvolutionMode_t convolution_mode;
     cudnnConvolutionBwdDataPreference_t data_preference;
 };
