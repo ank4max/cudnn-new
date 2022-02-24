@@ -189,12 +189,12 @@ int BatchNormalizationForward::BatchNormalizationForwardApiCall() {
    *    This mode is similar to CUDNN_BATCHNORM_SPATIAL but it
    *    can be faster for some tasks.
    */
-  if (mode == "batchnorm_per_activation") {
+  if (mode == "per_activation") {
     bn_mode = CUDNN_BATCHNORM_PER_ACTIVATION;
     std::cout << "\nUsing batchnorm mode : CUDNN_BATCHNORM_PER_ACTIVATION\n";
   }
 
-  else if (mode == "batchnorm_spatial") {
+  else if (mode == "spatial") {
     bn_mode = CUDNN_BATCHNORM_SPATIAL;
     std::cout << "\nUsing batchnorm mode : CUDNN_BATCHNORM_SPATIAL\n";
   }
@@ -310,12 +310,10 @@ int BatchNormalizationForward::BatchNormalizationForwardApiCall() {
   }
 
   clk_start=clock();
-  status = cudnnBatchNormalizationForwardTraining(handle_, bn_mode,
-                &alpha, &beta, input_desc, DeviceInputTensor, output_desc,
-                DeviceOutputTensor, mean_descriptor, device_scale,
-                device_offset, ExponentialAverageFactor, device_running_mean,
-                device_running_var,EPSILON, device_saved_mean,
-                device_saved_inv_var);
+  status = cudnnBatchNormalizationForwardTraining(handle_, bn_mode, &alpha, &beta, input_desc, DeviceInputTensor, output_desc,
+                                                  DeviceOutputTensor, mean_descriptor, device_scale,device_offset, 
+                                                  ExponentialAverageFactor, device_running_mean, device_running_var, 
+                                                  EPSILON, device_saved_mean, device_saved_inv_var);
 
   clk_stop=clock();
 
