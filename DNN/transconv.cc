@@ -3,13 +3,12 @@
 #include "cudnn_utility.h"
 
 
-ConvolutionTranspose::ConvolutionTranspose(int batch, int channel, int height,
-    int width, int filter_batch, int filter_channel, int filter_height,
-    int filter_width, int padding, int stride, int dilation, char *bwd_preference)
-    : batch(batch), channel(channel), height(height), width(width),
-      filter_batch(filter_batch), filter_channel(filter_channel),
-      filter_height(filter_height), filter_width(filter_width),
-      padding(padding), stride(stride), dilation(dilation), bwd_preference(bwd_preference) {}
+ConvolutionTranspose::ConvolutionTranspose(int batch, int channel, int height, int width, int filter_batch, 
+                                           int filter_channel, int filter_height, int filter_width, int padding, 
+                                           int stride, int dilation, char *mode, char *preference) : batch(batch), 
+                                           channel(channel), height(height), width(width), filter_batch(filter_batch), 
+                                           filter_channel(filter_channel), filter_height(filter_height), filter_width(filter_width),
+                                           padding(padding), stride(stride), dilation(dilation), mode(mode), preference(preference) {}
 
 void ConvolutionTranspose::FreeMemory() {
   if (HostInputTensor) {
@@ -170,6 +169,24 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
   dilation_height = dilation;
   dilation_width = dilation;
 
+  /**
+   * CUDNN_CONVOLUTION
+   *     In this configuration, a convolution operation 
+   *     will be done when applying the filter to the images.    
+   * CUDNN_CROSS_CORRELATION
+   *     In this configuration, a cross-correlation operation 
+   *     will be done when applying the filter to the images.
+   */
+  if (mode == "cross_correlation") {
+    convolution_mode = CUDNN_CROSS_CORRELATION;
+    std::cout << "Using convolution_mode : CUDNN_CROSS_CORRELATION" << std::endl; 
+  }
+
+  else {
+    convolution_mode = CUDNN_CONVOLUTION;
+    std::cout << "Using convolution_mode : CUDNN_CONVOLUTION" << std::endl;
+  }
+
   status = cudnnCreateConvolutionDescriptor(&convolution_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
     std::cout << "\nCreating convolution Descriptor error\n" << std::endl;
@@ -179,7 +196,7 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
 
   status = cudnnSetConvolution2dDescriptor(convolution_desc, padding_height, padding_width,
                                            stride_height, stride_width, dilation_height,
-                                           dilation_width, CUDNN_CROSS_CORRELATION, data_type);
+                                           dilation_width, convolution_mode, data_type);
   if( status != CUDNN_STATUS_SUCCESS) {
     std::cout << "\nSetting Convolution Descriptor error\n" << std::endl;
     FreeMemory();
@@ -232,13 +249,12 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
    *     cudnnGetConvolutionBackwardDataAlgorithm() will return the fastest
    *     algorithm that fits within the memory limit that the user provided.
    */
-
-  if (bwd_preference == "no_workspace") {
+  if (preference == "no_workspace") {
     data_preference =  CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE;
     std::cout << "using data_preference : CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE" << std::endl;
   }
 
-  else if (bwd_preference == "specify_workspace_limit") {
+  else if (preference == "specify_workspace_limit") {
     data_preference =  CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT;
     std::cout << "using data_preference : CUDNN_CONVOLUTION_BWD_DATA_SPECIFY_WORKSPACE_LIMIT" << std::endl;
   }
@@ -247,8 +263,6 @@ int ConvolutionTranspose::ConvolutionTransposeApiCall() {
     data_preference =  CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST;
     std::cout << "using data_preference : CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST" << std::endl;
   }
-
-
 
   alpha = ALPHA_INITIAL_VALUE;
   beta = BETA_INITIAL_VALUE;
@@ -332,7 +346,7 @@ int main(int argc, char** argv) {
 
   int batch, channel, height, width, filter_batch, filter_channel, filter_height, filter_width;
   int padding, stride, dilation;
-  char *bwd_preference;
+  char *mode, *preference;
   //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);
@@ -368,14 +382,15 @@ int main(int argc, char** argv) {
 
     else if (!(cmd_argument.compare("-dilation")))
       dilation = std::stod(argv[loop_count + 1]);
+
+    else if (!(cmd_argument.compare("-mode")))
+      mode = (argv[loop_count + 1]);
     
     else if (!(cmd_argument.compare("-preference")))
-      bwd_preference = (argv[loop_count + 1]);
+      preference = (argv[loop_count + 1]);
   }
 
   ConvolutionTranspose convolutiontranspose(batch, channel, height, width, filter_batch, filter_channel,
-                                            filter_height, filter_width, padding, stride, dilation, bwd_preference);
+                                            filter_height, filter_width, padding, stride, dilation, mode, preference);
   convolutiontranspose.ConvolutionTransposeApiCall();
 }
-
-  
