@@ -1,13 +1,13 @@
-%%writefile ne.cc
+%%writefile max.cc
 #include "connv.h"
 #include "cudnn_utility.h"
 
 ConvolutionForward::ConvolutionForward(int batch, int channel, int height, int width, int filter_batch,
                                        int filter_channel, int filter_height, int filter_width, int padding, 
-                                       int stride, int dilation, char *mode, char *fwd_preference) : batch(batch), channel(channel), height(height),
+                                       int stride, int dilation, char *mode, char *preference) : batch(batch), channel(channel), height(height),
                                        width(width), filter_batch(filter_batch), filter_channel(filter_channel), 
                                        filter_height(filter_height), filter_width(filter_width), padding(padding),
-                                       stride(stride), dilation(dilation), mode(mode), fwd_preference(fwd_preference) {}
+                                       stride(stride), dilation(dilation), mode(mode), preference(preference) {}
  
 void ConvolutionForward::FreeMemory() {
   if (HostInputTensor) {
@@ -176,16 +176,14 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
    *     In this configuration, a cross-correlation operation 
    *     will be done when applying the filter to the images.
    */
-
-  //! Setting convolution mode
-  if (mode == "convolution") {
-    convolution_mode = CUDNN_CONVOLUTION;
-    std::cout << "Using convolution_mode : CUDNN_CONVOLUTION" << std::endl;
+  if (mode == "cross_correlation") {
+    convolution_mode = CUDNN_CROSS_CORRELATION;
+    std::cout << "Using convolution_mode : CUDNN_CROSS_CORRELATION" << std::endl; 
   }
 
   else {
-    convolution_mode = CUDNN_CROSS_CORRELATION;
-    std::cout << "Using convolution_mode : CUDNN_CROSS_CORRELATION" << std::endl; 
+    convolution_mode = CUDNN_CONVOLUTION;
+    std::cout << "Using convolution_mode : CUDNN_CONVOLUTION" << std::endl;
   }
   
   status = cudnnCreateConvolutionDescriptor(&convolution_desc);
@@ -256,13 +254,12 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
    *     cudnnGetConvolutionForwardAlgorithm() will return the fastest
    *     algorithm that fits within the memory limit that the user provided.
    */
-
-  if (fwd_preference == "no_workspace") {
+  if (preference == "no_workspace") {
     data_preference =  CUDNN_CONVOLUTION_FWD_NO_WORKSPACE;
     std::cout << "Using data_preference : CUDNN_CONVOLUTION_FWD_NO_WORKSPACE" << std::endl;
   }
 
-  else if (fwd_preference == "specify_workspace_limit") {
+  else if (preference == "specify_workspace_limit") {
     data_preference =  CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT;
     std::cout << "Using data_preference : CUDNN_CONVOLUTION_FWD_SPECIFY_WORKSPACE_LIMIT" << std::endl;
   }
@@ -317,7 +314,6 @@ int ConvolutionForward::ConvolutionForwardApiCall() {
     return EXIT_FAILURE;   
   }
   
-  double flopsCoef = 2.0;
   std::cout << "\nInput n*c*h*w: " << input_size << 
                "\nLatency: " << ((double)(clk_stop - clk_start))/CLOCKS_PER_SEC <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_stop, input_size) << std::endl;
@@ -348,7 +344,7 @@ int main(int argc, char** argv) {
     
   int batch, channel, height, width, filter_batch, filter_channel, filter_height, filter_width;
   int padding, stride, dilation;
-  char *mode, *fwd_preference;
+  char *mode, *preference;
   //! reading cmd line arguments and initializing the required parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::string cmd_argument(argv[loop_count]);  
@@ -389,10 +385,10 @@ int main(int argc, char** argv) {
       mode = (argv[loop_count + 1]);
 
     else if (!(cmd_argument.compare("-preference")))
-      fwd_preference = (argv[loop_count + 1]);
+      preference = (argv[loop_count + 1]);
   }
 
   ConvolutionForward convolutionforward(batch, channel, height, width, filter_batch, filter_channel, 
-                          filter_height, filter_width, padding, stride, dilation, mode, fwd_preference);
+                          filter_height, filter_width, padding, stride, dilation, mode, preference);
   convolutionforward.ConvolutionForwardApiCall();
 }
