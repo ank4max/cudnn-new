@@ -1,10 +1,6 @@
-%%writefile me.cc
+%%writefile max.cc
 #include "activation.h"
 #include "cudnn_utility.h"
-
-#define ONE 1.0
-#define ZERO 0.0
-
 
 ActivationBackward::ActivationBackward(int batch, int channel, int height, int width, char* activation_mode)
     : batch(batch), channel(channel), height(height), width(width),
@@ -23,27 +19,27 @@ void ActivationBackward::FreeMemory() {
 
   cudaStatus = cudaFree(DeviceInputTensor);
   if (cudaStatus != cudaSuccess) {
-    printf("Device input memory deallocation error\n");
+    std::cout << "Device input memory deallocation error\n" << std::endl;
   }
 
   cudaStatus = cudaFree(DeviceOutputTensor);
   if (cudaStatus != cudaSuccess) {
-    printf("Device output memory deallocation error\n");
+    std::cout << "Device output memory deallocation error\n" << std::endl;
   }
 
   status = cudnnDestroyTensorDescriptor(input_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to Destroy input Descriptor\n");
+    std::cout << " Unable to Destroy input Descriptor\n" << std::endl;
   }
 
   status = cudnnDestroyTensorDescriptor(output_desc);
   if (status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to Destroy output Descriptor\n");
+    std::cout << " Unable to Destroy output Descriptor\n" << std::endl;
   }
 
   status = cudnnDestroy(handle_);
   if (status != CUDNN_STATUS_SUCCESS) {
-    printf("Unable to uninitialize handle\n");
+    std::cout << "Unable to uninitialize handle\n" << std::endl;
   }
 }
 
@@ -64,7 +60,7 @@ int ActivationBackward::ActivationBackwardApiCall() {
 
   status = cudnnCreate(&handle_);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Unable to initialize handle\n");
+    std::cout << " Unable to initialize handle\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -72,28 +68,28 @@ int ActivationBackward::ActivationBackwardApiCall() {
 
   status = cudnnCreateTensorDescriptor(&input_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating input tensor descriptor error\n");
+    std::cout << " Creating input tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnSetTensor4dDescriptor(input_desc, format, dtype, batch, channel, height, width);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting input tensor descriptor error\n");
+    std::cout << " Setting input tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnCreateTensorDescriptor(&output_desc);
   if(status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating output tensor descriptor error\n");
+    std::cout << " Creating output tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   status = cudnnSetTensor4dDescriptor(output_desc, format, dtype, batch, channel, height, width);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Setting output tensor descriptor error\n");
+    std::cout << " Setting output tensor descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -101,14 +97,14 @@ int ActivationBackward::ActivationBackwardApiCall() {
   //! Device memory allocation for Input and Output Arrays
   cudaStatus = cudaMalloc(&DeviceInputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory allocation failed for input\n");
+    std::cout << " the device memory allocation failed for input\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   cudaStatus = cudaMalloc(&DeviceOutputTensor, size_bytes);
   if( cudaStatus != cudaSuccess) {
-    printf(" the device memory allocation failed for output\n");
+    std::cout << " the device memory allocation failed for output\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -117,13 +113,13 @@ int ActivationBackward::ActivationBackwardApiCall() {
   cudaStatus = cudaMemcpy(DeviceInputTensor, HostInputTensor, size_bytes,
                           cudaMemcpyHostToDevice);
   if (cudaStatus != cudaSuccess) {
-    fprintf (stderr, "!!!! Setting up values on device for Input tensor failed\n");
+    std::cout << "!!!! Setting up values on device for Input tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  float alpha[channel] = {ONE};
-  float beta[channel] = {ZERO};
+  float alpha[channel] = {ALPHA_INITIAL_VALUE};
+  float beta[channel] = {BETA_INITIAL_VALUE};
 
   //! Initializing activation mode
   if (activation_mode == "tanh") {
@@ -141,14 +137,14 @@ int ActivationBackward::ActivationBackwardApiCall() {
   //! Setting activation descriptor
   status = cudnnCreateActivationDescriptor(&activation_desc);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" Creating activation descriptor error\n");
+    std::cout << " Creating activation descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  status = cudnnSetActivationDescriptor(activation_desc, mode, propagation, ZERO);
+  status = cudnnSetActivationDescriptor(activation_desc, mode, propagation, RELU_CLIPPING_THREASHOLD);
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf("Setting activation  descriptor error\n");
+    std::cout << "Setting activation  descriptor error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -156,23 +152,14 @@ int ActivationBackward::ActivationBackwardApiCall() {
   //! API call
   clk_start=clock();
 
-  status = cudnnActivationBackward(handle_,
-                                  activation_desc,
-                                  alpha,
-                                  input_desc,
-                                  DeviceInputTensor,
-                                  input_desc,
-                                  DeviceInputTensor,
-                                  output_desc,
-                                  DeviceOutputTensor,
-                                  beta,
-                                  output_desc,
-                                  DeviceOutputTensor
-                                  );
+  status = cudnnActivationBackward(handle_, activation_desc, alpha, input_desc, DeviceInputTensor,
+                                  input_desc, DeviceInputTensor, output_desc, DeviceOutputTensor,
+                                  beta, output_desc, DeviceOutputTensor);
+
   clk_stop=clock();
 
   if( status != CUDNN_STATUS_SUCCESS) {
-    printf(" kernel execution error\n");
+    std::cout << " kernel execution error\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -181,7 +168,7 @@ int ActivationBackward::ActivationBackwardApiCall() {
   cudaStatus = cudaMemcpy(HostOutputTensor, DeviceOutputTensor, size_bytes,
                           cudaMemcpyDeviceToHost);
   if (cudaStatus != cudaSuccess) {
-    fprintf (stderr, "!!!! Setting up values on host for output tensor failed\n");
+    std::cout << "!!!! Setting up values on host for output tensor failed\n" << std::endl;
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -194,6 +181,7 @@ int ActivationBackward::ActivationBackwardApiCall() {
   Util::PrintTensor(HostOutputTensor, batch, channel, height, width);
 
   FreeMemory();
+
   return EXIT_SUCCESS;
 }
 
