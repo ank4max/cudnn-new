@@ -23,7 +23,7 @@ class ConvolutionForward {
      */
     ConvolutionForward(int batch, int channel, int height, int width, int filter_batch,
                        int filter_channel, int filter_height, int filter_width, int padding, 
-                       int stride, int dilation, char *mode, char *fwd_Preference);
+                       int stride, int dilation, char *mode, char *fwd_preference);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
