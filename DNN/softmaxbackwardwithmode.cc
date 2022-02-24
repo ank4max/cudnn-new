@@ -3,7 +3,7 @@
 #include "cudnn_utility.h"
 
 SoftmaxBackward::SoftmaxBackward(int batch, int channel, int height, int width, char *mode, char *algo)
-    : batch(batch), channel(channel), height(height), width(width), mode(mode), algo(algo) {}
+                                : batch(batch), channel(channel), height(height), width(width), mode(mode), algo(algo) {}
 
 void SoftmaxBackward::FreeMemory() {
   if (HostInputTensor) {
