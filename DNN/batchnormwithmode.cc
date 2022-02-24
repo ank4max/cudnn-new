@@ -6,7 +6,8 @@
 #define EPSILON 0.001
 
 BatchNormalizationForward::BatchNormalizationForward(int batch, int channel, int height, int width, char *mode)
-    : batch(batch), channel(channel), height(height), width(width), mode(mode) {}
+                                                     : batch(batch), channel(channel), height(height), width(width),
+                                                     mode(mode) {}
 
 void BatchNormalizationForward::FreeMemory() {
   if (HostInputTensor) {
