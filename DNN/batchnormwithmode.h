@@ -53,7 +53,6 @@ class BatchNormalizationForward {
     cudnnHandle_t handle_;
     cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
     cudnnTensorFormat_t data_format = CUDNN_TENSOR_NCHW;
-    cudnnActivationDescriptor_t activation_desc;
     cudnnTensorDescriptor_t input_desc;
     cudnnTensorDescriptor_t output_desc;
     cudnnTensorDescriptor_t mean_descriptor;
