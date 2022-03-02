@@ -1,3 +1,4 @@
+%%writefile cublas_utility.h
 #define INDEX(row, col, row_count) (((col) * (row_count)) + (row))    // for getting index values matrices
 #define RANDOM (rand() % 1000 * 1.00) / 100    // to generate random values
 
@@ -384,3 +385,5 @@ namespace util {
 
 
 }  // end of namespace util
+
+
