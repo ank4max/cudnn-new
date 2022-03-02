@@ -4,17 +4,15 @@
 
 template<class T>
 Amax<T>::Amax(int x_size, char mode)
-    : x_size(x_size), mode(mode) {}
+              : x_size(x_size), mode(mode) {}
 
 template<class T>
 void Amax<T>::FreeMemory() {
   //! Free Host Memory
-
   if (HostVectorX)
     delete[] HostVectorX;
 
   //! Free Device Memory
-
   cudaStatus = cudaFree(DeviceVectorX);
   if (cudaStatus != cudaSuccess) {
     std::cout << " The device memory deallocation failed for X" << std::endl;
@@ -95,7 +93,6 @@ int Amax<T>::AmaxApiCall() {
   }
   
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
-
   status = cublasSetVector(x_size, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
