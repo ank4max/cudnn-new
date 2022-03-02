@@ -188,6 +188,17 @@ int Gemv<T>::GemvApiCall() {
     return EXIT_FAILURE;
   }
   
+  /**
+   * API call to performs matrix - vector multiplication : \f$ Y = alpha * A * X + beta * Y \f$
+   */
+    
+  /**
+   * The Error values returned by API are : \n
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized \n
+   * CUBLAS_STATUS_INVALID_VALUE - the parameters m, n < 0 or incx, incy = 0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
+   */
   
   switch (mode) {
     case 'S': {
