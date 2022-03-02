@@ -1,3 +1,4 @@
+%%writefile gbmv.h
 #include <iostream>
 #include <string>
 #include <cuda_runtime.h>
@@ -55,4 +56,3 @@ class Gbmv {
     cublasHandle_t handle;
     clock_t clk_start, clk_end;
 };
-
