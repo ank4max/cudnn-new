@@ -54,8 +54,8 @@ int Axpy<T>::AxpyApiCall() {
   }
 
   /**
-   * Switch Case - To Initialize and Print input matrix and vectors based on mode passed,
-   * A is a general matrix, X and Y 
+   * Switch Case - To Initialize and Print input vectors based on mode passed,
+   * X and Y are general vectors
    */
   
   switch (mode) {
