@@ -186,7 +186,7 @@ int Amax<T>::AmaxApiCall() {
   
   //! Printing the result stored
 
-  std::cout << "\nThe" << mode << "Amax operation is:\n";
+  std::cout << "\nThe result obtained  after I" << mode << "Amax operation is:\n";
 
   switch (mode) {
     case 'S': {  
