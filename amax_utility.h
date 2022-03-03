@@ -344,6 +344,16 @@ namespace util {
     std::cout << "the maximum value exists at the  " << (result-1) << "th index : " << abs((Vector[result -1].x)) << "+" << abs(Vector[result - 1].y) << "*I "   << " ";;
   }
 
+  template<class C>
+  void PrintAmin(C* Vector, int result) {
+    std::cout << "the minimum value exists at the  " << (result-1) << "th index  : " << abs((Vector[result -1]));
+  }
+
+  template<class C>
+  void PrintComplexAmin(C* Vector, int result) {
+    std::cout << "the minimum value exists at the  " << (result-1) << "th index : " << abs((Vector[result -1].x)) << "+" << abs(Vector[result - 1].y) << "*I "   << " ";;
+  }
+
 
 }  // end of namespace util
 
