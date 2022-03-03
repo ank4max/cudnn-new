@@ -190,22 +190,22 @@ int Amin<T>::AminApiCall() {
 
   switch (mode) {
     case 'S': {  
-      util::PrintAmin((float *)HostVectorX, result);
+      util::PrintAmin<float>((float *)HostVectorX, result);
       break;
     }
 
     case 'D': {
-      util::PrintAmin((double *)HostVectorX, result);
+      util::PrintAmin<double>((double *)HostVectorX, result);
       break;
     }
 
     case 'C': {
-      util::PrintComplexAmin((cuComplex *)HostVectorX, result);
+      util::PrintComplexAmin<cuComplex>((cuComplex *)HostVectorX, result);
       break;
     }
 
     case 'Z': {
-      util::PrintComplexAmin((cuDoubleComplex *)HostVectorX, result);
+      util::PrintComplexAmin<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, result);
       break;
     }  
     
