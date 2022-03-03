@@ -190,22 +190,22 @@ int Amax<T>::AmaxApiCall() {
 
   switch (mode) {
     case 'S': {  
-      util::PrintAmax((float *)HostVectorX, result);
+      util::PrintAmax<float>((float *)HostVectorX, result);
       break;
     }
 
     case 'D': {
-      util::PrintAmax((double *)HostVectorX, result);
+      util::PrintAmax<double>((double *)HostVectorX, result);
       break;
     }
 
     case 'C': {
-      util::PrintComplexAmax((cuComplex *)HostVectorX, result);
+      util::PrintComplexAmax<cuComplex>((cuComplex *)HostVectorX, result);
       break;
     }
 
     case 'Z': {
-      util::PrintComplexAmax((cuDoubleComplex *)HostVectorX, result);
+      util::PrintComplexAmax<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, result);
       break;
     }  
     
