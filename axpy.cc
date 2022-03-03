@@ -106,11 +106,9 @@ int Axpy<T>::AxpyApiCall() {
       
       break;
     }
-
   }
   
-  //! Allocating Device Memory for Matrix and Vectors using cudaMalloc()
-  
+  //! Allocating Device Memory for Vectors using cudaMalloc()
   cudaStatus = cudaMalloc((void **)&DeviceVectorX, vector_length * sizeof(*HostVectorX));
   if(cudaStatus != cudaSuccess) {
     std::cout << " The device memory allocation failed for X " << std::endl;
@@ -134,7 +132,6 @@ int Axpy<T>::AxpyApiCall() {
   }
   
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
-
   status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
@@ -151,7 +148,7 @@ int Axpy<T>::AxpyApiCall() {
   
   /**
    * API call to multiply the vector x by the scalar α and adds it to the vector y : Y = alpha * X + Y \n
-   * Hence, the performed operation is \f$ y[j] = α × x[k] + y[j] for i=1,…,n  \f$ where \f$ k = 1 + (i − 1) * incx \f$ and 
+   * Hence, the performed operation is \f$ y[j] = α × x[k] + y[j] for i=1,…,n \f$ where \f$ k = 1 + (i − 1) * incx \f$ and 
    * \f$ j = 1 + (i − 1) * incy \f$ \n . 
    * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran.
    */
@@ -169,7 +166,6 @@ int Axpy<T>::AxpyApiCall() {
       clk_start = clock();
 
       status = cublasSaxpy(handle, vector_length, (float *)&alpha, (float *)DeviceVectorX, 1, (float *)DeviceVectorY, 1);
-
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Saxpy kernel execution error\n");
@@ -235,7 +231,7 @@ int Axpy<T>::AxpyApiCall() {
     }
   }
   
-  //! Copy Vector C, holding resultant Vector, from Device to Host using cublasGetVector()
+  //! Copy Vector Y, holding resultant Vector, from Device to Host using cublasGetVector()
   status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
@@ -353,7 +349,6 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
   
-
   (*cublas_func_ptr[mode_index[mode]])(vector_length, alpha_real, alpha_imaginary);
   
   return 0;
