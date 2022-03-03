@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
   
-  //! initializing values for matrix B and C
+  //! initializing values for vector x and y
   x_size = A_col;
   y_size = A_row;
 
