@@ -130,14 +130,16 @@ int Axpy<T>::AxpyApiCall() {
   }
   
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
-  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, VECTOR_LEADING_DIMENSION, DeviceVectorX, 
+                           VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, 1, DeviceVectorY, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, VECTOR_LEADING_DIMENSION, DeviceVectorY,
+                           VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector Y from host to device failed\n");
     FreeMemory();
@@ -163,7 +165,8 @@ int Axpy<T>::AxpyApiCall() {
       std::cout << "\nCalling Saxpy API\n";
       clk_start = clock();
 
-      status = cublasSaxpy(handle, vector_length, (float *)&alpha, (float *)DeviceVectorX, 1, (float *)DeviceVectorY, 1);
+      status = cublasSaxpy(handle, vector_length, (float *)&alpha, (float *)DeviceVectorX, VECTOR_LEADING_DIMENSION, 
+               (float *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Saxpy kernel execution error\n");
@@ -180,7 +183,8 @@ int Axpy<T>::AxpyApiCall() {
       std::cout << "\nCalling Daxpy API\n";
       clk_start = clock();
 
-      status = cublasDaxpy(handle, vector_length, (double *)&alpha, (double *)DeviceVectorX, 1, (double *)DeviceVectorY, 1);
+      status = cublasDaxpy(handle, vector_length, (double *)&alpha, (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, 
+                          (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Daxpy kernel execution error\n");
@@ -197,7 +201,8 @@ int Axpy<T>::AxpyApiCall() {
       std::cout << "\nCalling Caxpy API\n";
       clk_start = clock();
 
-      status = cublasCaxpy(handle, vector_length, (cuComplex *)&alpha, (cuComplex *)DeviceVectorX, 1, (cuComplex *)DeviceVectorY, 1);
+      status = cublasCaxpy(handle, vector_length, (cuComplex *)&alpha, (cuComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, 
+                           (cuComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Caxpy kernel execution error\n");
@@ -214,8 +219,8 @@ int Axpy<T>::AxpyApiCall() {
       std::cout << "\nCalling Zaxpy API\n";
       clk_start = clock();
 
-      status = cublasZaxpy(handle, vector_length, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceVectorX, 1, 
-                          (cuDoubleComplex *)DeviceVectorY, 1);
+      status = cublasZaxpy(handle, vector_length, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, 
+                          (cuDoubleComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Zaxpy kernel execution error\n");
@@ -230,7 +235,8 @@ int Axpy<T>::AxpyApiCall() {
   }
   
   //! Copy Vector Y, holding resultant Vector, from Device to Host using cublasGetVector()
-  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, VECTOR_LEADING_DIMENSION, HostVectorY, 
+                           VECTOR_LEADING_DIMENSION);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to get output vector y from device\n");
