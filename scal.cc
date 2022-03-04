@@ -29,7 +29,6 @@ template<class T>
 int Scal<T>::ScalApiCall() {
   //! Allocating Host Memory for Vectors
   HostVectorX = new T[vector_length];
-  HostVectorY = new T[vector_length];
 
   if (!HostVectorX) {
     fprintf (stderr, "!!!! Host memory allocation error (vectorX)\n");
@@ -37,15 +36,9 @@ int Scal<T>::ScalApiCall() {
     return EXIT_FAILURE;
   }
 
-  if (!HostVectorY) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorY)\n");
-    FreeMemory();
-    return EXIT_FAILURE;
-  }
-
   /**
    * Switch Case - To Initialize and Print input vectors based on mode passed,
-   * X and Y are vectors
+   * X is a vector
    */
   
   switch (mode) {
