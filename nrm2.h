@@ -13,7 +13,7 @@
 
 /**
  * Class Nrm2 contains Nrm2 API which computes the Euclidean norm of the vector x
- * \param X - n x 1 general vector
+ * \param X - vector of length n
  */
 template<class T>
 class Nrm2 {
