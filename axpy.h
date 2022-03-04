@@ -14,8 +14,8 @@
 /**
  * Class Axpy contains Axpy API which multiplies the vector x by the scalar α and adds it to the vector y 
  * overwriting the latest vector with the result : Y = alpha * X + Y
- * \param X - n x 1 general vector
- * \param Y - n x 1 general vector
+ * \param X - vector of length n
+ * \param Y - vector of length n
  * \param alpha - scalar
  */
 template<class T>
