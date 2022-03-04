@@ -130,14 +130,14 @@ int Copy<T>::CopyApiCall() {
   }
   
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
-  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, 1, DeviceVectorY, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, VECTOR_LEADING_DIMENSION, DeviceVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector Y from host to device failed\n");
     FreeMemory();
@@ -162,7 +162,7 @@ int Copy<T>::CopyApiCall() {
       std::cout << "\nCalling Scopy API\n";
       clk_start = clock();
 
-      status = cublasScopy(handle, vector_length, (float *)DeviceVectorX, 1, (float *)DeviceVectorY, 1);
+      status = cublasScopy(handle, vector_length, (float *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (float *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Scopy kernel execution error\n");
         FreeMemory();
@@ -178,7 +178,7 @@ int Copy<T>::CopyApiCall() {
       std::cout << "\nCalling Dcopy API\n";
       clk_start = clock();
 
-      status = cublasDcopy(handle, vector_length, (double *)DeviceVectorX, 1, (double *)DeviceVectorY, 1);
+      status = cublasDcopy(handle, vector_length, (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Dcopy kernel execution error\n");
         FreeMemory();
@@ -194,7 +194,7 @@ int Copy<T>::CopyApiCall() {
       std::cout << "\nCalling Ccopy API\n";
       clk_start = clock();
 
-      status = cublasCcopy(handle, vector_length, (cuComplex *)DeviceVectorX, 1, (cuComplex *)DeviceVectorY, 1);
+      status = cublasCcopy(handle, vector_length, (cuComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (cuComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Ccopy kernel execution error\n");
         FreeMemory();
@@ -210,7 +210,7 @@ int Copy<T>::CopyApiCall() {
       std::cout << "\nCalling Zcopy API\n";
       clk_start = clock();
 
-      status = cublasZcopy(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, 1, (cuDoubleComplex *)DeviceVectorY, 1);
+      status = cublasZcopy(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (cuDoubleComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Zcopy kernel execution error\n");
         FreeMemory();
@@ -224,7 +224,7 @@ int Copy<T>::CopyApiCall() {
   }
   
   //! Copy Vector Y, holding resultant Vector, from Device to Host using cublasGetVector()
-  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, VECTOR_LEADING_DIMENSION, HostVectorY, VECTOR_LEADING_DIMENSION);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to get output vector y from device\n");
