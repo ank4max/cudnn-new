@@ -13,8 +13,8 @@
 
 /**
  * Class Copy contains Copy API which copies the vector x into the vector y 
- * \param X - n x 1 general vector
- * \param Y - n x 1 general vector
+ * \param X - vector of length n
+ * \param Y - vector of length n
  */
 template<class T>
 class Copy {
