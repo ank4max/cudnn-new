@@ -130,14 +130,14 @@ int Swap<T>::SwapApiCall() {
   }
   
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
-  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
 
-  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, 1, DeviceVectorY, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, VECTOR_LEADING_DIMENSION, DeviceVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector Y from host to device failed\n");
     FreeMemory();
@@ -163,7 +163,7 @@ int Swap<T>::SwapApiCall() {
       std::cout << "\nCalling Sswap API\n";
       clk_start = clock();
 
-      status = cublasSswap(handle, vector_length, (float *)DeviceVectorX, 1, (float *)DeviceVectorY, 1);
+      status = cublasSswap(handle, vector_length, (float *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (float *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Sswap kernel execution error\n");
@@ -180,7 +180,7 @@ int Swap<T>::SwapApiCall() {
       std::cout << "\nCalling Dswap API\n";
       clk_start = clock();
 
-      status = cublasDswap(handle, vector_length, (double *)DeviceVectorX, 1, (double *)DeviceVectorY, 1);
+      status = cublasDswap(handle, vector_length, (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Dswap kernel execution error\n");
@@ -197,7 +197,7 @@ int Swap<T>::SwapApiCall() {
       std::cout << "\nCalling Cswap API\n";
       clk_start = clock();
 
-      status = cublasCswap(handle, vector_length, (cuComplex *)DeviceVectorX, 1, (cuComplex *)DeviceVectorY, 1);
+      status = cublasCswap(handle, vector_length, (cuComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (cuComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Cswap kernel execution error\n");
@@ -214,7 +214,7 @@ int Swap<T>::SwapApiCall() {
       std::cout << "\nCalling Zswap API\n";
       clk_start = clock();
 
-      status = cublasZswap(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, 1, (cuDoubleComplex *)DeviceVectorY, 1);
+      status = cublasZswap(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (cuDoubleComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Zswap kernel execution error\n");
@@ -229,7 +229,7 @@ int Swap<T>::SwapApiCall() {
   }
   
   //! Copy Vectors X and Y, holding resultant Vectors, from Device to Host using cublasGetVector()
-  status = cublasGetVector(vector_length, sizeof (*HostVectorX), DeviceVectorX, 1, HostVectorX, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorX), DeviceVectorX, VECTOR_LEADING_DIMENSION, HostVectorX, VECTOR_LEADING_DIMENSION);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to get output vector x from device\n");
@@ -237,7 +237,7 @@ int Swap<T>::SwapApiCall() {
     return EXIT_FAILURE;
   }
 
-  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, VECTOR_LEADING_DIMENSION, HostVectorY, VECTOR_LEADING_DIMENSION);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "!!!! Unable to get output vector y from device\n");
