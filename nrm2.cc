@@ -38,14 +38,13 @@ int Nrm2<T>::Nrm2ApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input vector based on mode passed,
-   * X is a general vector 
+   * X is a vector 
    */
-  
   switch (mode) {
     case 'S': {
       util::InitializeVector<float>((float *)HostVectorX, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<float>((float *)HostVectorX, vector_length);        
       break;
     }
@@ -53,7 +52,7 @@ int Nrm2<T>::Nrm2ApiCall() {
     case 'D': {
       util::InitializeVector<double>((double *)HostVectorX, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<double>((double *)HostVectorX, vector_length);      
       break;
     }
@@ -61,7 +60,7 @@ int Nrm2<T>::Nrm2ApiCall() {
     case 'C': {
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
       break;
     }
@@ -69,7 +68,7 @@ int Nrm2<T>::Nrm2ApiCall() {
     case 'Z': {
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);       
       break;
     }
@@ -94,26 +93,25 @@ int Nrm2<T>::Nrm2ApiCall() {
   //! Copying values of Host vector to Device vector using cublasSetVector()
   status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Nrm2ing vector X from host to device failed\n");
+    fprintf (stderr, "Copying vector X from host to device failed\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
-  /**
-   * API call to Nrm2 to compute the Euclidean norm of the vector x.
-   * The code uses a multiphase model of accumulation to avoid intermediate underflow and overflow, with the result being 
-   *   equivalent to \f$ ∑ni = 1 (x[j] × x[j]) \f$  √ where \f$ j=1+(i−1)* incx \f$ in exact arithmetic.  
-   * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran.
-   */
     
   /**
-   * The Error values returned by API are : 
-   * CUBLAS_STATUS_SUCCESS - The operation completed successfully 
-   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized 
-   * CUBLAS_STATUS_ALLOC_FAILED - The reduction buffer could not be allocated
-   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU 
+   * The Error values returned by API are :\n 
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized \n
+   * CUBLAS_STATUS_ALLOC_FAILED - The reduction buffer could not be allocated \n
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
    */
   
+  /**
+   * API call to Nrm2 to compute the Euclidean norm of the vector x \n
+   * The code uses a multiphase model of accumulation to avoid intermediate underflow and overflow, with the result being 
+   *   equivalent to \f$ ∑ni = 1 (x[j] × x[j]) \f$  √ where \f$ j = 1 + (i − 1) * incx \f$ in exact arithmetic \n  
+   * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran \n
+   */
   switch (mode) {
     case 'S': {
       std::cout << "\nCalling Snrm2 API\n";
@@ -129,7 +127,7 @@ int Nrm2<T>::Nrm2ApiCall() {
 
       clk_end = clock();
       std::cout << "Snrm2 API call ended\n";
-      std::cout << "Euclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
+      std::cout << "\nEuclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
       break;
     }
 
@@ -147,7 +145,7 @@ int Nrm2<T>::Nrm2ApiCall() {
 
       clk_end = clock();
       std::cout << "Dnrm2 API call ended\n";
-      std::cout << "Euclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
+      std::cout << "\nEuclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
       break;
     }
 
@@ -166,7 +164,7 @@ int Nrm2<T>::Nrm2ApiCall() {
 
       clk_end = clock();
       std::cout << "Scnrm2 API call ended\n";
-      std::cout << "Euclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
+      std::cout << "\nEuclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
       break;
     }
 
@@ -184,7 +182,7 @@ int Nrm2<T>::Nrm2ApiCall() {
 
       clk_end = clock();
       std::cout << "Dznrm2 API call ended\n";
-      std::cout << "Euclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
+      std::cout << "\nEuclidean norm of x after " << mode << "nrm2 operation : " << abs((result));
       break;
     }
   }
