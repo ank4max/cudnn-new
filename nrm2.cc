@@ -91,7 +91,7 @@ int Nrm2<T>::Nrm2ApiCall() {
   }
   
   //! Copying values of Host vector to Device vector using cublasSetVector()
-  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 1, DeviceVectorX, 1);
+  status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf (stderr, "Copying vector X from host to device failed\n");
     FreeMemory();
@@ -118,7 +118,7 @@ int Nrm2<T>::Nrm2ApiCall() {
       float result;
       clk_start = clock();
 
-      status = cublasSnrm2(handle, vector_length, (float *)DeviceVectorX, 1, (float *)&result);
+      status = cublasSnrm2(handle, vector_length, (float *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (float *)&result);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Snrm2 kernel execution error\n");
         FreeMemory();
@@ -136,7 +136,7 @@ int Nrm2<T>::Nrm2ApiCall() {
       double result;
       clk_start = clock();
 
-      status = cublasDnrm2(handle, vector_length, (double *)DeviceVectorX, 1, (double *)&result);
+      status = cublasDnrm2(handle, vector_length, (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)&result);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Dnrm2 kernel execution error\n");
         FreeMemory();
@@ -155,7 +155,7 @@ int Nrm2<T>::Nrm2ApiCall() {
 
       clk_start = clock();
 
-      status = cublasScnrm2(handle, vector_length, (cuComplex *)DeviceVectorX, 1, (float *)&result);
+      status = cublasScnrm2(handle, vector_length, (cuComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (float *)&result);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Scnrm2 kernel execution error\n");
         FreeMemory();
@@ -173,7 +173,7 @@ int Nrm2<T>::Nrm2ApiCall() {
       double result;
       clk_start = clock();
 
-      status = cublasDznrm2(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, 1, (double *)&result);
+      status = cublasDznrm2(handle, vector_length, (cuDoubleComplex *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)&result);
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Dznrm2 kernel execution error\n");
         FreeMemory();
