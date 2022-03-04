@@ -16,7 +16,6 @@ void Copy<T>::FreeMemory() {
     delete[] HostVectorY;
 
   //! Free Device Memory
-
   cudaStatus = cudaFree(DeviceVectorX);
   if (cudaStatus != cudaSuccess) {
     std::cout << " The device memory deallocation failed for X" << std::endl;
@@ -54,7 +53,7 @@ int Copy<T>::CopyApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input vectors based on mode passed,
-   * X and Y are general vectors 
+   * X and Y are vectors 
    */
   
   switch (mode) {
@@ -62,9 +61,9 @@ int Copy<T>::CopyApiCall() {
       util::InitializeVector<float>((float *)HostVectorX, vector_length);
       util::InitializeVector<float>((float *)HostVectorY, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<float>((float *)HostVectorX, vector_length);
-      std::cout << "\nVector Y of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintVector<float>((float *)HostVectorY, vector_length);
           
       break;
@@ -74,9 +73,9 @@ int Copy<T>::CopyApiCall() {
       util::InitializeVector<double>((double *)HostVectorX, vector_length);
       util::InitializeVector<double>((double *)HostVectorY, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<double>((double *)HostVectorX, vector_length);
-      std::cout << "\nVector Y of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintVector<double>((double *)HostVectorY, vector_length);
        
       break;
@@ -86,9 +85,9 @@ int Copy<T>::CopyApiCall() {
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorY, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
-      std::cout << "\nVector Y of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorY, vector_length);
       
       break;
@@ -98,9 +97,9 @@ int Copy<T>::CopyApiCall() {
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorY, vector_length);
 
-      std::cout << "\nVector X of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
-      std::cout << "\nVector Y of size " << vector_length << " * 1 : \n" ;
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorY, vector_length);      
       
       break;
@@ -144,18 +143,18 @@ int Copy<T>::CopyApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
-  /**
-   * API call to copy the vector x into the vector y. Hence, the performed operation is \f$ y[j] = x[k] for i = 1, …, n \f$
-   *   where \f$ k = 1 + (i − 1) * incx \f$ and  \f$ j=1+(i−1)* incy \f$ . 
-   * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran.
-   */
     
   /**
-   * The Error values returned by API are : 
-   * CUBLAS_STATUS_SUCCESS - The operation completed successfully 
-   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized 
-   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU 
+   * The Error values returned by API are :\n
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n 
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized \n
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
+   */
+  
+  /**
+   * API call to copy the vector x into the vector y. Hence, the performed operation is \f$ y[j] = x[k] for i = 1, …, n \f$ \n
+   *   where \f$ k = 1 + (i − 1) * incx \f$ and  \f$ j = 1 + (i − 1) * incy \f$ \n
+   * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran \n
    */
   
   switch (mode) {
