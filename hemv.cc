@@ -157,7 +157,17 @@ int Hemv<T>::HemvApiCall() {
     return EXIT_FAILURE;
   }
   
-  
+  /**
+   * API call to performs Hermitian matrix-vector multiplication : \f$ Y = alpha * A *X + beta * Y \f$
+   */
+    
+  /**
+   * The Error values returned by API are : 
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully 
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized 
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters n<0 or incx,incy=0
+   * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU 
+   */
   
   switch (mode) {
 
@@ -200,9 +210,9 @@ int Hemv<T>::HemvApiCall() {
   }
   
   //! Copy Vector Y, holding resultant vector, from Device to Host using cublasGetVector()
-  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, VECTOR_LEADING_DIMENSION, HostVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
+    fprintf (stderr, "!!!! Unable to get output vector Y from device failed");
     FreeMemory();
     return EXIT_FAILURE;
   }
