@@ -73,7 +73,6 @@ int Syr<T>::SyrApiCall() {
       util::InitializeSymmetricMatrix<double>((double *)HostMatrixA, A_row, A_col);
       util::InitializeVector<double>((double *)HostVectorX, vector_length);
 
-
       std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
       util::PrintSymmetricMatrix<double>((double *)HostMatrixA, A_row, A_col);
       std::cout << "\nVector X of size " << vector_length << "\n" ;
@@ -245,7 +244,6 @@ int Syr<T>::SyrApiCall() {
 
   std::cout << "\nMatrix A after " << mode << "syr operation is:\n";
 
-
   switch (mode) {
     case 'S': {  
       util::PrintSymmetricMatrix<float>((float *)HostMatrixA, A_row, A_col);
@@ -350,7 +348,7 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
   
-  //! initializing values for matrix B and C
+  //! initializing values for A column and vector size
   A_col = A_row;
   vector_length = A_row;
 
