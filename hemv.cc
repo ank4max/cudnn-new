@@ -26,12 +26,12 @@ void Hemv<T>::FreeMemory() {
 
   cudaStatus = cudaFree(DeviceVectorX);
   if (cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for B" << std::endl;
+    std::cout << " The device memory deallocation failed for X" << std::endl;
   }
 
   cudaStatus = cudaFree(DeviceVectorY);
   if (cudaStatus != cudaSuccess) {
-    std::cout << " The device memory deallocation failed for C" << std::endl;
+    std::cout << " The device memory deallocation failed for Y" << std::endl;
   }
 
   //! Destroy CuBLAS context
@@ -54,13 +54,13 @@ int Hemv<T>::HemvApiCall() {
     return EXIT_FAILURE;
   }
   if (!HostVectorX) {
-    fprintf (stderr, "!!!! Host memory allocation error (matrixB)\n");
+    fprintf (stderr, "!!!! Host memory allocation error (vectorX)\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   if (!HostVectorY) {
-    fprintf (stderr, "!!!! Host memory allocation error (matrixC)\n");
+    fprintf (stderr, "!!!! Host memory allocation error (vectorY)\n");
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -133,6 +133,7 @@ int Hemv<T>::HemvApiCall() {
   }
   
   //! Copying values of Host matrices to Device matrices using cublasSetMatrix()
+  //! Copying values of Host vectors to Device vectors using cublasSetVector()
 
   status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);
   if (status != CUBLAS_STATUS_SUCCESS) {
