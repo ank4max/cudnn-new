@@ -77,11 +77,11 @@ int Hemv<T>::HemvApiCall() {
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorY, vector_length);
 
-      std::cout << "\nMatrix A:\n";
+      std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
       util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-      std::cout << "\nVector X:\n";
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
-      std::cout << "\nVector Y:\n";
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorY, vector_length);
       
       break;
@@ -91,11 +91,11 @@ int Hemv<T>::HemvApiCall() {
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorY, vector_length);
 
-      std::cout << "\nMatrix A:\n";
+      std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
       util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-      std::cout << "\nVector X:\n";
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
-      std::cout << "\nVector Y:\n";
+      std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorY, vector_length);      
       
       break;
@@ -157,10 +157,6 @@ int Hemv<T>::HemvApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
-  /**
-   * API call to performs Hermitian matrix-vector multiplication : \f$ Y = alpha * A *X + beta * Y \f$
-   */
     
   /**
    * The Error values returned by API are : 
@@ -169,7 +165,10 @@ int Hemv<T>::HemvApiCall() {
    * CUBLAS_STATUS_INVALID_VALUE - The parameters n<0 or incx,incy=0
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU 
    */
-  
+    
+  /**
+   * API call to performs Hermitian matrix-vector multiplication : \f$ Y = alpha * A *X + beta * Y \f$
+   */
   switch (mode) {
 
     case 'C': {
@@ -308,7 +307,7 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
-   //! initializing values for matrix B and C
+   //! initializing values for A column and vector size
    A_col = A_row;
    vector_length = A_row;
 
