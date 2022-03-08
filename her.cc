@@ -51,9 +51,9 @@ int Her<T>::HerApiCall() {
   }
 
   /**
-   * Switch Case - To Initialize and Print input matrix and vectors based on mode passed,
+   * Switch Case - To Initialize and Print input matrix and vector based on mode passed,
    * A is Hermitian matrix, 
-   * X and Y are vectors
+   * X is a vector
    */
   switch (mode) {
 
@@ -61,9 +61,9 @@ int Her<T>::HerApiCall() {
       util::InitializeSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
       util::InitializeComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
 
-      std::cout << "\nMatrix A:\n";
+      std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
       util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-      std::cout << "\nVector X:\n";
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
       
       break;
@@ -72,9 +72,9 @@ int Her<T>::HerApiCall() {
       util::InitializeSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
       util::InitializeComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);
 
-      std::cout << "\nMatrix A:\n";
+      std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
       util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-      std::cout << "\nVector X:\n";
+      std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuDoubleComplex>((cuDoubleComplex *)HostVectorX, vector_length);    
       
       break;
@@ -121,10 +121,6 @@ int Her<T>::HerApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
-  /**
-   * API call to performs the Hermitian rank-1 update : \f$ A = alpha * X * X ^ H + A \f$
-   */
     
   /**
    * The Error values returned by API are : 
@@ -133,7 +129,10 @@ int Her<T>::HerApiCall() {
    * CUBLAS_STATUS_INVALID_VALUE - The parameters n<0 or incx,incy=0
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU 
    */
-  
+    
+  /**
+   * API call to performs the Hermitian rank-1 update : \f$ A = alpha * X * X ^ H + A \f$
+   */ 
   switch (mode) {
 
     case 'C': {
