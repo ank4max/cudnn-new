@@ -83,8 +83,7 @@ int Syr2<T>::Syr2ApiCall() {
       util::PrintVector<float>((float *)HostVectorX, vector_length);
       std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintVector<float>((float *)HostVectorY, vector_length);
-
-          
+    
       break;
     }
 
@@ -99,8 +98,7 @@ int Syr2<T>::Syr2ApiCall() {
       util::PrintVector<double>((double *)HostVectorX, vector_length);
       std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintVector<double>((double *)HostVectorY, vector_length);
-
-       
+     
       break;
     }
 
@@ -115,8 +113,7 @@ int Syr2<T>::Syr2ApiCall() {
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorX, vector_length);
       std::cout << "\nVector Y of size " << vector_length << "\n" ;
       util::PrintComplexVector<cuComplex>((cuComplex *)HostVectorY, vector_length);
-
-      
+    
       break;
     }
 
