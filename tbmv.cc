@@ -236,10 +236,10 @@ int Tbmv<T>::TbmvApiCall() {
     }
   }
   
-  //! Copy Vector Y, holding resultant vector, from Device to Host using cublasGetVector()
+  //! Copy Vector X, holding resultant vector, from Device to Host using cublasGetVector()
   status = cublasGetVector(vector_length, sizeof (*HostVectorX), DeviceVectorX, VECTOR_LEADING_DIMENSION, HostVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << " Unable to get output vector Y from device\n";
+    std::cout << " Unable to get output vector X from device\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -349,7 +349,7 @@ int main(int argc, char **argv) {
   A_col = A_row;
   vector_length = A_row;
 
-  // for triangular banded matrix stored in lower mode
+  //! For triangular banded matrix stored in lower mode
   super_diagonals = 0;  
 
   (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, vector_length, super_diagonals,
