@@ -38,7 +38,7 @@ void Ger<T>::FreeMemory() {
   //! Destroy CuBLAS context
   status  = cublasDestroy(handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    std::cout << " Unable to uninitialize handle" << std::endl;
   }
 }
 
@@ -50,18 +50,18 @@ int Ger<T>::GerApiCall() {
   HostVectorY = new T[Y_length];
 
   if (!HostMatrixA) {
-    fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
+    std::cout << " Host memory allocation error (matrixA)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
   if (!HostVectorX) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorX)\n");
+    std::cout << " Host memory allocation error (vectorX)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   if (!HostVectorY) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorY)\n");
+    std::cout << " Host memory allocation error (vectorY)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -188,7 +188,7 @@ int Ger<T>::GerApiCall() {
   //! Initializing CUBLAS context
   status = cublasCreate(&handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    std::cout << " Failed to initialize handle\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -197,7 +197,7 @@ int Ger<T>::GerApiCall() {
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
   status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying matrix A from host to device failed\n");
+    std::cout << " Copying matrix A from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -205,7 +205,7 @@ int Ger<T>::GerApiCall() {
   status = cublasSetVector(X_length, sizeof(*HostVectorX), HostVectorX, 
                            VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying vector X from host to device failed\n");
+    std::cout << " Copying vector X from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -213,12 +213,11 @@ int Ger<T>::GerApiCall() {
   status = cublasSetVector(Y_length, sizeof(*HostVectorY), HostVectorY,
                            VECTOR_LEADING_DIMENSION, DeviceVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying vector Y from host to device failed\n");
+    std::cout << " Copying vector Y from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
   
-
   /**
    * The Error values returned by API are : \n
    * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n
@@ -240,7 +239,7 @@ int Ger<T>::GerApiCall() {
 
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Sger kernel execution error\n");
+        std::cout << " Sger kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -258,7 +257,7 @@ int Ger<T>::GerApiCall() {
                           (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION, (double *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  DGer kernel execution error\n");
+        std::cout << " DGer kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -276,7 +275,7 @@ int Ger<T>::GerApiCall() {
                           (cuComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION, (cuComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Cgeru kernel execution error\n");
+        std::cout << " Cgeru kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -294,7 +293,7 @@ int Ger<T>::GerApiCall() {
                           (cuComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION, (cuComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Cgerc kernel execution error\n");
+        std::cout << " Cgerc kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -312,7 +311,7 @@ int Ger<T>::GerApiCall() {
                           (cuDoubleComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION, (cuDoubleComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Zgeru kernel execution error\n");
+        std::cout << " Zgeru kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -330,7 +329,7 @@ int Ger<T>::GerApiCall() {
                           (cuDoubleComplex *)DeviceVectorY, VECTOR_LEADING_DIMENSION, (cuDoubleComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Zgerc kernel execution error\n");
+        std::cout << " Zgerc kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -346,7 +345,7 @@ int Ger<T>::GerApiCall() {
                            A_row, HostMatrixA, A_row);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to get output vector Y from device\n");
+    std::cout << " Unable to get output vector Y from device\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
