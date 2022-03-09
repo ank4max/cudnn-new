@@ -30,7 +30,7 @@ void Syr<T>::FreeMemory() {
   //! Destroy CuBLAS context
   status  = cublasDestroy(handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    std::cout << " Unable to uninitialize handle" << std::endl;
   }
 }
 
@@ -41,12 +41,12 @@ int Syr<T>::SyrApiCall() {
   HostVectorX = new T[vector_length];
 
   if (!HostMatrixA) {
-    fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
+    std::cout << " Host memory allocation error (matrixA)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
   if (!HostVectorX) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorX)\n");
+    std::cout << " Host memory allocation error (vectorX)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -125,7 +125,7 @@ int Syr<T>::SyrApiCall() {
   //! Initializing CUBLAS context
   status = cublasCreate(&handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    std::cout << " Failed to initialize handle\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -134,7 +134,7 @@ int Syr<T>::SyrApiCall() {
   //! Copying values of Host vector to Device vector using cublasSetVector()
   status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying matrix A from host to device failed\n");
+    std::cout << " Copying matrix A from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -142,7 +142,7 @@ int Syr<T>::SyrApiCall() {
   status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 
                            VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying vector X from host to device failed\n");
+    std::cout << " Copying vector X from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   } 
@@ -167,7 +167,7 @@ int Syr<T>::SyrApiCall() {
                           (float *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Ssyr kernel execution error\n");
+        std::cout << " Ssyr kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -185,7 +185,7 @@ int Syr<T>::SyrApiCall() {
                           (double *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Dsyr kernel execution error\n");
+        std::cout << " Dsyr kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -203,7 +203,7 @@ int Syr<T>::SyrApiCall() {
                           (cuComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Csyr kernel execution error\n");
+        std::cout << " Csyr kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -221,7 +221,7 @@ int Syr<T>::SyrApiCall() {
                           (cuDoubleComplex *)DeviceMatrixA, A_row);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Zsyr kernel execution error\n");
+        std::cout << " Zsyr kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -237,7 +237,7 @@ int Syr<T>::SyrApiCall() {
                            DeviceMatrixA, A_row, HostMatrixA, A_row);
 
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to get output matrix A from device\n");
+    std::cout << " Unable to get output matrix A from device\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
