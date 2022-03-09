@@ -39,7 +39,7 @@ void Sbmv<T>::FreeMemory() {
   //! Destroy CuBLAS context
   status  = cublasDestroy(handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to uninitialize handle \n");
+    std::cout << " Unable to uninitialize handle" << std::endl;
   }
 }
 
@@ -51,18 +51,18 @@ int Sbmv<T>::SbmvApiCall() {
   HostVectorY = new T[vector_length];
 
   if (!HostMatrixA) {
-    fprintf (stderr, "!!!! Host memory allocation error (matrixA)\n");
+    std::cout << " Host memory allocation error (matrixA)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
   if (!HostVectorX) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorX)\n");
+    std::cout << " Host memory allocation error (vectorX)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
 
   if (!HostVectorY) {
-    fprintf (stderr, "!!!! Host memory allocation error (vectorY)\n");
+    std::cout << " Host memory allocation error (vectorY)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -129,7 +129,7 @@ int Sbmv<T>::SbmvApiCall() {
   //! Initializing CUBLAS context
   status = cublasCreate(&handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Failed to initialize handle\n");
+    std::cout << " Failed to initialize handle\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -139,7 +139,7 @@ int Sbmv<T>::SbmvApiCall() {
 
   status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying matrix A from host to device failed\n");
+    std::cout << " Copying matrix A from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -147,7 +147,7 @@ int Sbmv<T>::SbmvApiCall() {
   status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX, 
                            VECTOR_LEADING_DIMENSION, DeviceVectorX, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying vector X from host to device failed\n");
+    std::cout << " Copying vector X from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -155,7 +155,7 @@ int Sbmv<T>::SbmvApiCall() {
   status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY, 
                            VECTOR_LEADING_DIMENSION, DeviceVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "Copying vector Y from host to device failed\n");
+    std::cout << " Copying vector Y from host to device failed\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -182,7 +182,7 @@ int Sbmv<T>::SbmvApiCall() {
 
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Ssbmv kernel execution error\n");
+        std::cout << " Ssbmv kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -200,7 +200,7 @@ int Sbmv<T>::SbmvApiCall() {
                            (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)&beta, (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        fprintf (stderr, "!!!!  Dsbmv kernel execution error\n");
+        std::cout << " Dsbmv kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -212,9 +212,9 @@ int Sbmv<T>::SbmvApiCall() {
   }
   
   //! Copy Vector Y, holding resultant vector, from Device to Host using cublasGetVector()
-  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, 1, HostVectorY, 1);
+  status = cublasGetVector(vector_length, sizeof (*HostVectorY), DeviceVectorY, VECTOR_LEADING_DIMENSION, HostVectorY, VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    fprintf (stderr, "!!!! Unable to get output matrix C from device\n");
+    std::cout << " Unable to get output vector Y from device\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
