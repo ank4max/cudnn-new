@@ -130,7 +130,7 @@ int Tpmv<T>::TpmvApiCall() {
     return EXIT_FAILURE;
   }
   
-  //! Copying values of Host matrix to Device matrix using cublasSetMatrix()
+  //! Copying values of Host matrix to Device matrix using cublasSetVector()
   //! Copying values of Host vectors to Device vectors using cublasSetVector()
 
   status = cublasSetVector (matrix_size, sizeof (*HostMatrixA), HostMatrixA, VECTOR_LEADING_DIMENSION, DeviceMatrixA, VECTOR_LEADING_DIMENSION);
