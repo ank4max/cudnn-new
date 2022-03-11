@@ -251,16 +251,16 @@ void mode_S(int vector_length, double param_1, double param_2,
   float param_f3 = (float)param_3;
   float param_f4 = (float)param_4;
 
-  Rotm<float> Crotm(vector_length, param_f1, param_f2, param_f3, param_f4, 'S');
-  Crotm.RotmApiCall(); 
+  Rotm<float> Srotm(vector_length, param_f1, param_f2, param_f3, param_f4, 'S');
+  Srotm.RotmApiCall(); 
 }
 
 void mode_D(int vector_length, double param_1, double param_2,
             double param_3, double param_4) {
             
 
-  Rotm<double> Zrotm(vector_length, param_1, param_2, param_3, param_4, 'D');
-  Zrotm.RotmApiCall(); 
+  Rotm<double> Drotm(vector_length, param_1, param_2, param_3, param_4, 'D');
+  Drotm.RotmApiCall(); 
 }
 
 void (*cublas_func_ptr[])(int, double, double, double, double) = {
