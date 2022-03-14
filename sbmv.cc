@@ -3,10 +3,8 @@
 #include "sbmv.h"
 
 template<class T>
-Sbmv<T>::Sbmv(int A_row, int A_col, int vector_length, int super_diagonals,
-    int sub_diagonals, T alpha, T beta, char mode) : A_row(A_row), A_col(A_col), 
-    vector_length(vector_length), super_diagonals(super_diagonals), 
-    sub_diagonals(sub_diagonals), alpha(alpha), beta(beta), mode(mode) {}
+Sbmv<T>::Sbmv(int A_row, int A_col, int vector_length, int sub_diagonals, T alpha, T beta, char mode) : A_row(A_row), A_col(A_col), 
+    vector_length(vector_length), sub_diagonals(sub_diagonals), alpha(alpha), beta(beta), mode(mode) {}
 
 template<class T>
 void Sbmv<T>::FreeMemory() {
@@ -74,12 +72,12 @@ int Sbmv<T>::SbmvApiCall() {
    */
   switch (mode) {
     case 'S': {
-      util::InitializeDiagonalMatrix<float>((float *)HostMatrixA, A_row, A_col, super_diagonals, sub_diagonals);
+      util::InitializeTriangularBandedMatrix<float>((float *)HostMatrixA, A_row, sub_diagonals);
       util::InitializeVector<float>((float *)HostVectorX, vector_length);
       util::InitializeVector<float>((float *)HostVectorY, vector_length);
 
       std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
-      util::PrintDiagonalMatrix<float>((float *)HostMatrixA, A_row, A_col);
+      util::PrintTriangularBandedMatrix<float>((float *)HostMatrixA, A_row);
       std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<float>((float *)HostVectorX, vector_length);
       std::cout << "\nVector Y of size " << vector_length << "\n" ;
@@ -89,12 +87,12 @@ int Sbmv<T>::SbmvApiCall() {
     }
 
     case 'D': {
-      util::InitializeDiagonalMatrix<double>((double *)HostMatrixA, A_row, A_col, super_diagonals, sub_diagonals);
+      util::InitializeTriangularBandedMatrix<double>((double *)HostMatrixA, A_row, sub_diagonals);
       util::InitializeVector<double >((double *)HostVectorX, vector_length);
       util::InitializeVector<double >((double  *)HostVectorY, vector_length);
 
       std::cout << "\nMatrix A of size " << A_row << " * " << A_col << ":\n";
-      util::PrintDiagonalMatrix<double >((double *)HostMatrixA, A_row, A_col);
+      util::PrintTriangularBandedMatrix<double>((double *)HostMatrixA, A_row);
       std::cout << "\nVector X of size " << vector_length << "\n" ;
       util::PrintVector<double >((double  *)HostVectorX, vector_length);
       std::cout << "\nVector Y of size " << vector_length << "\n" ;
@@ -177,7 +175,7 @@ int Sbmv<T>::SbmvApiCall() {
       std::cout << "\nCalling Ssbmv API\n";
       clk_start = clock();
 
-      status = cublasSsbmv(handle, CUBLAS_FILL_MODE_LOWER, vector_length, super_diagonals, (float *)&alpha, (float *)DeviceMatrixA, A_row,
+      status = cublasSsbmv(handle, CUBLAS_FILL_MODE_LOWER, vector_length, sub_diagonals, (float *)&alpha, (float *)DeviceMatrixA, A_row,
                            (float *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (float *)&beta, (float *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
 
@@ -196,7 +194,7 @@ int Sbmv<T>::SbmvApiCall() {
       std::cout << "\nCalling Dsbmv API\n";
       clk_start = clock();
 
-      status = cublasDsbmv(handle, CUBLAS_FILL_MODE_LOWER, vector_length, super_diagonals, (double *)&alpha, (double *)DeviceMatrixA, A_row,
+      status = cublasDsbmv(handle, CUBLAS_FILL_MODE_LOWER, vector_length, sub_diagonals, (double *)&alpha, (double *)DeviceMatrixA, A_row,
                            (double *)DeviceVectorX, VECTOR_LEADING_DIMENSION, (double *)&beta, (double *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
@@ -244,26 +242,24 @@ int Sbmv<T>::SbmvApiCall() {
 }
 
 
-void mode_S(int A_row, int A_col, int vector_length, int super_diagonals, 
-            int sub_diagonals, double alpha_real, double beta_real) {
+void mode_S(int A_row, int A_col, int vector_length, int sub_diagonals, double alpha_real, double beta_real) {
   float alpha = (float)alpha_real;
   float beta = (float)beta_real;
 
-  Sbmv<float> Ssbmv(A_row, A_col, vector_length, super_diagonals, sub_diagonals, alpha, beta, 'S' );
+  Sbmv<float> Ssbmv(A_row, A_col, vector_length, sub_diagonals, alpha, beta, 'S' );
   Ssbmv.SbmvApiCall();
 }
 
-void mode_D(int A_row, int A_col, int vector_length, int super_diagonals, 
-            int sub_diagonals, double alpha_real, double beta_real) {
+void mode_D(int A_row, int A_col, int vector_length, int sub_diagonals, double alpha_real, double beta_real) {
             
   double alpha = alpha_real;
   double beta = beta_real;
 
-  Sbmv<double> Dsbmv(A_row, A_col, vector_length, super_diagonals, sub_diagonals, alpha, beta, 'D');
+  Sbmv<double> Dsbmv(A_row, A_col, vector_length, sub_diagonals, alpha, beta, 'D');
   Dsbmv.SbmvApiCall();
 }
 
-void (*cublas_func_ptr[])(int, int, int, int, int, double, double) = {
+void (*cublas_func_ptr[])(int, int, int, int, double, double) = {
   mode_S, mode_D
 };
 
@@ -291,8 +287,8 @@ int main(int argc, char **argv) {
     if (!(cmd_argument.compare("-A_row")))
       A_row = atoi(argv[loop_count + 1]);
 
-    else if (!(cmd_argument.compare("-super_diagonals")))
-      super_diagonals = atoi(argv[loop_count + 1]);
+    else if (!(cmd_argument.compare("-sub_diagonals")))
+      sub_diagonals = atoi(argv[loop_count + 1]);
 
    else if (!(cmd_argument.compare("-alpha_real")))
       alpha_real = std::stod(argv[loop_count + 1]);
@@ -304,13 +300,11 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
-   //! initializing values for A column, sub_diagonals and vector size
+   //! initializing values for A column and vector size
   A_col = A_row;
   vector_length = A_row;
-  sub_diagonals = super_diagonals;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, vector_length, super_diagonals,
-                                       sub_diagonals, alpha_real, beta_real);
+  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, vector_length, sub_diagonals, alpha_real, beta_real);
 
   return 0;
 }
