@@ -26,7 +26,7 @@ class Sbmv {
      * Sbmv constructor - To initialize the class varibles using initializer list,
      * sets up the API mode, alpha, beta and dimension of matrix and vectors 
      */
-    Sbmv(int A_row, int A_col, int vector_length, int super_diagonals, int sub_diagonals, T alpha, T beta, char mode);
+    Sbmv(int A_row, int A_col, int vector_length, int sub_diagonals, T alpha, T beta, char mode);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -41,7 +41,7 @@ class Sbmv {
 
   private:
     int A_row, A_col;
-    int vector_length, super_diagonals, sub_diagonals;
+    int vector_length, sub_diagonals;
     char mode;
     T *HostMatrixA;
     T *HostVectorX;
