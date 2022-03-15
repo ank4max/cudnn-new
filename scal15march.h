@@ -16,14 +16,14 @@
  * \param X - vector of length n
  * \param alpha - scalar
  */
-template<class T, class T1>
+template<class T, class TNC>
 class Scal {
   public:
     /**
      * Scal constructor - To initialize the class varibles using initializer list,
-     * sets up the API mode, alpha and dimension of vectors
+     * sets up the API mode, alpha and dimension of vector
      */
-    Scal(int vector_length, T1 alpha, char mode);
+    Scal(int vector_length, TNC alpha, char mode);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -41,7 +41,7 @@ class Scal {
     char mode;
     T *HostVectorX;
     T *DeviceVectorX;
-    T1 alpha;
+    TNC alpha;
     cudaError_t cudaStatus;
     cublasStatus_t status;
     cublasHandle_t handle;
