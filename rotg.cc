@@ -35,10 +35,7 @@ int Rotg<T>::RotgApiCall() {
    */
     
   /**
-   * API call to constructs the modified Givens transformation :
-   * The result is that zeros out the second entry of a 2×1 vector(d1 * 1/2 * x1, d2 * 1/2 * y1) * T.
-   * Notice that the last two equations reflect 1-based indexing used for compatibility with Fortran.
-   * The elements , , and of matrix H are stored in param[1], param[2], param[3] and param[4], respectively. 
+   * API call to constructs the modified Givens transformation : 
    */
   switch (mode) {
 
