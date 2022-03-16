@@ -2,12 +2,12 @@
 #include <unordered_map>
 #include "scal.h"
 
-template<class T, class TNC>
-Scal<T, TNC>::Scal(int vector_length, TNC alpha, char mode)
+template<class T, class C>
+Scal<T, C>::Scal(int vector_length, C alpha, char mode)
               : vector_length(vector_length), alpha(alpha), mode(mode) {}
 
-template<class T, class TNC>
-void Scal<T, TNC>::FreeMemory() {
+template<class T, class C>
+void Scal<T, C>::FreeMemory() {
   //! Free Host Memory
   if (HostVectorX)
     delete[] HostVectorX;
@@ -25,8 +25,8 @@ void Scal<T, TNC>::FreeMemory() {
   }
 }
 
-template<class T, class TNC>
-int Scal<T, TNC>::ScalApiCall() {
+template<class T, class C>
+int Scal<T, C>::ScalApiCall() {
   //! Allocating Host Memory for Vectors
   HostVectorX = new T[vector_length];
 
