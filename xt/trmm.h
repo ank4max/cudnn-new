@@ -45,7 +45,6 @@ class Trmm {
     T *HostMatrixB;
     T *HostMatrixC;
     T alpha;
-    T beta;
     cudaError_t cudaStatus;
     cublasStatus_t status;
     cublasXtHandle_t handle;
