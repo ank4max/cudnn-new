@@ -43,8 +43,6 @@ class Herk {
     char mode;
     T *HostMatrixA;
     T *HostMatrixC;
-    T *DeviceMatrixA;
-    T *DeviceMatrixC;
     double alpha;
     double beta;
     cudaError_t cudaStatus;
