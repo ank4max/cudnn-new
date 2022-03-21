@@ -4,7 +4,7 @@
 template<class T>
 Trmm<T>::Trmm(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
-      C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
+      C_row(C_row), C_col(C_col), alpha(alpha), mode(mode) {}
 
 template<class T>
 void Trmm<T>::FreeMemory() {
