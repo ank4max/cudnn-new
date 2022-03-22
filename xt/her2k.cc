@@ -1,3 +1,4 @@
+%%writefile her2k.cc
 #include <unordered_map>
 #include "her2k.h"
 
@@ -33,7 +34,8 @@ int Her2k<T>::Her2kApiCall() {
   HostMatrixA = new T[A_row * A_col]; 
   HostMatrixB = new T[B_row * B_col]; 
   HostMatrixC = new T[C_row * C_col]; 
-  
+  std::cout << "beta : " <<beta;
+
   if (!HostMatrixA) {
     std::cout << "!!!! Host memory allocation error (matrixA)\n";
     FreeMemory();
@@ -115,13 +117,14 @@ int Her2k<T>::Her2kApiCall() {
   switch (mode) {
     case 'C': {
       std::cout << "\nCalling XtCher2k API\n";
+      float beta_real = (float)beta;
       clk_start = clock();
 
       status = cublasXtCher2k(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                             A_row, A_col, (cuComplex *)&alpha, 
                             (cuComplex *)HostMatrixA, A_row,
                             (cuComplex *)HostMatrixB, B_row, 
-                            (float *)&beta, (cuComplex *)HostMatrixC, C_row); 
+                            (float *)&beta_real, (cuComplex *)HostMatrixC, C_row); 
 
     
       if (status != CUBLAS_STATUS_SUCCESS) {
