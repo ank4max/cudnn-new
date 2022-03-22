@@ -1,5 +1,6 @@
+%%writefile herkx1.cc
 #include <unordered_map>
-#include "herkx.h"
+#include "herkx1.h"
 
 template<class T>
 Herkx<T>::Herkx(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, double beta, char mode)
@@ -117,13 +118,14 @@ int Herkx<T>::HerkxApiCall() {
   switch (mode) {
     case 'C': {
       std::cout << "\nCalling XtCherkx API\n";
+      float beta_real = (float) beta;
       clk_start = clock();
 
       status = cublasXtCherkx(handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_N,
                             A_row, A_col, (cuComplex *)&alpha, 
                             (cuComplex *)HostMatrixA, A_row,
                             (cuComplex *)HostMatrixB, B_row, 
-                            (float *)&beta, (cuComplex *)HostMatrixC, C_row); 
+                            (float *)&beta_real, (cuComplex *)HostMatrixC, C_row); 
 
         
       if (status != CUBLAS_STATUS_SUCCESS) {
@@ -210,7 +212,7 @@ void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double) 
 int main(int argc, char **argv) {
 
   int A_row, A_col, B_row, B_col, C_row, C_col, status;
-  double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
+  double alpha_real, alpha_imaginary, beta_real;
   char mode;
   
   std::unordered_map<char, int> mode_index;
@@ -259,4 +261,3 @@ int main(int argc, char **argv) {
   
   return 0;
 }
-
