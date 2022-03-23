@@ -34,7 +34,6 @@ int Her2k<T>::Her2kApiCall() {
   HostMatrixA = new T[A_row * A_col]; 
   HostMatrixB = new T[B_row * B_col]; 
   HostMatrixC = new T[C_row * C_col]; 
-  std::cout << "beta : " <<beta;
 
   if (!HostMatrixA) {
     std::cout << "!!!! Host memory allocation error (matrixA)\n";
