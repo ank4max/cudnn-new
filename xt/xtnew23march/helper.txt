@@ -1,0 +1,52 @@
+template<class C>
+  void InitializeSymmetricComplexMatrixXt(C* Matrix, size_t matrix_row, size_t matrix_col) {
+    size_t row, col;
+    size_t i =0;
+    for (col = 0; col < matrix_col; col++) {
+      for (row = 0; row < matrix_row; row++) {
+        if (row >= col) {
+          Matrix[INDEX(row, col, matrix_row)].x = i++;
+          Matrix[INDEX(row, col, matrix_row)].y = 0;
+        }
+      }
+    }
+  }
+
+ template<class C>
+  void InitializeComplexMatrixXt(C* Matrix, size_t matrix_row, size_t matrix_col) {
+    size_t row, col;
+    size_t i=0;
+    for (col = 0; col < matrix_col; col++) {
+      for (row = 0; row < matrix_row; row++) {
+        Matrix[INDEX(row, col, matrix_row)].x = i++;
+        Matrix[INDEX(row, col, matrix_row)].y = 0;
+      }
+    }
+  }
+
+
+
+
+template<class C>
+  void PrintSymmetricComplexMatrixXt(C* Matrix, size_t matrix_row, size_t matrix_col) {
+    size_t row, col;
+    for (row = 0; row < matrix_row; row++) {
+      for (col = 0; col < matrix_col; col++) {
+        if (row >= col) {
+          std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
+        }
+      }
+      std::cout << "\n";
+    }
+  }
+
+template<class C>
+  void PrintComplexMatrixXt(C* Matrix, size_t matrix_row, size_t matrix_col) {
+    size_t row, col;
+    for (row = 0; row < matrix_row; row++) {
+      for (col = 0; col < matrix_col; col++) {
+        std::cout << Matrix[INDEX(row, col, matrix_row)].x << "+" << Matrix[INDEX(row, col, matrix_row)].y << "*I ";
+      }
+      std::cout << "\n";
+    }
+  }
