@@ -76,7 +76,7 @@ int Spmm<T>::SpmmApiCall() {
     case 'D': {
       util::InitializeSymmetricPackedMatrixXt<double>((double *)HostMatrixA, matrix_size);
       util::InitializeMatrixXt<double>((double *)HostMatrixB, B_row, B_col);
-      util::InitializeMatrix<double>((double *)HostMatrixC, C_row, C_col);
+      util::InitializeMatrixXt<double>((double *)HostMatrixC, C_row, C_col);
 
       std::cout << "\nMatrix A:\n";
       util::PrintSymmetricPackedUpperMatrixXt<double>((double *)HostMatrixA, A_row, matrix_size);
