@@ -233,10 +233,10 @@ int main(int argc, char **argv) {
     std::string cmd_argument(argv[loop_count]);
 
     if (!(cmd_argument.compare("-A_row")))
-      A_row = std::strtoul((argv[loop_count + 1]), &end, 10);
+      A_row = std::strtoull((argv[loop_count + 1]), &end, 10);
 
     else if (!(cmd_argument.compare("-A_column")))
-      A_col = std::strtoul((argv[loop_count + 1]), &end, 10);
+      A_col = std::strtoull((argv[loop_count + 1]), &end, 10);
 
     else if (!(cmd_argument.compare("-alpha_real")))
       alpha_real = std::stod(argv[loop_count + 1]);
