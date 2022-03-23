@@ -62,6 +62,18 @@ template<class C>
       }
     }
   }
+  
+  template<class C>
+  void InitializeSymmetricMatrixXt(C* Matrix, size_t matrix_row, size_t matrix_col) {
+    size_t row , col;
+    for (row = 0; row < matrix_row; row++) {
+      for (col = 0; col < matrix_col; col++) {
+        if (row >= col) {
+          Matrix[INDEX(row, col, matrix_row)] = RANDOM;
+        }
+      }
+    }
+  }
 
 
 
