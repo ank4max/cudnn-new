@@ -36,7 +36,7 @@ class Hemm {
     void FreeMemory();
     
     /**
-     * HemmAPICall function - To allocate Host and Device memory,
+     * HemmAPICall function - To allocate Host memory,
      * sets up matrices and calls Hemm API based on the mode passed
      */
     int HemmApiCall();
