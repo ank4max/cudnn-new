@@ -257,8 +257,8 @@ int main(int argc, char **argv) {
 
   //! Dimension check
   if (vector_length <= 0){
-      std::cout << "Minimum Dimension error\n";
-      return EXIT_FAILURE;
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
   }
  
   status = (*cublas_func_ptr[mode_index[mode]])(vector_length);
