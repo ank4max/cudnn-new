@@ -1,3 +1,4 @@
+%%writefile cublas_sbmv_test2.cc
 #include <unordered_map>
 #include "cublas_sbmv_test.h"
 
@@ -305,13 +306,13 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
-  //! Dimension check
-  if (A_row <= 0 || sub_diagonals <=0) {
+  //! Dimension check	
+  if (A_row <= 0 || sub_diagonals <= 0 || sub_diagonals >= A_row) {
     std::cout << "Minimum Dimension error\n";
     return EXIT_FAILURE;
   }
 
-   //! initializing values for A column and vector size
+  //! initializing values for A column and vector size
   A_col = A_row;
   vector_length = A_row;
 
