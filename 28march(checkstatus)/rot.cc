@@ -1,4 +1,4 @@
-%%writefile cublas_rot_test1.cc
+%%writefile cublas_rot_test2.cc
 #include <unordered_map>
 #include "cublas_rot_test.h"
 
@@ -485,6 +485,12 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
+  }
+
+  //! Dimension check
+  if (vector_length <= 0){
+      std::cout << "Minimum Dimension error\n";
+      return EXIT_FAILURE;
   }
 
   alpha_radian = DEG_TO_RADIAN(alpha);
