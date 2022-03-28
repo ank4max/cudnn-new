@@ -427,8 +427,6 @@ int main(int argc, char **argv) {
 
   status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, vector_length, alpha_real,
                                        alpha_imaginary, beta_real, beta_imaginary);
-  
-  std::cout <<status;
 
   return status;
 }
