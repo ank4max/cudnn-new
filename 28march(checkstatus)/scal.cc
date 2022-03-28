@@ -1,4 +1,4 @@
-%%writefile cublas_scal_test.cc
+%%writefile cublas_scal_test1.cc
 #include <unordered_map>
 #include "cublas_scal_test.h"
 
@@ -385,6 +385,12 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
+  }
+
+  //! Dimension check
+  if (vector_length <= 0){
+      std::cout << "Minimum Dimension error\n";
+      return EXIT_FAILURE;
   }
 
   status = (*cublas_func_ptr[mode_index[mode]])(vector_length, alpha_real, alpha_imaginary);
