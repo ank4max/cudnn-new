@@ -53,6 +53,6 @@ class Gemm {
     cudaError_t cudaStatus;
     cublasStatus_t status;
     cublasHandle_t handle;
-    clock_t clk_start, clk_end;
+    cudaEvent_t start, stop;
 };
 
