@@ -40,6 +40,18 @@ void Gemm<T>::FreeMemory() {
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "!!!! Unable to uninitialize handle \n";
   }
+
+  //! Destroy events
+  cudaStatus = cudaEventDestroy(start);
+  if (cudaStatus != cudaSuccess) {
+    std::cout << "Unable to destroy start event\n";
+  }
+
+  cudaStatus = cudaEventDestroy(stop);
+  if (cudaStatus != cudaSuccess) {
+    std::cout << "Unable to destroy stop event\n";
+  }
+  
 }
 
 template<class T>
