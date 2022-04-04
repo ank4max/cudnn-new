@@ -1,4 +1,4 @@
-%%writefile cublas_gemm_test.cc
+%%writefile gemm1apr.cc
 #include <unordered_map>
 #include "cublas_gemm_test.h"
 
@@ -214,15 +214,32 @@ int Gemm<T>::GemmApiCall() {
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
    */
 
-   cudaEvent_t start, stop;
-   cudaEventCreate(&start);
-   cudaEventCreate(&stop);
+   
+   cudaStatus = cudaEventCreate(&start);
+   if(cudaStatus != cudaSuccess) {
+     std::cout << " Failed to Create start event " << std::endl;
+     FreeMemory();
+    return EXIT_FAILURE;
+   }
+   
+   cudaStatus = cudaEventCreate(&stop);
+   if(cudaStatus != cudaSuccess) {
+     std::cout << " Failed to create stop time " << std::endl;
+     FreeMemory();
+     return EXIT_FAILURE;
+   }
+
    float milliseconds;
   
   switch (mode) {
     case 'S': {
       std::cout << "\nCalling Sgemm API\n";
-      cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record start time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
 
       status = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
                            B_col, A_col, (float *)&alpha,
@@ -230,11 +247,21 @@ int Gemm<T>::GemmApiCall() {
                            (float *)DeviceMatrixB, B_row, (float *)&beta,
                            (float *)DeviceMatrixC, C_row);
 
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Sgemm kernel execution error\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }                     
+
+      cudaStatus = cudaEventRecord(stop);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record stop time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+      cudaStatus = cudaEventSynchronize(stop);
+      if (cudaStatus != cudaSuccess) {
+        std::cout << "Failed to synchronize events\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -244,7 +271,12 @@ int Gemm<T>::GemmApiCall() {
 
     case 'D': {
       std::cout << "\nCalling Dgemm API\n";
-       cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record start time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
 
       status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
                            B_col, A_col, (double *)&alpha,
@@ -253,22 +285,39 @@ int Gemm<T>::GemmApiCall() {
                            (double *)&beta,
                            (double *)DeviceMatrixC, C_row);
 
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Dgemm kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
+      cudaStatus = cudaEventRecord(stop);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record stop time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventSynchronize(stop);
+      if (cudaStatus != cudaSuccess) {
+        std::cout << "Failed to synchronize events\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      
       std::cout << "Dgemm API call ended\n";
       break;
     }
 
     case 'H': {
       std::cout << "\nCalling Hgemm API\n";
-      cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record start time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
 
       status = cublasHgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
                            B_col, A_col, (__half *)&alpha,
@@ -277,21 +326,38 @@ int Gemm<T>::GemmApiCall() {
                            (__half *)&beta,
                            (__half *)DeviceMatrixC, C_row);
 
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
-     if (status != CUBLAS_STATUS_SUCCESS) {
+      if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Hgemm kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
+
+      cudaStatus = cudaEventRecord(stop);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record stop time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventSynchronize(stop);
+      if (cudaStatus != cudaSuccess) {
+        std::cout << "Failed to synchronize events\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
       std::cout << "Hgemm API call ended\n";
       break;
     }
 
     case 'C': {
       std::cout << "\nCalling Cgemm API\n";
-      cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record start time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
 
       status = cublasCgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
                            B_col, A_col, (cuComplex *)&alpha,
@@ -300,11 +366,22 @@ int Gemm<T>::GemmApiCall() {
                            (cuComplex *)&beta,
                            (cuComplex *)DeviceMatrixC, C_row);
 
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Cgemm kernel execution error\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventRecord(stop);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record stop time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventSynchronize(stop);
+      if (cudaStatus != cudaSuccess) {
+        std::cout << "Failed to synchronize events\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -314,7 +391,12 @@ int Gemm<T>::GemmApiCall() {
 
     case 'Z': {
       std::cout << "\nCalling Zgemm API\n";
-      cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record start time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
 
       status = cublasZgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row,
                            B_col, A_col, (cuDoubleComplex *)&alpha,
@@ -323,11 +405,22 @@ int Gemm<T>::GemmApiCall() {
                            (cuDoubleComplex *)&beta,
                            (cuDoubleComplex *)DeviceMatrixC, C_row);
 
-      cudaEventRecord(stop);
-      cudaEventSynchronize(stop);
-
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Zgemm kernel execution error\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventRecord(stop);
+      if(cudaStatus != cudaSuccess) {
+        std::cout << " Failed to record stop time " << std::endl;
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      cudaStatus = cudaEventSynchronize(stop);
+      if (cudaStatus != cudaSuccess) {
+        std::cout << "Failed to synchronize events\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
@@ -375,7 +468,7 @@ int Gemm<T>::GemmApiCall() {
     }
   }
 
-  long long total_operations = A_row * A_col * B_col;
+  long long total_operations = 1ULL * A_row * A_col * B_col;
 
   //! printing latency and throughput of the function
   cudaEventElapsedTime(&milliseconds, start, stop);
@@ -388,59 +481,59 @@ int Gemm<T>::GemmApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   float alpha = (float)alpha_real;
   float beta = (float)beta_real;
 
   Gemm<float> Sgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S' );
-  Sgemm.GemmApiCall();
+  return Sgemm.GemmApiCall();
 }
 
-void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary, 
+int mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary, 
             double beta_real, double beta_imaginary) {
             
   double alpha = alpha_real;
   double beta = beta_real;
 
   Gemm<double> Dgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'D');
-  Dgemm.GemmApiCall();
+  return Dgemm.GemmApiCall();
 }
 
-void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
   Gemm<cuComplex> Cgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  Cgemm.GemmApiCall();
+  return Cgemm.GemmApiCall();
 
 }
 
-void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
   Gemm<cuDoubleComplex> Zgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  Zgemm.GemmApiCall();
+  return Zgemm.GemmApiCall();
 
 }
 
-void mode_H(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_H(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
 
   __half alpha = (__half)alpha_real;
   __half beta = (__half)beta_real;
 
   Gemm<__half> Hgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'H');
-  Hgemm.GemmApiCall();
+  return Hgemm.GemmApiCall();
 }
 
-void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
+int (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
   mode_S, mode_D, mode_C, mode_Z, mode_H
 };
 
@@ -493,14 +586,18 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
+  if(A_row <= 0 || A_col <= 0 || B_col <= 0 ) {
+      std::cout << "Minimum Dimension error\n";
+      return EXIT_FAILURE;
+  }
   
   //! initializing values for matrix B and C
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, 
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, 
                                                 alpha_imaginary, beta_real, beta_imaginary);
   
-  return 0;
+  return status;
 }
