@@ -260,51 +260,52 @@ int Spmm<T>::SpmmApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   float alpha = (float)alpha_real;
   float beta = (float)beta_real;
 
   Spmm<float> Sspmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S');
-  Sspmm.SpmmApiCall();
+  return Sspmm.SpmmApiCall();
 }
 
-void mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
 
   double alpha = alpha_real;
   double beta = beta_real;
 
   Spmm<double> Dspmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'D');
-  Dspmm.SpmmApiCall();
+  return Dspmm.SpmmApiCall();
 }
 
-void mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
 
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
   Spmm<cuComplex> Cspmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  Cspmm.SpmmApiCall();
+  return Cspmm.SpmmApiCall();
 }
 
-void mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
 
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
   Spmm<cuDoubleComplex> Zspmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  Zspmm.SpmmApiCall();
+  return Zspmm.SpmmApiCall();
 }
 
-void (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double, double) = {
+int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double, double) = {
   mode_S, mode_D, mode_C, mode_Z
 };
 
 int main(int argc, char **argv) {
   size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  int status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
   char *end;
@@ -348,12 +349,18 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
+  //! Dimension check
+  if(A_row <= 0 || B_col <= 0) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
+
   A_col = A_row;
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real, beta_imaginary);
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real, beta_imaginary);
 
-  return 0;
+  return status;
 }
