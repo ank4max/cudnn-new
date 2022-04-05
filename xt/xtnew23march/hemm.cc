@@ -1,19 +1,19 @@
-%%writefile hemm.cc
-#include "hemm.h"
+%%writefile symm.cc
+#include "symm1.h"
 #include <unordered_map>
 #include <bits/stdc++.h>
 
 template<class T>
-Hemm<T>::Hemm(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, T alpha, T beta, char mode)
+Symm<T>::Symm(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, T alpha, T beta, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
       C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
 
 template<class T>
-void Hemm<T>::FreeMemory(){
+void Symm<T>::FreeMemory() {
   //! Free Host Memory
   if (HostMatrixA)
     delete[] HostMatrixA;
-  
+
   if (HostMatrixB)
     delete[] HostMatrixB;
 
@@ -28,12 +28,12 @@ void Hemm<T>::FreeMemory(){
 }
 
 template<class T>
-int Hemm<T>::HemmApiCall() {
+int Symm<T>::SymmApiCall() {
   //! Allocating Host Memory for Matrices
-  HostMatrixA = new T[A_row * A_col]; 
-  HostMatrixB = new T[B_row * B_col]; 
-  HostMatrixC = new T[C_row * C_col]; 
-  
+  HostMatrixA = new T[A_row * A_col];
+  HostMatrixB = new T[B_row * B_col];
+  HostMatrixC = new T[C_row * C_col];
+
   if (!HostMatrixA) {
     std::cout << "!!!! Host memory allocation error (matrixA)\n";
     FreeMemory();
@@ -44,18 +44,49 @@ int Hemm<T>::HemmApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
+
   if (!HostMatrixC) {
     std::cout << "!!!! Host memory allocation error (matrixC)\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
+
   /**
-   * Switch Case - To Initialize and Print input matrices based on mode passed
-   * A is a Hermitian matrix, B and C are general matrices
+   * Switch Case - To Initialize and Print input matrices based on mode passed,
+   * A is a symmetric Matrix,
+   * B and C are general Matrices
    */
   switch (mode) {
+    case 'S': {
+      util::InitializeSymmetricMatrixXt<float>((float *)HostMatrixA, A_row, A_col);
+      util::InitializeMatrixXt<float>((float *)HostMatrixB, B_row, B_col);
+      util::InitializeMatrixXt<float>((float *)HostMatrixC, C_row, C_col);
+
+      std::cout << "\nMatrix A:\n";
+      util::PrintSymmetricMatrixXt<float>((float *)HostMatrixA, A_row, A_col);
+      std::cout << "\nMatrix B:\n";
+      util::PrintMatrixXt<float>((float *)HostMatrixB, B_row, B_col);
+      std::cout << "\nMatrix C:\n";
+      util::PrintMatrixXt<float>((float *)HostMatrixC, C_row, C_col);
+      break;
+
+    }
+
+    case 'D': {
+      util::InitializeSymmetricMatrixXt<double>((double *)HostMatrixA, A_row, A_col);
+      util::InitializeMatrixXt<double>((double *)HostMatrixB, B_row, B_col);
+      util::InitializeMatrixXt<double>((double *)HostMatrixC, C_row, C_col);
+
+      std::cout << "\nMatrix A:\n";
+      util::PrintSymmetricMatrixXt<double>((double *)HostMatrixA, A_row, A_col);
+      std::cout << "\nMatrix B:\n";
+      util::PrintMatrixXt<double>((double *)HostMatrixB, B_row, B_col);
+      std::cout << "\nMatrix C:\n";
+      util::PrintMatrixXt<double>((double *)HostMatrixC, C_row, C_col);
+      break;
+
+    }
+
     case 'C': {
       util::InitializeSymmetricComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
       util::InitializeComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
@@ -67,9 +98,10 @@ int Hemm<T>::HemmApiCall() {
       util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
       std::cout << "\nMatrix C:\n";
       util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
-      break; 
+      break;
+
     }
-                        
+
     case 'Z': {
       util::InitializeSymmetricComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
       util::InitializeComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
@@ -81,12 +113,13 @@ int Hemm<T>::HemmApiCall() {
       util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
       std::cout << "\nMatrix C:\n";
       util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
-      break; 
+      break;
+
     }
   }
 
   //! Initializing CUBLAS context
-  status = cublasXtCreate(&handle);      
+  status = cublasXtCreate(&handle);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "!!!! Failed to initialize handle\n";
     FreeMemory();
@@ -100,122 +133,193 @@ int Hemm<T>::HemmApiCall() {
     std::cout << " Set devices fail\n"; 
     return EXIT_FAILURE;   
   }
-  
+
   /**
-   * API call to performs matrix - matrix multiplication : \f$ C = alpha * A * B + beta * C \f$
+   * API call to performs symmetric matrix - matrix multiplication : \f$ C = alpha * A * B + beta * C \f$
    */
-     
+   
   /**
    * The possible error values returned by this API and their meanings are listed below : \n
-   * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n
-   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized \n
-   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n < 0 \n
+   * CUBLAS_STATUS_SUCCESS - The operation completed successfully  \n
+   * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized  \n
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n < 0  \n
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
-   */
+   */ 
+   
   switch (mode) {
-    case 'C': {
-      std::cout << "\nCalling XtChemm API\n";
+    case 'S': {
+      std::cout << "\nCalling XtSsymm API\n";
       clk_start = clock();
 
-      status = cublasXtChemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                            A_row, B_col, (cuComplex *)&alpha,
-                            (cuComplex *)HostMatrixA, A_row, 
-                            (cuComplex *)HostMatrixB, B_row, (cuComplex *)&beta, 
-                            (cuComplex *)HostMatrixC, C_row);
-    
+      status = cublasXtSsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+                           A_row, B_col, (float *)&alpha, (float *)HostMatrixA,
+                           A_row, (float *)HostMatrixB, B_row, (float *)&beta, 
+                           (float *)HostMatrixC, C_row);
+        
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  XtChemm kernel execution error\n";
+        std::cout << "!!!!  XtSsymm kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "XtChemm API call ended\n";
+      std::cout << "XtSsymm API call ended\n";
       break;
     }
-  
-    case 'Z': {
-      std::cout << "\nCalling XtZhemm API\n";
+
+    case 'D': {
+      std::cout << "\nCalling XtDsymm API\n";
       clk_start = clock();
 
-      status = cublasXtZhemm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                            A_row, B_col, (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex *)HostMatrixA, A_row, 
-                            (cuDoubleComplex *)HostMatrixB, B_row, 
-                            (cuDoubleComplex *)&beta, (cuDoubleComplex *)HostMatrixC, C_row);
-    
+      status = cublasXtDsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+                           A_row, B_col, (double *)&alpha, (double *)HostMatrixA,
+                           A_row, (double *)HostMatrixB, B_row, (double *)&beta, 
+                           (double *)HostMatrixC, C_row);
+      
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  XtZhemm kernel execution error\n";
+        std::cout << "!!!!  XtDsymm kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "XtZhemm API call ended\n";
+      std::cout << "XtDsymm API call ended\n";
       break;
     }
-  }
-  
-  std::cout << "\nMatriz C after Xt" << mode << "hemm operation is:\n";
 
-  switch (mode) {
     case 'C': {
-      util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixC, C_row ,C_col); 
+      std::cout << "\nCalling XtCsymm API\n";
+      clk_start = clock();
+
+      status = cublasXtCsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+                           A_row, B_col, (cuComplex *)&alpha, (cuComplex *)HostMatrixA,
+                           A_row, (cuComplex *)HostMatrixB, B_row, (cuComplex *)&beta, 
+                           (cuComplex *)HostMatrixC, C_row);
+      
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        std::cout << "!!!!  XtCsymm kernel execution error\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      clk_end = clock();
+      std::cout << "XtCsymm API call ended\n";
       break;
     }
 
     case 'Z': {
-      util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row ,C_col); 
+      std::cout << "\nCalling XtZsymm API\n";
+      clk_start = clock();
+
+      status = cublasXtZsymm(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+                           A_row, B_col, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)HostMatrixA,
+                           A_row, (cuDoubleComplex *)HostMatrixB, B_row, (cuDoubleComplex *)&beta, 
+                           (cuDoubleComplex *)HostMatrixC, C_row);
+      
+      if (status != CUBLAS_STATUS_SUCCESS) {
+        std::cout << "!!!!  XtZsymm kernel execution error\n";
+        FreeMemory();
+        return EXIT_FAILURE;
+      }
+
+      clk_end = clock();
+      std::cout << "XtZsymm API call ended\n";
       break;
     }
   }
 
-  long long total_operations = A_row * A_col * B_col;  
-  
-  //! printing latency and throughput of the function
+  std::cout << "\nMatrix C after Xt" << mode << "symm operation is:\n";
+
+  //! Print the final resultant Matrix C
+  switch (mode) {
+    case 'S': {
+      util::PrintMatrixXt<float>((float *)HostMatrixC, C_row, C_col);
+      break;
+    }
+
+    case 'D': {
+      util::PrintMatrixXt<double>((double *)HostMatrixC, C_row, C_col);
+      break;
+    }
+
+    case 'C': {
+      util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+      break;
+    }
+
+    case 'Z': {
+      util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+      break;
+    }
+  }
+
+  long long total_operations = A_row * A_col * B_col;
+
+  //! Print Latency and Throughput of the API
   std::cout << "\nLatency: " <<  ((double)(clk_end - clk_start)) / (double)(CLOCKS_PER_SEC) <<
                "\nThroughput: " << THROUGHPUT(clk_start, clk_end, total_operations) << "\n\n";
-  
+
   FreeMemory();
-  return EXIT_SUCCESS;      
+
+  return EXIT_SUCCESS;
+}
+
+int mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+            double beta_real, double beta_imaginary) {
+  float alpha = (float)alpha_real;
+  float beta = (float)beta_real;
+
+  Symm<float> Ssymm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S');
+  return Ssymm.SymmApiCall();
+
+}
+
+int mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+            double beta_real, double beta_imaginary) {
+    
+  double alpha = alpha_real;
+  double beta = beta_real;
+
+  Symm<double> Dsymm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'D');
+  return Dsymm.SymmApiCall();
 }
 
 int mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
-  
+    
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
-  Hemm<cuComplex> Chemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  return Chemm.HemmApiCall();
- 
+  Symm<cuComplex> Csymm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
+  return Csymm.SymmApiCall();
 }
 
 int mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
-  
+    
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
-  Hemm<cuDoubleComplex> Zhemm(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  return Zhemm.HemmApiCall(); 
+  Symm<cuDoubleComplex> Zsymm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'Z');
+  return Zsymm.SymmApiCall();
 }
 
 
 int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double, double) = {
-   mode_C, mode_Z
+  mode_S, mode_D, mode_C, mode_Z
 };
 
-
 int main(int argc, char **argv) {
-  size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  size_t A_row, A_col, B_row, B_col, C_row, C_col, status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
   char *end;
   
   std::unordered_map<char, int> mode_index;
-  mode_index['C'] = 0;
-  mode_index['Z'] = 1;
+  mode_index['S'] = 0;
+  mode_index['D'] = 1;
+  mode_index['C'] = 2;
+  mode_index['Z'] = 3;
 
   std::cout << "\n\n" << argv[0] << std::endl;
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -225,12 +329,12 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  //! reading cmd line arguments and initializing the required parameters
+  // Reading cmd line arguments and initializing the parameters
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
-    std::string cmd_argument(argv[loop_count]);  
+    std::string cmd_argument(argv[loop_count]);
     if (!(cmd_argument.compare("-A_row")))
       A_row = std::strtoull((argv[loop_count + 1]), &end, 10);
-      
+
     else if (!(cmd_argument.compare("-B_column")))
       B_col = std::strtoull((argv[loop_count + 1]), &end, 10);
 
@@ -239,7 +343,7 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-alpha_imaginary")))
       alpha_imaginary = std::stod(argv[loop_count + 1]);
-
+    
     else if (!(cmd_argument.compare("-beta_real")))
       beta_real = std::stod(argv[loop_count + 1]);
     
@@ -249,21 +353,20 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
-	
+
   //! Dimension check	
-  if (A_row <= 0 || B_col <= 0) {
+  if (A_row <= 0 || B_col <=0) {
     std::cout << "Minimum Dimension error\n";
     return EXIT_FAILURE;
-  }	
- 
-  //! Initializing values for matrix B and C
+  }
+
   A_col = A_row;
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
-  
+
   status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, 
-	              	                        alpha_real, alpha_imaginary, beta_real, beta_imaginary);
+		                                        alpha_real, alpha_imaginary, beta_real, beta_imaginary); 
 
   return status;
 }
