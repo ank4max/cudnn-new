@@ -1,3 +1,4 @@
+%%writefile syr2k.cc
 #include <unordered_map>
 #include "syr2k.h"
 #include <bits/stdc++.h>
@@ -271,51 +272,52 @@ int Syr2k<T>::Syr2kApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   float alpha = (float)alpha_real;
   float beta = (float)beta_real;
 
   Syr2k<float> Ssyr2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S');
-  Ssyr2k.Syr2kApiCall();
+  return Ssyr2k.Syr2kApiCall();
 }
 
-void mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   double alpha = alpha_real;
   double beta = beta_real;
 
   Syr2k<double> Dsyr2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'D');
-  Dsyr2k.Syr2kApiCall();
+  return Dsyr2k.Syr2kApiCall();
 }
 
-void mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
   Syr2k<cuComplex> Csyr2k(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  Csyr2k.Syr2kApiCall();
+  return Csyr2k.Syr2kApiCall();
 }
 
-void mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
   Syr2k<cuDoubleComplex> Zsyr2k(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  Zsyr2k.Syr2kApiCall();
+  return Zsyr2k.Syr2kApiCall();
 
 }
 
 
-void (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double, double) = {
+int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double, double) = {
   mode_S, mode_D, mode_C, mode_Z
 };
 
 
 int main(int argc, char **argv) {
-  size_t A_row, A_col, B_row, B_col, C_row, C_col, status;
+  size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  int status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
   char *end;
@@ -359,13 +361,19 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
+  //! Dimension check
+  if(A_row <= 0 || A_col <= 0) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
+
   B_row = A_row;
   B_col = A_col;
   C_row = A_row;
   C_col = A_row;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real,
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real,
 		                                alpha_imaginary, beta_real, beta_imaginary);
   
-  return 0;
+  return status;
 }
