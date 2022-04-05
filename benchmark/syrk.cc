@@ -152,7 +152,7 @@ int Syrk<T>::SyrkApiCall() {
     return EXIT_FAILURE;
   }
 
-
+  //! Event create for storing time
   cudaStatus = cudaEventCreate(&start);
    if(cudaStatus != cudaSuccess) {
      std::cout << " Failed to Create start event " << std::endl;
@@ -167,7 +167,7 @@ int Syrk<T>::SyrkApiCall() {
      return EXIT_FAILURE;
    }
 
-   float milliseconds;
+   float milliseconds = 0;
 
   /**
    * API call to performs the symmetric rank- k update : \f$ C = alpha * A * A^T + beta * C \f$
@@ -184,7 +184,7 @@ int Syrk<T>::SyrkApiCall() {
   switch (mode) {
     case 'S': {
       std::cout << "\nCalling Ssyrk API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -202,7 +202,7 @@ int Syrk<T>::SyrkApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -222,7 +222,7 @@ int Syrk<T>::SyrkApiCall() {
                             
     case 'D': {
       std::cout << "\nCalling Dsyrk API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -240,7 +240,7 @@ int Syrk<T>::SyrkApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -261,7 +261,7 @@ int Syrk<T>::SyrkApiCall() {
 
     case 'C': {
       std::cout << "\nCalling Csyrk API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -280,7 +280,7 @@ int Syrk<T>::SyrkApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -299,7 +299,7 @@ int Syrk<T>::SyrkApiCall() {
       
     case 'Z': {
       std::cout << "\nCalling Zsyrk API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -318,7 +318,7 @@ int Syrk<T>::SyrkApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -382,7 +382,7 @@ int Syrk<T>::SyrkApiCall() {
     return EXIT_FAILURE;
   }
 
-  long long total_operations = A_row * A_col * C_col;
+  long long total_operations = 1ULL * A_row * A_col * C_col;
   double seconds = SECONDS(milliseconds);
 
   //! Print Latency and Throughput of the API
