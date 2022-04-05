@@ -207,7 +207,7 @@ int Trmm<T>::TrmmApiCall() {
      return EXIT_FAILURE;
    }
 
-   float milliseconds;
+   float milliseconds = 0;
 
   /**
    * API call to performs Triangular matrix - matrix multiplication : \f$ C = alpha * A * B \f$
@@ -224,7 +224,7 @@ int Trmm<T>::TrmmApiCall() {
   switch (mode) {
     case 'S': {
       std::cout << "\nCalling Strmm API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -243,7 +243,7 @@ int Trmm<T>::TrmmApiCall() {
         return EXIT_FAILURE;
       }
       
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -262,7 +262,7 @@ int Trmm<T>::TrmmApiCall() {
 
     case 'D': {
       std::cout << "\nCalling Dtrmm API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -280,7 +280,7 @@ int Trmm<T>::TrmmApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -298,7 +298,7 @@ int Trmm<T>::TrmmApiCall() {
 
     case 'C': {
       std::cout << "\nCalling Ctrmm API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -317,7 +317,7 @@ int Trmm<T>::TrmmApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
@@ -335,7 +335,7 @@ int Trmm<T>::TrmmApiCall() {
 
     case 'Z': {
       std::cout << "\nCalling Ztrmm API\n";
-      cudaStatus = cudaEventRecord(start);
+      cudaStatus = cudaEventRecord(start, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record start time " << std::endl;
         FreeMemory();
@@ -354,7 +354,7 @@ int Trmm<T>::TrmmApiCall() {
         return EXIT_FAILURE;
       }
 
-      cudaStatus = cudaEventRecord(stop);
+      cudaStatus = cudaEventRecord(stop, 0);
       if(cudaStatus != cudaSuccess) {
         std::cout << " Failed to record stop time " << std::endl;
         FreeMemory();
