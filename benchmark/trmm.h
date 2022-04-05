@@ -8,7 +8,7 @@
  * 1e-9 for converting throughput in GFLOP/sec, multiplying by 2 as each multiply-add operation uses two flops and
  * finally dividing it by latency to get required throughput
  */
-#define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start))
+#define THROUGHPUT(seconds, operations) ((1e-9 * 2 * operations) / (seconds))
 
 /**
  * Class Trmm contains Trmm API which performs Triangular matrix - matrix multiplication : C = alpha * A * B
