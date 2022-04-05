@@ -270,40 +270,41 @@ int Trmm<T>::TrmmApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
+int mode_S(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
   float alpha = (float)alpha_real;
 
   Trmm<float> Strmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, 'S');
-  Strmm.TrmmApiCall();
+  return Strmm.TrmmApiCall();
 }
 
-void mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
+int mode_D(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
   double alpha = alpha_real;
 
   Trmm<double> Dtrmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, 'D');
-  Dtrmm.TrmmApiCall();
+  return Dtrmm.TrmmApiCall();
 }
 
-void mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
+int mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
 
   Trmm<cuComplex> Ctrmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, 'C');
-  Ctrmm.TrmmApiCall();
+  return Ctrmm.TrmmApiCall();
 }
 
-void mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
+int mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary) {
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
 
   Trmm<cuDoubleComplex> Ztrmm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, 'Z');
-  Ztrmm.TrmmApiCall();
+  return Ztrmm.TrmmApiCall();
 }
 
-void (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double) = {
+int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double) = {
   mode_S, mode_D, mode_C, mode_Z
 };
 
 int main(int argc, char **argv) {
   size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  int status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
   char *end;
@@ -341,12 +342,18 @@ int main(int argc, char **argv) {
       mode = *(argv[loop_count + 1]);
   }
 
+  //! Dimension check
+  if(A_row <= 0 || B_col <= 0) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
+
   A_col = A_row;
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary);
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary);
 
-  return 0;
+  return status;
 }
