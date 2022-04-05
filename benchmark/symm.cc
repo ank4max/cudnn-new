@@ -255,20 +255,11 @@ int Symm<T>::SymmApiCall() {
       
       cudaStatus = cudaEventSynchronize(stop);
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  Ssymm kernel execution error\n";
+        std::cout << "Failed to synchronize events\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
-
-      if(cudaStatus != cudaSuccess) {
-        std::cout << " The device memory allocation failed for C " << std::endl;
-        FreeMemory();
-        return EXIT_FAILURE;
-      }
-        
-      
-
-      
+             
       std::cout << "Ssymm API call ended\n";
       break;
     }
