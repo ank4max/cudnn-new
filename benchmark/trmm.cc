@@ -407,7 +407,7 @@ int Trmm<T>::TrmmApiCall() {
     }
   }
 
-  l//! Execution time for API
+  //! Execution time for API
   cudaStatus = cudaEventElapsedTime(&milliseconds, start, stop);
   if(cudaStatus != cudaSuccess) {
     std::cout << " Failed to store API execution time " << std::endl;
