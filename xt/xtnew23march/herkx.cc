@@ -187,31 +187,32 @@ int Herkx<T>::HerkxApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_C(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real) {
     
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   
   Herkx<cuComplex> Cherkx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, 'C');
-  Cherkx.HerkxApiCall();
+  return Cherkx.HerkxApiCall();
 }
 
-void mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(size_t A_row, size_t A_col, size_t B_row, size_t B_col, size_t C_row, size_t C_col, double alpha_real, double alpha_imaginary,
             double beta_real) {
   
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
 
   Herkx<cuDoubleComplex> Zherkx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta_real, 'Z');
-  Zherkx.HerkxApiCall();
+  return Zherkx.HerkxApiCall();
 }
 
-void (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double) = {
+int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double, double, double) = {
   mode_C, mode_Z
 };
 
 int main(int argc, char **argv) {
 
   size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  int status;
   double alpha_real, alpha_imaginary, beta_real;
   char mode;
   char *end;
@@ -250,6 +251,12 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
+
+  //! Dimension check
+  if(A_row <= 0 || A_col <= 0) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
   
   //! initializing values for matrix B and C
   B_row = A_row;
@@ -258,7 +265,7 @@ int main(int argc, char **argv) {
   C_col = A_row;
 
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real);
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, alpha_imaginary, beta_real);
   
-  return 0;
+  return status;
 }
