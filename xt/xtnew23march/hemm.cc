@@ -208,7 +208,8 @@ int (*cublas_func_ptr[])(size_t, size_t, size_t, size_t, size_t, size_t, double,
 
 
 int main(int argc, char **argv) {
-  size_t A_row, A_col, B_row, B_col, C_row, C_col, status;
+  size_t A_row, A_col, B_row, B_col, C_row, C_col;
+  int status;
   double alpha_real, alpha_imaginary, beta_real, beta_imaginary;
   char mode;
   char *end;
