@@ -1,4 +1,4 @@
-//%%writefile hemm.cc
+%%writefile hemm.cc
 #include "hemm.h"
 #include <unordered_map>
 
@@ -56,30 +56,30 @@ int Hemm<T>::HemmApiCall() {
    */
   switch (mode) {
     case 'C': {
-      util::InitializeSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
-      util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
-      util::InitializeComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+      util::InitializeSymmetricComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+      util::InitializeComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+      util::InitializeComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
 
       std::cout << "\nMatrix A:\n";
-      util::PrintSymmetricComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
+      util::PrintSymmetricComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixA, A_row, A_col);
       std::cout << "\nMatrix B:\n";
-      util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
+      util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixB, B_row, B_col);
       std::cout << "\nMatrix C:\n";
-      util::PrintComplexMatrix<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
+      util::PrintComplexMatrixXt<cuComplex>((cuComplex *)HostMatrixC, C_row, C_col);
       break; 
     }
                         
     case 'Z': {
-      util::InitializeSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
-      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
-      util::InitializeComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+      util::InitializeSymmetricComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+      util::InitializeComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+      util::InitializeComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
 
       std::cout << "\nMatrix A:\n";
-      util::PrintSymmetricComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
+      util::PrintSymmetricComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixA, A_row, A_col);
       std::cout << "\nMatrix B:\n";
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
+      util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixB, B_row, B_col);
       std::cout << "\nMatrix C:\n";
-      util::PrintComplexMatrix<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
+      util::PrintComplexMatrixXt<cuDoubleComplex>((cuDoubleComplex *)HostMatrixC, C_row, C_col);
       break; 
     }
   }
@@ -179,29 +179,29 @@ int Hemm<T>::HemmApiCall() {
   return EXIT_SUCCESS;      
 }
 
-void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
   Hemm<cuComplex> Chemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  Chemm.HemmApiCall();
+  return Chemm.HemmApiCall();
  
 }
 
-void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
   
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
   Hemm<cuDoubleComplex> Zhemm(A_row, A_col,B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  Zhemm.HemmApiCall(); 
+  return Zhemm.HemmApiCall(); 
 }
 
 
-void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
+int (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
   mode_C, mode_Z
 };
 
@@ -247,6 +247,12 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
+
+  //! Dimension check	
+  if (A_row <= 0 || B_col <= 0) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
  
   //! Initializing values for matrix B and C
   A_col = A_row;
@@ -254,8 +260,8 @@ int main(int argc, char **argv) {
   C_row = A_row;
   C_col = B_col;
   
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, 
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, 
 	              	                        alpha_real, alpha_imaginary, beta_real, beta_imaginary);
-
-  return 0;
+ std::cout <<status;
+  return status;
 }
