@@ -183,10 +183,10 @@ int mode_Z(int A_row, int A_col, int C_row, int C_col, double alpha_real, double
 
 }
 
-
 int (*cublas_func_ptr[])(int, int, int, int, double, double) = {
   mode_C, mode_Z
 };
+
 int main(int argc, char **argv) {
   int A_row, A_col, C_row, C_col, status;
   double alpha_real, beta_real;
