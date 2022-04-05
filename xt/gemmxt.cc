@@ -268,49 +268,49 @@ int Gemm<T>::GemmApiCall() {
   return EXIT_SUCCESS;
 }
 
-void mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   float alpha = (float)alpha_real;
   float beta = (float)beta_real;
 
   Gemm<float> Sgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S' );
-  Sgemm.GemmApiCall();
+  return Sgemm.GemmApiCall();
 }
 
-void mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary, 
+int mode_D(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary, 
             double beta_real, double beta_imaginary) {
             
   double alpha = alpha_real;
   double beta = beta_real;
 
   Gemm<double> Dgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'D');
-  Dgemm.GemmApiCall();
+  return Dgemm.GemmApiCall();
 }
 
-void mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
   cuComplex beta = {(float)beta_real, (float)beta_imaginary};
 
   Gemm<cuComplex> Cgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C');
-  Cgemm.GemmApiCall();
+  return Cgemm.GemmApiCall();
 
 }
 
-void mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
+int mode_Z(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary) {
             
   cuDoubleComplex alpha = {alpha_real, alpha_imaginary};
   cuDoubleComplex beta = {beta_real, beta_imaginary};
 
   Gemm<cuDoubleComplex> Zgemm(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'Z');
-  Zgemm.GemmApiCall();
+  return Zgemm.GemmApiCall();
 
 }
 
-void (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
+int (*cublas_func_ptr[])(int, int, int, int, int, int, double, double, double, double) = {
   mode_S, mode_D, mode_C, mode_Z
 };
 
@@ -362,14 +362,19 @@ int main(int argc, char **argv) {
     else if (!(cmd_argument.compare("-mode")))
       mode = *(argv[loop_count + 1]);
   }
+
+  if(A_row <= 0 || A_col <= 0 || B_col <= 0 ) {
+    std::cout << "Minimum Dimension error\n";
+    return EXIT_FAILURE;
+  }
   
   //! initializing values for matrix B and C
   B_row = A_col;
   C_row = A_row;
   C_col = B_col;
 
-  (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, 
+  status = (*cublas_func_ptr[mode_index[mode]])(A_row, A_col, B_row, B_col, C_row, C_col, alpha_real, 
                                                 alpha_imaginary, beta_real, beta_imaginary);
   
-  return 0;
+  return status;
 }
