@@ -128,8 +128,7 @@ int Syrkx<T>::SyrkxApiCall() {
   int devices[1] = { 0 }; 
   status = cublasXtDeviceSelect(handle, 1, devices);
   if(status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << " Set devices fail\n";
-    std::cout << status; 
+    std::cout << " Set devices fail\n"; 
     return EXIT_FAILURE;   
   }
   
