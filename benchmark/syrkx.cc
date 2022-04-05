@@ -193,6 +193,7 @@ int Syrkx<T>::SyrkxApiCall() {
     return EXIT_FAILURE;
   }
 
+  //! Event create for storing time
   cudaStatus = cudaEventCreate(&start);
    if(cudaStatus != cudaSuccess) {
      std::cout << " Failed to Create start event " << std::endl;
