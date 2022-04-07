@@ -179,6 +179,7 @@ int Spmv<T>::SpmvApiCall() {
                            VECTOR_LEADING_DIMENSION, (float *)&beta, (float *)DeviceVectorY, VECTOR_LEADING_DIMENSION);
 
 
+
       if (status != CUBLAS_STATUS_SUCCESS) {
         fprintf (stderr, "!!!!  Sspmv kernel execution error\n");
         FreeMemory();
