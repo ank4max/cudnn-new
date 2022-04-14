@@ -55,7 +55,7 @@ int Tpttr<T>::TpttrApiCall() {
 
   /**
    * Switch Case - To Initialize and Print input matrix based on mode passed,
-   * A is a triangular packed matrix, 
+   * AP is a triangular packed matrix, 
    */
   switch (mode) {
     case 'S': {
