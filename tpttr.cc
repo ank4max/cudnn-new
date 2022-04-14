@@ -75,11 +75,11 @@ int Tpttr<T>::TpttrApiCall() {
     }
 
     case 'C': {
-      util::InitializeSymmetricPackedComplexMatrix<cuComplex>((cuComplex *)HostMatrixA, matrix_size);
+      util::InitializeSymmetricPackedComplexMatrix<cuComplex>((cuComplex *)HostMatrixAP, matrix_size);
       
 
       std::cout << "\nMatrix AP of size " << A_row << " * " << A_col << ":\n";
-      util::PrintSymmetricPackedUpperComplexMatrix<cuComplex >((cuComplex *)HostMatrixA, A_row, matrix_size);
+      util::PrintSymmetricPackedUpperComplexMatrix<cuComplex >((cuComplex *)HostMatrixAP, A_row, matrix_size);
       break;
     }
 
