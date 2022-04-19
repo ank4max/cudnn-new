@@ -206,9 +206,11 @@ int Matmul<T>::MatmulApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-
+  
+  int requestedAlgoCount = 1;
+  int cuda_setstream = 0;
   //! Getting algorithm for Matmul operation
-  status = cublasLtMatmulAlgoGetHeuristic(LtHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
+  status = cublasLtMatmulAlgoGetHeuristic(LtHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, requestedAlgoCount, &heuristicResult, &returnedResults);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "MatmulAlgoGetHeuristic API error \n";
     FreeMemory();
@@ -261,7 +263,7 @@ int Matmul<T>::MatmulApiCall() {
       clk_start = clock();
 
       status = cublasLtMatmul(LtHandle, operationDesc, &alpha, DeviceMatrixA, Adesc, DeviceMatrixB, Bdesc, &beta,
-                              DeviceMatrixC, Cdesc, DeviceMatrixC, Cdesc, &heuristicResult.algo, workspace, workspaceSize, 0);
+                              DeviceMatrixC, Cdesc, DeviceMatrixC, Cdesc, &heuristicResult.algo, workspace, workspaceSize, cuda_setstream);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Matmul kernel execution error\n";
