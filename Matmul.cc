@@ -118,8 +118,10 @@ int Matmul<T>::MatmulApiCall() {
     return EXIT_FAILURE;
   }
   
-  void *workspace =NULL;
+  //! Setting workspace size  
+  void *workspace = NULL;
   size_t workspaceSize = 0 ;
+    
   //! Setting up trans for performing matrix-matrix multiplication
   int returnedResults = 0;
   cublasOperation_t transa = CUBLAS_OP_N;
@@ -148,7 +150,7 @@ int Matmul<T>::MatmulApiCall() {
     return EXIT_FAILURE;
   }
 
-
+  //! Creating necessary descriptors
   status = cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "Operation Descriptor creation error\n";
@@ -198,13 +200,14 @@ int Matmul<T>::MatmulApiCall() {
     return EXIT_FAILURE;
   }
 
-  status = cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(   workspaceSize));
+  status = cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspaceSize, sizeof(workspaceSize));
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "Preference Set Attribute API error \n";
     FreeMemory();
     return EXIT_FAILURE;
   }
 
+  //! Getting algorithm for Matmul operation
   status = cublasLtMatmulAlgoGetHeuristic(LtHandle, operationDesc, Adesc, Bdesc, Cdesc, Cdesc, preference, 1, &heuristicResult, &returnedResults);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "MatmulAlgoGetHeuristic API error \n";
@@ -270,7 +273,6 @@ int Matmul<T>::MatmulApiCall() {
       std::cout << "Matmul API call ended\n";
       break;
     }
-
     
   }
   
