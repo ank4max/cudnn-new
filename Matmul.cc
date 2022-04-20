@@ -47,7 +47,7 @@ void Matmul<T>::FreeMemory() {
 
   status = cublasLtMatmulPreferenceDestroy(preference);
   if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << "!!!! Unable to destroy operation descriptor \n";
+    std::cout << "!!!! Unable to destroy preference \n";
   }
 }
 
