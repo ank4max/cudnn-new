@@ -267,14 +267,14 @@ int GemmBatchedEx<T>::GemmBatchedExApiCall() {
       std::cout << "SGemmBatchedEx API call ended\n";
       break;
     }
-/*
+
     case 'C': {
       std::cout << "\nCalling GemmBatchedEx API with cuda compute\n";
       clk_start = clock();
        
       status = cublasGemmBatchedEx(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row, B_col, A_col, (float *)&alpha, 
-                                  (float**)DeviceMatrixA, CUDA_R_32F, A_row, (float**)DeviceMatrixB, CUDA_R_32F, 
-                                  B_row, (float *)&beta, (float **)DeviceMatrixC, CUDA_R_32F, C_row, batch_count,
+                                  (const void * const *)DeviceMatrixA, CUDA_R_32F, A_row, (const void * const *)DeviceMatrixB, CUDA_R_32F, 
+                                  B_row, (float *)&beta, (void * const *)DeviceMatrixC, CUDA_R_32F, C_row, batch_count,
                                   CUDA_R_32F, cublas_algo);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
@@ -287,7 +287,7 @@ int GemmBatchedEx<T>::GemmBatchedExApiCall() {
       std::cout << "CGemmBatchedEx API call ended\n";
       break;
     }
-    */
+    
   }
   
   //! Copy Matrix C, holding resultant matrix, from Device to Host using cublasGetMatrix()
