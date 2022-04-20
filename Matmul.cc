@@ -1,4 +1,3 @@
-%%writefile matmul.cc
 #include <unordered_map>
 #include "cublas_matmul_test.h"
 
@@ -39,6 +38,16 @@ void Matmul<T>::FreeMemory() {
   status  = cublasLtDestroy(LtHandle);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "!!!! Unable to uninitialize handle \n";
+  }
+
+  status = cublasLtMatmulDescDestroy(operationDesc);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << "!!!! Unable to destroy operation descriptor \n";
+  }
+
+  status = cublasLtMatmulPreferenceDestroy(preference);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << "!!!! Unable to destroy operation descriptor \n";
   }
 }
 
