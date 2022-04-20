@@ -276,11 +276,11 @@ int mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, dou
 int mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, double alpha_real, double alpha_imaginary,
             double beta_real, double beta_imaginary, char algo) {
             
-  cuComplex alpha = {(float)alpha_real, (float)alpha_imaginary};
-  cuComplex beta = {(float)beta_real, (float)beta_imaginary};
+  float alpha = (float)alpha_real;
+  float beta = (float)beta_real;
 
-  GemmEx<cuComplex> CgemmEx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'C', algo);
-  return CgemmEx.GemmExApiCall();
+  GemmEx<float> SgemmEx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S', algo);
+  return SgemmEx.GemmExApiCall();
 
 }
 
