@@ -255,7 +255,7 @@ int GemmBatchedEx<T>::GemmBatchedExApiCall() {
       status = cublasGemmBatchedEx(handle, CUBLAS_OP_N, CUBLAS_OP_N, A_row, B_col, A_col, (float *)&alpha, 
                                   (const void * const *)DeviceMatrixA, CUDA_R_32F, A_row, (const void * const *)DeviceMatrixB, CUDA_R_32F, 
                                   B_row, &beta, (void * const *)DeviceMatrixC, CUDA_R_32F, C_row, batch_count,
-                                  CUDA_R_32F, cublas_algo);
+                                  CUBLAS_COMPUTE_32F, cublas_algo);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  GemmBatchedEx kernel execution error\n";
