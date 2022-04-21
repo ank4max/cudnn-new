@@ -40,8 +40,12 @@ void MatrixTransform<T>::FreeMemory() {
   if (cudaStatus != cudaSuccess) {
     std::cout << " The device memory deallocation failed for C" << std::endl;
   }
-
-
+    
+  //! Destroy transform descriptor
+  status = cublasLtMatrixTransformDescDestroy(transformDesc);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << "!!!! Unable to destroy transform descriptor \n";
+  }
     
   //! Destroy CuBLAS context
   status  = cublasLtDestroy(LtHandle);
@@ -125,16 +129,10 @@ int MatrixTransform<T>::MatrixTransformApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-  
-  //! Setting workspace size  
-  void *workspace = NULL;
-  size_t workspaceSize = 0 ;
     
   //! Setting up trans for performing matrix-matrix multiplication
-  int returnedResults = 0;
   cublasOperation_t transa = CUBLAS_OP_N;
   cublasOperation_t transb = CUBLAS_OP_N;
-
   
   //! Copying values of Host matrices to Device matrices using cublasSetMatrix()
   status = cublasSetMatrix(A_row, A_col, sizeof(*HostMatrixA), HostMatrixA, A_row, DeviceMatrixA, A_row);
@@ -201,45 +199,10 @@ int MatrixTransform<T>::MatrixTransformApiCall() {
     return EXIT_FAILURE;
   }
 
-/*
-  void * buf;
-  auto constexpr cudaDataTypeO = CUDA_C_32F;
-  size_t planarOffsetA = ( A_row * A_col * sizeof( float) ) / 2;
-  size_t planarOffsetB = ( B_row * B_column * sizeof(float) ) / 2;
-  size_t planarOffsetC = ( C_row * C_column * sizeof(cudaDataTypeO) ) / 2;   */
-
-  /*
-  status = cublasLtMatrixLayoutSetAttribute(Cdesc, CUBLASLT_MATRIX_LAYOUT_TYPE,&buf, sizeof(buf));
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << "Layout set error for C \n";
-    FreeMemory();
-    return EXIT_FAILURE;
-  }
-
-  status = cublasLtMatrixLayoutSetAttribute(Cdesc, CUBLASLT_MATRIX_LAYOUT_TYPE,&buf, sizeof(buf));
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << "Layout set error for C \n";
-    FreeMemory();
-    return EXIT_FAILURE;
-  }
-
-  status = cublasLtMatrixLayoutSetAttribute(Cdesc, CUBLASLT_MATRIX_LAYOUT_TYPE,&buf, sizeof(buf));
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << "Layout set error for C \n";
-    FreeMemory();
-    return EXIT_FAILURE;
-  
-  }
-
   cudaStream_t stream = 0;
-
-*/
-
-  
   /**
    * API call to computes the matrix transformation operation on the input matrices A and B, to produce the output matrix C\n 
    * \f$ C = alpha * transform(A) + beta * transform(B) \f$ \n
-   *
    */
     
   /**
@@ -259,7 +222,7 @@ int MatrixTransform<T>::MatrixTransformApiCall() {
       clk_start = clock();
 
       status = cublasLtMatrixTransform(LtHandle, transformDesc, &alpha, DeviceMatrixA, Adesc, &beta, DeviceMatrixB, Bdesc,
-                              DeviceMatrixC, Cdesc, 0);
+                                       DeviceMatrixC, Cdesc, stream);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
         std::cout << "!!!!  Matrix Transform kernel execution error\n";
@@ -305,7 +268,6 @@ int MatrixTransform<T>::MatrixTransformApiCall() {
 }
 
 int mode_S(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, float alpha, float beta) {
-
 
   MatrixTransform<float> MatrixTransform(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S' );
   return MatrixTransform.MatrixTransformApiCall();
