@@ -51,12 +51,12 @@ class Matmul {
     T *DeviceMatrixC;
     T alpha;
     T beta;
-    cublasLtMatmulDesc_t operationDesc = NULL;
-    cublasLtMatrixLayout_t Adesc = NULL;
-    cublasLtMatrixLayout_t Bdesc = NULL;
-    cublasLtMatrixLayout_t Cdesc = NULL;
-    cublasLtMatmulPreference_t preference = NULL;
-    cublasLtMatmulHeuristicResult_t heuristicResult = {};
+    cublasLtMatmulDesc_t operationDesc;
+    cublasLtMatrixLayout_t Adesc;
+    cublasLtMatrixLayout_t Bdesc;
+    cublasLtMatrixLayout_t Cdesc;
+    cublasLtMatmulPreference_t preference ;
+    cublasLtMatmulHeuristicResult_t heuristicResult;
     cudaError_t cudaStatus;
     cublasStatus_t status;
     cublasLtHandle_t LtHandle;
