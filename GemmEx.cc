@@ -67,25 +67,23 @@ int GemmEx<T>::GemmExApiCall() {
   }
 
   /**
-   * Switch Case - To Initialize and Print input matrices based on mode passed,
+   * If statement - To Initialize and Print input matrices based on mode passed,
    * A, B and C are general matrices
    */
   
-  
-    if (mode == 'S' || mode == 'C')  {
-      util::InitializeMatrix<float>((float *)HostMatrixA, A_row, A_col);
-      util::InitializeMatrix<float>((float *)HostMatrixB, B_row, B_col);
-      util::InitializeMatrix<float>((float *)HostMatrixC, C_row, C_col);
+  if (mode == 'S' || mode == 'C')  {
+    util::InitializeMatrix<float>((float *)HostMatrixA, A_row, A_col);
+    util::InitializeMatrix<float>((float *)HostMatrixB, B_row, B_col);
+    util::InitializeMatrix<float>((float *)HostMatrixC, C_row, C_col);
 
-      std::cout << "\nMatrix A:\n";
-      util::PrintMatrix<float>((float *)HostMatrixA, A_row, A_col);
-      std::cout << "\nMatrix B:\n";
-      util::PrintMatrix<float>((float *)HostMatrixB, B_row, B_col);
-      std::cout << "\nMatrix C:\n";
-      util::PrintMatrix<float>((float *)HostMatrixC, C_row, C_col);
+    std::cout << "\nMatrix A:\n";
+    util::PrintMatrix<float>((float *)HostMatrixA, A_row, A_col);
+    std::cout << "\nMatrix B:\n";
+    util::PrintMatrix<float>((float *)HostMatrixB, B_row, B_col);
+    std::cout << "\nMatrix C:\n";
+    util::PrintMatrix<float>((float *)HostMatrixC, C_row, C_col);
           
-    }
-  
+  }
   
   //! Allocating Device Memory for Matrices using cudaMalloc()
   cudaStatus = cudaMalloc((void **)&DeviceMatrixA, A_row * A_col * sizeof(*HostMatrixA));
@@ -281,7 +279,6 @@ int mode_C(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, dou
 
   GemmEx<float> SgemmEx(A_row, A_col, B_row, B_col, C_row, C_col, alpha, beta, 'S', algo);
   return SgemmEx.GemmExApiCall();
-
 }
 
 
