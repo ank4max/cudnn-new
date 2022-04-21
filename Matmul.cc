@@ -4,7 +4,14 @@
 template<class T>
 Matmul<T>::Matmul(int A_row, int A_col, int B_row, int B_col, int C_row, int C_col, T alpha, T beta, char mode)
     : A_row(A_row), A_col(A_col), B_row(B_row), B_col(B_col),
-      C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {}
+      C_row(C_row), C_col(C_col), alpha(alpha), beta(beta), mode(mode) {
+      operationDesc = NULL;
+      Adesc = NULL;
+      Bdesc = NULL;
+      Cdesc = NULL;
+      preference = NULL;
+      heuristicResult = {};
+      }
 
 template<class T>
 void Matmul<T>::FreeMemory() {
@@ -34,12 +41,6 @@ void Matmul<T>::FreeMemory() {
     std::cout << " The device memory deallocation failed for C" << std::endl;
   }
 
-  //! Destroy CuBLAS context
-  status  = cublasLtDestroy(LtHandle);
-  if (status != CUBLAS_STATUS_SUCCESS) {
-    std::cout << "!!!! Unable to uninitialize handle \n";
-  }
-
   status = cublasLtMatmulDescDestroy(operationDesc);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "!!!! Unable to destroy operation descriptor \n";
@@ -48,6 +49,12 @@ void Matmul<T>::FreeMemory() {
   status = cublasLtMatmulPreferenceDestroy(preference);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "!!!! Unable to destroy preference \n";
+  }
+    
+  //! Destroy CuBLAS context
+  status  = cublasLtDestroy(LtHandle);
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << "!!!! Unable to uninitialize handle \n";
   }
 }
 
