@@ -445,7 +445,7 @@ int main(int argc, char **argv) {
   }
 
   //! Check Dimension Validity
-  if (A_row <= 0 || A_col <= 0 || nhrs <= 0 || batch_count <= 0){
+  if (A_row <= 0 || A_col <= 0 || batch_count <= 0){
     std::cout << "Invalid dimension error\n";
     return EXIT_FAILURE;
   }
@@ -457,3 +457,4 @@ int main(int argc, char **argv) {
   
   return status;
 }
+
