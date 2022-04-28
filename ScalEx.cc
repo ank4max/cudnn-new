@@ -1,10 +1,8 @@
-%%writefile cublas_ScalEx_test.cc
-#include <unordered_map>
 #include "cublas_ScalEx_test.h"
 
 template<class T>
-ScalEx<T>::ScalEx(int vector_length, T alpha, char mode)
-              : vector_length(vector_length), alpha(alpha), mode(mode) {}
+ScalEx<T>::ScalEx(int vector_length, T alpha)
+              : vector_length(vector_length), alpha(alpha) {}
 
 template<class T>
 void ScalEx<T>::FreeMemory() {
@@ -35,18 +33,13 @@ int ScalEx<T>::ScalExApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-
-  /**
-   * If statement- To Initialize and Print input vectors based on mode passed,
-   * X is a vector
-   */
   
-  if (mode == 'S') {
-    util::InitializeVector<float>((float *)HostVectorX, vector_length);
+  //! Initializing and Printing Vector X
+  util::InitializeVector<float>((float *)HostVectorX, vector_length);
 
-    std::cout << "\nVector X of size " << vector_length << "\n" ;
-    util::PrintVector<float>((float *)HostVectorX, vector_length);
-  }
+  std::cout << "\nVector X of size " << vector_length << "\n" ;
+  util::PrintVector<float>((float *)HostVectorX, vector_length);
+  
 
   //! Allocating Device Memory for Vector using cudaMalloc()
   cudaStatus = cudaMalloc((void **)&DeviceVectorX, vector_length * sizeof(*HostVectorX));
@@ -88,25 +81,21 @@ int ScalEx<T>::ScalExApiCall() {
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
    */
   
-  if (mode == 'S') {
-    std::cout << "\nCalling ScalEx API\n";
-    clk_start = clock();
-
-    status = cublasScalEx(handle, vector_length, (float *)&alpha, CUDA_R_32F,
-	                      (float *)DeviceVectorX, CUDA_R_32F, VECTOR_LEADING_DIMENSION, CUDA_R_32F);
-
-    if (status != CUBLAS_STATUS_SUCCESS) {
-      std::cout << " ScalEx kernel execution error\n";
-      FreeMemory();
-      return EXIT_FAILURE;
-    }
-
-    clk_end = clock();
-    std::cout << "ScalEx API call ended\n";
   
+  std::cout << "\nCalling ScalEx API\n";
+  clk_start = clock();
+
+  status = cublasScalEx(handle, vector_length, (float *)&alpha, CUDA_R_32F,
+	               (float *)DeviceVectorX, CUDA_R_32F, VECTOR_LEADING_DIMENSION, CUDA_R_32F);
+
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << " ScalEx kernel execution error\n";
+    FreeMemory();
+    return EXIT_FAILURE;
   }
 
-
+  clk_end = clock();
+  std::cout << "ScalEx API call ended\n";
 
   //! Copy Vector X, holding resultant Vector, from Device to Host using cublasGetVector()
   status = cublasGetVector(vector_length, sizeof (*HostVectorX),
@@ -120,13 +109,9 @@ int ScalEx<T>::ScalExApiCall() {
   }
 
   std::cout << "\nVector X after " << "ScalEx operation is:\n";
-
   
-  if(mode == 'S') {
-    util::PrintVector<float>((float *)HostVectorX, vector_length);
-    
-  }
-
+  //! Printing Output Vector
+  util::PrintVector<float>((float *)HostVectorX, vector_length);
 
   long long total_operations = vector_length;
 
@@ -139,29 +124,10 @@ int ScalEx<T>::ScalExApiCall() {
   return EXIT_SUCCESS;
 }
 
-int mode_S(int vector_length, float alpha) {
-
-  ScalEx<float> SScalEx(vector_length, alpha, 'S' );
-  return SScalEx.ScalExApiCall();
-}
-
-
-
-
-
-int (*cublas_func_ptr[])(int, float) = {
-  mode_S
-};
-
 int main(int argc, char **argv) {
   int vector_length, status;
   float alpha_real;
-  char mode;
-
-  std::unordered_map<char, int> mode_index;
-  mode_index['S'] = 0;
   
-
   std::cout << "\n\n" << argv[0] << std::endl;
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
     std::cout << argv[loop_count] << " ";
@@ -179,9 +145,6 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-alpha_real")))
       alpha_real = std::stof(argv[loop_count + 1]);
-
-    else if (!(cmd_argument.compare("-mode")))
-      mode = *(argv[loop_count + 1]);
   }
 
   //! Check Dimension Validity
@@ -190,6 +153,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  status = (*cublas_func_ptr[mode_index[mode]])(vector_length, alpha_real);
+  ScalEx<float> scalEx(vector_length, alpha_real);
+  status = scalEx.ScalExApiCall();
   return status;
 }
