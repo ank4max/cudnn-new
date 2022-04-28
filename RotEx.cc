@@ -50,12 +50,8 @@ int RotEx<T>::RotExApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
-
-  /**
-   * If statement - To Initialize and Print input vectors.
-   * X and Y are vectors
-   */
   
+  //! Initializing and Printing Input Vectors
   util::InitializeVector<float>((float *)HostVectorX, vector_length);
   util::InitializeVector<float>((float *)HostVectorY, vector_length);
 
