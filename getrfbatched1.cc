@@ -14,11 +14,27 @@ void GetrfBatched<T>::FreeMemory() {
   if (HostMatrixA)
     delete[] HostMatrixA;
 
+  if (HostPivotArray)
+    delete[] HostPivotArray;
+  
+  if (HostInfoArray)
+    delete[] HostInfoArray;
+
 
   //! Free Device Memory
   cudaStatus = cudaFree(DeviceMatrixA);
   if (cudaStatus != cudaSuccess) {
     std::cout << " The device memory deallocation failed for A" << std::endl;
+  }
+
+  cudaStatus = cudaFree(DevicePivotArray);
+  if (cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for Pivot array" << std::endl;
+  }
+
+  cudaStatus = cudaFree(DeviceInfoArray);
+  if (cudaStatus != cudaSuccess) {
+    std::cout << " The device memory deallocation failed for Info array" << std::endl;
   }
 
   //! Destroy CuBLAS context
