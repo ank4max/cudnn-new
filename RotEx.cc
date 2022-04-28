@@ -1,9 +1,9 @@
-#include <unordered_map>
+
 #include "cublas_RotEx_test.h"
 
 template<class T>
-RotEx<T>::RotEx(int vector_length, T sine, T cosine, char mode)
-    : vector_length(vector_length), sine(sine), cosine(cosine), mode(mode) {}
+RotEx<T>::RotEx(int vector_length, T sine, T cosine)
+    : vector_length(vector_length), sine(sine), cosine(cosine) {}
 
 template<class T>
 void RotEx<T>::FreeMemory() {
@@ -52,23 +52,18 @@ int RotEx<T>::RotExApiCall() {
   }
 
   /**
-   * If statement - To Initialize and Print input vectors based on mode passed,
+   * If statement - To Initialize and Print input vectors.
    * X and Y are vectors
    */
   
-  if (mode == 'S') {
-    util::InitializeVector<float>((float *)HostVectorX, vector_length);
-    util::InitializeVector<float>((float *)HostVectorY, vector_length);
+  util::InitializeVector<float>((float *)HostVectorX, vector_length);
+  util::InitializeVector<float>((float *)HostVectorY, vector_length);
 
-    std::cout << "\nVector X of size " << vector_length << "\n" ;
-    util::PrintVector<float>((float *)HostVectorX, vector_length);
-    std::cout << "\nVector Y of size " << vector_length << "\n" ;
-    util::PrintVector<float>((float *)HostVectorY, vector_length);
+  std::cout << "\nVector X of size " << vector_length << "\n" ;
+  util::PrintVector<float>((float *)HostVectorX, vector_length);
+  std::cout << "\nVector Y of size " << vector_length << "\n" ;
+  util::PrintVector<float>((float *)HostVectorY, vector_length);
       
-  }
-
-  
-
   //! Allocating Device Memory for Vectors using cudaMalloc()
   cudaStatus = cudaMalloc((void **)&DeviceVectorX, vector_length * sizeof(*HostVectorX));
   if(cudaStatus != cudaSuccess) {
@@ -95,7 +90,7 @@ int RotEx<T>::RotExApiCall() {
   //! Copying values of Host vector to Device vector using cublasSetVector()
   status = cublasSetVector(vector_length, sizeof(*HostVectorX), HostVectorX,
                            VECTOR_LEADING_DIMENSION, DeviceVectorX,
-						   VECTOR_LEADING_DIMENSION);
+			   VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "Copying vector X from host to device failed\n";
     FreeMemory();
@@ -104,7 +99,7 @@ int RotEx<T>::RotExApiCall() {
 
   status = cublasSetVector(vector_length, sizeof(*HostVectorY), HostVectorY,
                            VECTOR_LEADING_DIMENSION, DeviceVectorY,
-						   VECTOR_LEADING_DIMENSION);
+			   VECTOR_LEADING_DIMENSION);
   if (status != CUBLAS_STATUS_SUCCESS) {
     std::cout << "Copying vector Y from host to device failed\n";
     FreeMemory();
@@ -127,26 +122,24 @@ int RotEx<T>::RotExApiCall() {
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
    */
   
-  if (mode == 'S') {
-    std::cout << "\nCalling RotEx API\n";
-    clk_start = clock();
+  std::cout << "\nCalling RotEx API\n";
+  clk_start = clock();
 
-    status = cublasRotEx(handle, vector_length, (float *)DeviceVectorX, CUDA_R_32F,
-	                    VECTOR_LEADING_DIMENSION, (float *)DeviceVectorY, CUDA_R_32F,
-                        VECTOR_LEADING_DIMENSION, (float *)&cosine, (float *)&sine,
-                        CUDA_R_32F, CUDA_R_32F);
+  status = cublasRotEx(handle, vector_length, (float *)DeviceVectorX, CUDA_R_32F,
+	               VECTOR_LEADING_DIMENSION, (float *)DeviceVectorY, CUDA_R_32F,
+                       VECTOR_LEADING_DIMENSION, (float *)&cosine, (float *)&sine,
+                       CUDA_R_32F, CUDA_R_32F);
 
-    if (status != CUBLAS_STATUS_SUCCESS) {
-      std::cout << " RotEx kernel execution error\n";
-      FreeMemory();
-      return EXIT_FAILURE;
-    }
-
-    clk_end = clock();
-    std::cout << "RotEx API call ended\n";
+  if (status != CUBLAS_STATUS_SUCCESS) {
+    std::cout << " RotEx kernel execution error\n";
+    FreeMemory();
+    return EXIT_FAILURE;
   }
 
-  //! Copy Vector X, holding resultant Vector, from Device to Host using cublasGetVector()
+  clk_end = clock();
+  std::cout << "RotEx API call ended\n";
+
+  //! Copy Vector X and Y, holding resultant Vector, from Device to Host using cublasGetVector()
   status = cublasGetVector(vector_length, sizeof (*HostVectorX), DeviceVectorX,
                            VECTOR_LEADING_DIMENSION, HostVectorX,
 			   VECTOR_LEADING_DIMENSION);
@@ -166,16 +159,14 @@ int RotEx<T>::RotExApiCall() {
     FreeMemory();
     return EXIT_FAILURE;
   }
+	
+  //! Print output vectors
+  std::cout << "\nVector X after " <<  "RotEx operation is:\n";
+  util::PrintVector<float>((float *)HostVectorX, vector_length);
 
-  if(mode == 'S') {
-    std::cout << "\nVector X after " <<  "RotEx operation is:\n";
-    util::PrintVector<float>((float *)HostVectorX, vector_length);
-
-    std::cout << "\nVector y after " << "RotEx operation is:\n";
-    util::PrintVector<float>((float *)HostVectorY, vector_length);
+  std::cout << "\nVector y after " << "RotEx operation is:\n";
+  util::PrintVector<float>((float *)HostVectorY, vector_length);
       
-  }
-
   long long total_operations = vector_length;
 
   //! printing latency and throughput of the function
@@ -187,25 +178,11 @@ int RotEx<T>::RotExApiCall() {
   return EXIT_SUCCESS;
 }
 
-int mode_S(int vector_length, float sine, float cosine) {
-  
-
-  RotEx<float> SRotEx(vector_length, sine, cosine,  'S' );
-  return SRotEx.RotExApiCall();
-}
-
-int (*cublas_func_ptr[])(int, float, float) = {
-  mode_S
-};
-
 int main(int argc, char **argv) {
   int vector_length, status;
   float alpha, alpha_radian, sine_real;
   float cosine;
-  char mode;
 
-  std::unordered_map<char, int> mode_index;
-  mode_index['S'] = 0;
 
   std::cout << "\n\n" << argv[0] << std::endl;
   for (int loop_count = 1; loop_count < argc; loop_count += 2) {
@@ -224,9 +201,6 @@ int main(int argc, char **argv) {
 
     else if (!(cmd_argument.compare("-alpha")))
       alpha = std::stof(argv[loop_count + 1]);
-
-    else if (!(cmd_argument.compare("-mode")))
-      mode = *(argv[loop_count + 1]);
   }
 
   //! Check Dimension Validity
@@ -239,7 +213,8 @@ int main(int argc, char **argv) {
   sine_real = sin(alpha_radian);
   cosine = cos(alpha_radian);
 
-  status = (*cublas_func_ptr[mode_index[mode]])(vector_length, sine_real, cosine);
+  RotEx<float> rotEx(vector_length, sine_real, cosine);
+  status = rotEx.RotExApiCall();
 
   return status;
 }
