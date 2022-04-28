@@ -12,7 +12,7 @@
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start))
 
 /**
- * Class ScalEx contains ScalEx API which Scales the vector x by the ScalExar α and overwrites it with the result : X = alpha * X
+ * Class ScalEx contains ScalEx API which Scales the vector x by the Scalar α and overwrites it with the result : X = alpha * X
  * \param X - vector of length n
  * \param alpha - Scalar
  */
@@ -21,9 +21,9 @@ class ScalEx {
   public:
     /**
      * ScalEx constructor - To initialize the class varibles using initializer list,
-     * sets up the API mode, alpha and dimension of vector
+     * sets up the alpha and dimension of vector
      */
-    ScalEx(int vector_length, T alpha, char mode);
+    ScalEx(int vector_length, T alpha);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -32,13 +32,12 @@ class ScalEx {
 
     /**
      * ScalExAPICall function - To allocate Host and Device memory,
-          sets up vector and calls ScalEx API based on the mode passed
+          sets up vector and calls ScalEx API 
      */
     int ScalExApiCall();
 
   private:
     int vector_length;
-    char mode;
     T *HostVectorX;
     T *DeviceVectorX;
     T alpha;
