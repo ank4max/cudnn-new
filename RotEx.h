@@ -27,9 +27,9 @@ class RotEx {
   public:
     /**
      * RotEx constructor - To initialize the class varibles using initializer list,
-     * sets up the API mode, sine, cosine and dimension of vectors
+     * sets up the sine, cosine and dimension of vectors
      */
-    RotEx(int vector_length, T sine, T cosine, char mode);
+    RotEx(int vector_length, T sine, T cosine);
 
     /**
      * FreeMemory function - To free the allocated memory when program is ended or in case of any error
@@ -38,13 +38,12 @@ class RotEx {
 
     /**
      * RotExAPICall function - To allocate Host and Device memory,
-          sets up vectors and calls RotEx API based on the mode passed
+          sets up vectors and calls RotEx API 
      */
     int RotExApiCall();
 
   private:
     int vector_length;
-    char mode;
     T *HostVectorX;
     T *HostVectorY;
     T *DeviceVectorX;
