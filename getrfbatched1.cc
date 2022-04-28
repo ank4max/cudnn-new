@@ -51,7 +51,6 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
     case 'S': {
       util::InitializeBatchedMatrix<float>((float **)HostMatrixA, A_row, A_col, batch_count);
       
-
       std::cout << "\nMatrix A:\n";
       util::PrintBatchedMatrix<float>((float **)HostMatrixA, A_row, A_col, batch_count);
       break;
@@ -83,7 +82,6 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
       break;
     }
 
-  
   }
   
   //! Allocating matrices on device    
@@ -103,6 +101,21 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
   cudaStatus = cudaMalloc((void**)&DeviceMatrixA, batch_count * sizeof(T*));
   if (cudaStatus != cudaSuccess) {
     std::cout << "!!!! Device memory allocation for matrix (A) failed\n";
+    FreeMemory();
+    return EXIT_FAILURE;
+  }
+
+  cudaStatus = cudaMalloc((void**)&DevicePivotArray, A_row * batch_count * sizeof(int));
+   if (cudaStatus != cudaSuccess) {
+    std::cout << "!!!! failed to create pivot array\n";
+    FreeMemory();
+    return EXIT_FAILURE;
+  }
+
+
+   cudaStatus = cudaMalloc((void**)&DeviceInfoArray, batch_count * sizeof(int));
+   if (cudaStatus != cudaSuccess) {
+    std::cout << "!!!! failed to create Info array\n";
     FreeMemory();
     return EXIT_FAILURE;
   }
@@ -134,104 +147,95 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
   }
 
   /**
-   * API call to performs matrix - matrix multiplication in batches : \f$ C = alpha * A[i] * B[i] + beta * C[i] \f$ \n
-   * Note: C[i] matrices must not overlap, i.e. the individual gemm operations must be computable independently \n
-            otherwise, undefined behavior is expected. \n
+   * API call to perform the LU factorization of each Aarray[i] : \f$ P * Aarray[i] = L * U \f$ \n
+   * where P is a permutation matrix which represents partial pivoting with row interchanges.\n 
+   * L is a lower triangular matrix with unit diagonal and U is an upper triangular matrix.\n
+   * L and U are written back to original matrix A, and diagonal elements of L are discarded. \n
+   * This function is intended to be used for matrices of small sizes where the launch overhead is a significant factor.\n
+   * GetrfBatched supports non-pivot LU factorization if PivotArray is nil.\n
+   * GetrfBatched supports arbitrary dimension.\n
+   * GetrfBatched only supports compute capability 2.0 or above.\n
    */
     
   /**
    * The possible error values returned by this API and their meanings are listed below : \n
    * CUBLAS_STATUS_SUCCESS - The operation completed successfully \n
    * CUBLAS_STATUS_NOT_INITIALIZED - The library was not initialized \n
-   * CUBLAS_STATUS_INVALID_VALUE - The parameters m, n, k, batchCount < 0 \n
+   * CUBLAS_STATUS_INVALID_VALUE - The parameters n, batchSize, lda < 0 \n
    * CUBLAS_STATUS_EXECUTION_FAILED - The function failed to launch on the GPU \n
    */
 
-   cudaStatus = cudaMalloc((void**)&DevicePivotArray, A_row * batch_count * sizeof(int));
-   if (cudaStatus != cudaSuccess) {
-    std::cout << "!!!! failed to create pivot array\n";
-    FreeMemory();
-    return EXIT_FAILURE;
-  }
-
-
-   cudaStatus = cudaMalloc((void**)&DeviceInfoArray, batch_count * sizeof(int));
-   if (cudaStatus != cudaSuccess) {
-    std::cout << "!!!! failed to create Info array\n";
-    FreeMemory();
-    return EXIT_FAILURE;
-  }
   
   switch (mode) {
     case 'S': {
-      std::cout << "\nCalling SGetrfBatched API\n";
+      std::cout << "\nCalling SgetrfBatched API\n";
       clk_start = clock();
  
       status = cublasSgetrfBatched(handle, A_row, (float**)DeviceMatrixA, A_row, 
                                   DevicePivotArray, DeviceInfoArray, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  SGetrfBatched kernel execution error\n";
+        std::cout << "!!!!  SgetrfBatched kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "SGetrfBatched API call ended\n";
+      std::cout << "SgetrfBatched API call ended\n";
       break;
     }
 
     case 'D': {
-      std::cout << "\nCalling DGetrfBatched API\n";
+      std::cout << "\nCalling DgetrfBatched API\n";
       clk_start = clock();
 
       status = cublasDgetrfBatched(handle, A_row, (double**)DeviceMatrixA, A_row, 
                                   DevicePivotArray, DeviceInfoArray, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  DGetrfBatched kernel execution error\n";
+        std::cout << "!!!!  DgetrfBatched kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "DGetrfBatched API call ended\n";
+      std::cout << "DgetrfBatched API call ended\n";
       break;
     }
 
     case 'C': {
-      std::cout << "\nCalling CGetrfBatched API\n";
+      std::cout << "\nCalling CgetrfBatched API\n";
       clk_start = clock();
        
       status = cublasCgetrfBatched(handle, A_row, (cuComplex**)DeviceMatrixA, A_row, 
                                   DevicePivotArray, DeviceInfoArray, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  CGetrfBatched kernel execution error\n";
+        std::cout << "!!!!  CgetrfBatched kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "CGetrfBatched API call ended\n";
+      std::cout << "CgetrfBatched API call ended\n";
       break;
     }
 
     case 'Z': {
-      std::cout << "\nCalling ZGetrfBatched API\n";
+      std::cout << "\nCalling ZgetrfBatched API\n";
       clk_start = clock();
    
       status = cublasZgetrfBatched(handle, A_row, (cuDoubleComplex**)DeviceMatrixA, A_row, 
-                                  DevicePivotArray, DeviceInfoArray, batch_count);
+                                   DevicePivotArray, DeviceInfoArray, batch_count);
 
       if (status != CUBLAS_STATUS_SUCCESS) {
-        std::cout << "!!!!  ZGetrfBatched kernel execution error\n";
+        std::cout << "!!!!  ZgetrfBatched kernel execution error\n";
         FreeMemory();
         return EXIT_FAILURE;
       }
 
       clk_end = clock();
-      std::cout << "ZGetrfBatched API call ended\n";
+      std::cout << "ZgetrfBatched API call ended\n";
       break;
     }
     
@@ -255,7 +259,7 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
       return EXIT_FAILURE;
     }
   
-
+  //! Copying Info array from device to host
   status = cublasGetVector(batch_count, sizeof (*HostInfoArray),
                            DeviceInfoArray, VECTOR_LEADING_DIMENSION,
 		               HostInfoArray, VECTOR_LEADING_DIMENSION);
@@ -267,35 +271,42 @@ int GetrfBatched<T>::GetrfBatchedApiCall() {
   } 
 
 
-  
 
   std::cout << "\nMatrix A after " << mode << "GetrfBatched operation is:\n";
 
   switch (mode) {
     case 'S': {
       util::PrintBatchedMatrix<float>((float **)HostMatrixA, A_row, A_col, batch_count);
+      std::cout <<"The Pivoting sequence is : " <<"\n";
       util::PrintMatrix<int>((int *)HostPivotArray, A_row, batch_count);
+      std::cout <<"Info array : " <<"\n";
       util::PrintVector<int>((int *)HostInfoArray, batch_count);
       break;
     }
 
     case 'D': {
       util::PrintBatchedMatrix<double>((double **)HostMatrixA, A_row, A_col, batch_count);
+      std::cout <<"The Pivoting sequence is : " <<"\n";
       util::PrintMatrix<int>((int *)HostPivotArray, A_row, batch_count);
+      std::cout <<"Info array : " <<"\n";
       util::PrintVector<int>((int *)HostInfoArray, batch_count);
       break;
     }
 
     case 'C': {
       util::PrintBatchedComplexMatrix<cuComplex>((cuComplex **)HostMatrixA, A_row, A_col, batch_count);
+      std::cout <<"The Pivoting sequence is : " <<"\n";
       util::PrintMatrix<int>((int *)HostPivotArray, A_row, batch_count);
+      std::cout <<"Info array : " <<"\n";
       util::PrintVector<int>((int *)HostInfoArray, batch_count);
       break;
     }
 
     case 'Z': {
       util::PrintBatchedComplexMatrix<cuDoubleComplex>((cuDoubleComplex **)HostMatrixA, A_row, A_col, batch_count);
+      std::cout <<"The Pivoting sequence is : " <<"\n";
       util::PrintMatrix<int>((int *)HostPivotArray, A_row, batch_count);
+      std::cout <<"Info array : " <<"\n";
       util::PrintVector<int>((int *)HostInfoArray, batch_count);
       break;
     }
@@ -388,4 +399,3 @@ int main(int argc, char **argv) {
   
   return status;
 }
-
