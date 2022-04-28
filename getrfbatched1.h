@@ -12,13 +12,9 @@
 #define THROUGHPUT(clk_start, clk_end, operations) ((1e-9 * 2 * operations) / (clk_end - clk_start))
 
 /**
- * Class GetrfBatched contains GetrfBatched API which performs matrix-matrix multiplication of a batch of matrices
- * \Operation: C[i] = alpha * A[i] * B[i] + beta * C[i]
- * \param A[i] - m x k general matrix,
- * \param B[i] - k x n general matrix
- * \param C[i] - m x n general matrix
- * \param alpha - scalar
- * \param beta - scalar
+ * Class GetrfBatched contains GetrfBatched API which performs the LU factorization of each Aarray[i] :\n
+ * \Operation: P * Aarray[i] = L * U
+ * \param A[i] - n x n general matrix,
  */
 template<class T>
 class GetrfBatched {
